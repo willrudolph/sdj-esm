@@ -1,0 +1,16 @@
+Copyright (c) 2023-2024 Will Rudolph <@willrudolph.com>
+Licensed under [MPLv2](https://www.mozilla.org/en-US/MPL/2.0/)
+
+Licensing/Copyright applies to all files in directory/repository/git
+below this point even if not specifically mentioned in the file.
+
+====
+
+Library has one peer dependency; Lodash (<https://github.com/lodash/lodash>)
+Copyright JS Foundation and other contributors <https://js.foundation/>
+provided under MIT License
+
+Files located in the node_modules and vendor directories are externally
+maintained libraries used by this software which have their own
+licenses; we recommend you read them, as their terms may differ from the
+terms above.

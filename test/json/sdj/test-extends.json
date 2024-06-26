@@ -1,0 +1,147 @@
+{
+  "$id": "http://willrudolph.com/schemas/sdj-schema.json",
+  "description": {
+    "sdInfo": {
+      "created": 1701390090598,
+      "modified": 1701390090598,
+      "name": "extends",
+      "uniqId": "3rh28R-Qlbx4-i6Xy-gqB33Ac"
+    },
+    "graph": [
+      {
+        "sdId": 1,
+        "sdKey": "alpha",
+        "sdItems": [2, 3],
+        "parentIds": [0],
+        "sdProps": {
+          "all": false,
+          "bil": "name",
+          "can": 3
+        }
+      },
+      {
+        "sdId": 2,
+        "sdKey": "beta",
+        "extendIds": [1],
+        "sdItems": [4],
+        "parentIds": [0],
+        "sdProps": {
+          "all": true,
+          "jeb": 7
+        }
+      },
+      {
+        "sdId": 3,
+        "sdKey": "gamma",
+        "extendIds": [2],
+        "sdItems": [5],
+        "parentIds": [0]
+      },
+      {
+        "sdId": 4,
+        "sdKey": "delta",
+        "extendIds": [3],
+        "sdItems": [6],
+        "parentIds": [0]
+      },
+      {
+        "sdId": 5,
+        "sdKey": "gamma_sub",
+        "extendIds": [3],
+        "sdItems": [7],
+        "parentIds": [0],
+        "sdProps": {
+          "dad": 32
+        }
+      },
+      {
+        "sdId": 6,
+        "sdKey": "beta_and_gamma_sub",
+        "extendIds": [2, 5],
+        "sdItems": [8],
+        "parentIds": [0],
+        "sdProps": {
+          "jeb": 2,
+          "all": 4
+        }
+      }
+    ],
+    "items": [
+      {
+        "sdId": 2,
+        "sdKey": "title",
+        "type": "string",
+        "limiter": "req"
+      },
+      {
+        "sdId": 3,
+        "sdKey": "keyName3",
+        "type": "strl"
+      },
+      {
+        "sdId": 4,
+        "sdKey": "keyName4",
+        "type": "numb"
+      },
+      {
+        "sdId": 5,
+        "sdKey": "keyName5",
+        "type": "numb"
+      },
+      {
+        "sdId": 6,
+        "sdKey":"keyName6",
+        "type": "strl"
+      },
+      {
+        "sdId": 7,
+        "sdKey": "keyName7",
+        "type": "numb"
+      },
+      {
+        "sdId": 8,
+        "sdKey": "keyName8",
+        "type": "numb"
+      }
+    ],
+    "lang": "en"
+  },
+  "sdInfo": {
+    "created": 1701390090598,
+    "modified": 1701390090598,
+    "name": "testExtends",
+    "uniqId": "3rh28R-Qlbx4-i6Xy-gq103MA"
+  },
+  "data": [
+    {
+      "sdId": 1,
+      "sdKey": "home1",
+      "title": "Home1"
+    },
+    {
+      "sdId": 2,
+      "sdKey": "home2",
+      "title": "Home2"
+    },
+    {
+      "sdId": 3,
+      "sdKey": "home3",
+      "title": "Home3"
+    },
+    {
+      "sdId": 4,
+      "sdKey": "home4",
+      "title": "Home4"
+    },
+    {
+      "sdId": 5,
+      "sdKey": "home5",
+      "title": "Home5"
+    },
+    {
+      "sdId": 6,
+      "sdKey": "home6",
+      "title": "Home6"
+    }
+  ]
+}

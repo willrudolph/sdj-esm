@@ -1,0 +1,93 @@
+{
+  "$id": "http://willrudolph.com/schemas/sdj-schema.json",
+  "description": {
+    "sdInfo": {
+      "created": 1701390090598,
+      "modified": 1701390090598,
+      "name": "betadesc",
+      "uniqId": "3rh28R-Qlbx4-i6Xy-gqB03Ac"
+    },
+    "lexicons": ["min-ang"],
+    "lang": "en"
+  },
+  "sdInfo": {
+    "created": 1701390090598,
+    "modified": 1701390090598,
+    "name": "testMinAngLex",
+    "uniqId": "3rh28R-Qlbx4-i6Xy-gq103MA"
+  },
+  "data": [{
+    "sdId": 2,
+    "sdKey": "route1",
+    "routeTitle": "Home",
+    "compClassName": "HomeComponent",
+    "sdChildren": [
+      {
+        "sdId": 1,
+        "sdKey": "home_comp1",
+        "compClassName": "SubHomeComp",
+        "sdChildren": [
+          {
+            "sdId": 3,
+            "sdKey": "article1",
+            "title": "Article 1"
+          },
+          {
+            "sdId": 3,
+            "sdKey": "article2",
+            "title": "Article 2"
+          },
+          {
+            "sdId": 3,
+            "sdKey": "article3",
+            "title": "Article 3"
+          }
+        ]
+      },
+      {
+        "sdId": 1,
+        "sdKey": "home_page2",
+        "compClassName": "SubHomeComp",
+        "sdChildren": [
+          {
+            "sdId": 3,
+            "sdKey": "article1",
+            "title": "Article 1"
+          },
+          {
+            "sdId": 3,
+            "sdKey": "article2",
+            "title": "Article 2"
+          },
+          {
+            "sdId": 3,
+            "sdKey": "article3",
+            "title": "Article 3"
+          }
+        ]
+      },
+      {
+        "sdId": 2,
+        "sdKey": "home_page3",
+        "compClassName": "SubHomeComp",
+        "sdChildren": [
+          {
+            "sdId": 3,
+            "sdKey": "article1",
+            "title": "Article 1"
+          },
+          {
+            "sdId": 3,
+            "sdKey": "article2",
+            "title": "Article 2"
+          },
+          {
+            "sdId": 3,
+            "sdKey": "article3",
+            "title": "Article 3"
+          }
+        ]
+      }
+    ]
+  }]
+}

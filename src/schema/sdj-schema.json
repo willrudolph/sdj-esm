@@ -1,0 +1,240 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "http://willrudolph.com/schemas/sdj-schema.json",
+  "type": "object",
+  "title": "SDJ Schema",
+  "required": [
+    "$id",
+    "description",
+    "sdInfo",
+    "data"
+  ],
+  "properties": {
+    "$id": {
+      "type": "string",
+      "title":"Sdj Schema Reference"
+    },
+    "sdInfo": {
+      "type": "object",
+      "$ref": "#/$defs/info",
+      "title": "Name, uniqId, created/modified for Json File."
+    },
+    "description": {
+      "type": "object",
+      "$ref": "#/$defs/description",
+      "title": "Self Description Object for SDJ file."
+    },
+    "data": {
+      "type": "array",
+      "default": [],
+      "title": "The top level data objects",
+      "items": {
+        "$ref": "#/$defs/data"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "description": {
+      "type": "object",
+      "description": "Description information for SDJ data",
+      "properties": {
+        "sdInfo": {
+          "type": "object",
+          "$ref": "#/$defs/info",
+          "title": "Name, uniqId, created/modified for SDJ Description"
+        },
+        "items": {
+          "type": "array",
+          "default": [],
+          "title": "The individual data item types referenced in plan",
+          "items": {
+            "$ref": "#/$defs/item"
+          }
+        },
+        "graph": {
+          "type": "array",
+          "default": [],
+          "title": "The array of entity types",
+          "items": {
+            "$ref": "#/$defs/entity"
+          }
+        },
+        "dataInfo": {
+          "type": ["boolean", "null"],
+          "default": null,
+          "title": "SDJ switch for uniqKey/creation/modification. If true systems will save and expect info per data object."
+        },
+        "lexicons": {
+          "type": ["array", "null"],
+          "title": "SDJ Description Lexicons associated with this description",
+          "default": null,
+          "items": {
+            "type": "string"
+          }
+        },
+        "lang": {
+          "type": "string",
+          "default": "en",
+          "title": "The language of the text in the description/sdj",
+          "examples": [
+            "en"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "sdInfo",
+        "items",
+        "graph"
+      ]
+    },
+    "info": {
+      "type": "object",
+      "description": "Standardized set of values for name, uniqKey, created date, and last modified date",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Name of descriptor"
+        },
+        "uniqId": {
+          "title": "Unique id for tracking, initialized on plan/data creation",
+          "type": "string"
+        },
+        "created": {
+          "title": "UTC Time descriptor was created",
+          "type": "integer"
+        },
+        "modified": {
+          "title": "UTC Time descriptor was last modified",
+          "type": "integer"
+        }
+      },
+      "required": ["name", "uniqId", "created", "modified"]
+    },
+    "data": {
+      "type": "object",
+      "description": "Standardized expandable data object",
+      "properties": {
+        "sdKey": {
+          "type": "string",
+          "title": "Key id/name/route of data"
+        },
+        "sdId": {
+          "title": "Entity sdId associated with data",
+          "type": "integer"
+        },
+        "sdInfo": {
+          "type": "object",
+          "default": null,
+          "title": "Optional descriptor object for tracking data changes",
+          "items": {
+            "$ref": "#/$defs/info"
+          }
+        },
+        "sdChildren": {
+          "title": "Child data array",
+          "type": ["array", "null"],
+          "default": null,
+          "items": {
+            "$ref": "#/$defs/data"
+          }
+        }
+      },
+      "required": ["sdKey", "sdId"],
+      "additionalProperties": true
+    },
+    "entity": {
+      "type": "object",
+      "title": "Entity description of data in graph/relationships",
+      "properties": {
+        "sdId": {
+          "type": "integer",
+          "title": "sdId in plan of entity"
+        },
+        "sdKey": {
+          "type": "string",
+          "title": "sdKey for Entity"
+        },
+        "extendIds": {
+          "type": ["array", "null"],
+          "title": "Optional ids which current Entity extends",
+          "default": null,
+          "items": {
+            "type": "integer",
+            "title": "Extended entity ids",
+            "uniqueItems": true
+          }
+        },
+        "parentIds": {
+          "type": ["array", "null"],
+          "title": "Optional allowed entity's parent sdIds",
+          "default": null,
+          "items": {
+            "type": "integer",
+            "title": "Allowed parent entity ids",
+            "uniqueItems": true
+          }
+        },
+        "childIds": {
+          "type": ["array", "null"],
+          "title": "Optional allowed entity's children sdIds",
+          "default": null,
+          "items": {
+            "type": "integer",
+            "title": "Child entity id",
+            "uniqueItems": true
+          }
+        },
+        "sdItems": {
+          "type": ["array", "null"],
+          "default": null,
+          "title": "Entity's associated item sdIds",
+          "items": {
+            "type": "integer",
+            "title": "Entity's associated item sdId",
+            "uniqueItems": true
+          }
+        },
+        "limiter": {
+          "type": ["string", "null"],
+          "title": "Parallels to entity limiter, used for limitations",
+          "default": null
+        },
+        "sdProps": {
+          "type": ["object", "null"],
+          "default": null,
+          "title": "Extended assigned key/value props of entity",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false,
+      "required": ["sdId", "sdKey"]
+    },
+    "item": {
+      "title": "Describes a data item found in data object/entity",
+      "type": "object",
+      "properties": {
+        "sdId": {
+          "title": "sdId for item in plan",
+          "type": "integer"
+        },
+        "sdKey": {
+          "type": "string",
+          "title": "sdKey property name found in data"
+        },
+        "type": {
+          "type": "string",
+          "title": "Type of data item"
+        },
+        "limiter": {
+          "type": ["string", "null"],
+          "title": "Parallels to entity limiter, used for limitations",
+          "default": null
+        }
+      },
+      "additionalProperties": false,
+      "required": ["sdId", "sdKey", "type"]
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "$id": "http://willrudolph.com/schemas/sdj-schema.json",
+  "description": {
+    "sdInfo": {
+      "created": 0,
+      "modified": 0,
+      "name": "descName",
+      "uniqId": "000000-00000-0000-0000000"
+    },
+    "graph": [],
+    "items": []
+  },
+  "sdInfo": {
+    "created": 1701390090598,
+    "modified": 1701390090598,
+    "name": "jsonName",
+    "uniqId": "000000-00000-0000-0000000"
+  },
+  "data": []
+}

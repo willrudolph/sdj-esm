@@ -1,0 +1,136 @@
+{
+  "$id": "http://willrudolph.com/schemas/sdj-schema.json",
+  "description": {
+    "sdInfo": {
+      "created": 1701390090598,
+      "modified": 1701390090598,
+      "name": "betadesc",
+      "uniqId": "3rh28R-Qlbx4-i6Xy-gqB03Ac"
+    },
+    "graph": [
+      {
+        "sdId": 1,
+        "sdKey": "alpha",
+        "sdItems": [2, 3],
+        "parentIds": [0],
+      },
+      {
+        "sdId": 2,
+        "sdKey": "beta",
+        "extendIds": [2],
+        "sdItems": [2, 3],
+        "parentIds": [0]
+      },
+      {
+        "sdId": 3,
+        "sdKey": "gamma",
+        "extendIds": [2],
+        "sdItems": [5],
+        "parentIds": [0]
+      }
+    ],
+    "items": [
+      {
+        "sdId": 2,
+        "sdKey": "title",
+        "type": "string",
+        "limiter": "req"
+      },
+      {
+        "sdId": 3,
+        "sdKey": "wordText",
+        "type": "strl"
+      },
+      {
+        "sdId": 4,
+        "sdKey": "counts",
+        "type": "numb"
+      },
+      {
+        "sdId": 5,
+        "sdKey": "jumbo",
+        "type": "numb"
+      }
+    ],
+    "lang": "en"
+  },
+  "sdInfo": {
+    "created": 1701390090598,
+    "modified": 1701390090598,
+    "name": "testFileA",
+    "uniqId": "3rh28R-Qlbx4-i6Xy-gq103MA"
+  },
+  "data": [{
+    "sdId": 1,
+    "sdKey": "home",
+    "title": "Home",
+    "sdChildren": [
+      {
+        "sdId": 2,
+        "sdKey": "home_page1",
+        "title": "Home Page 1",
+        "sdChildren": [
+          {
+            "sdId": 3,
+            "sdKey": "article1",
+            "title": "Article 1"
+          },
+          {
+            "sdId": 3,
+            "sdKey": "article2",
+            "title": "Article 2"
+          },
+          {
+            "sdId": 3,
+            "sdKey": "article3",
+            "title": "Article 3"
+          }
+        ]
+      },
+      {
+        "sdId": 2,
+        "sdKey": "home_page2",
+        "title": "Home Page 2",
+        "sdChildren": [
+          {
+            "sdId": 3,
+            "sdKey": "article1",
+            "title": "Article 1"
+          },
+          {
+            "sdId": 3,
+            "sdKey": "article2",
+            "title": "Article 2"
+          },
+          {
+            "sdId": 3,
+            "sdKey": "article3",
+            "title": "Article 3"
+          }
+        ]
+      },
+      {
+        "sdId": 2,
+        "sdKey": "home_page3",
+        "title": "Home Page 3",
+        "sdChildren": [
+          {
+            "sdId": 3,
+            "sdKey": "article1",
+            "title": "Article 1"
+          },
+          {
+            "sdId": 3,
+            "sdKey": "article2",
+            "title": "Article 2"
+          },
+          {
+            "sdId": 3,
+            "sdKey": "article3",
+            "title": "Article 3"
+          }
+        ]
+      }
+    ]
+  }]
+}

@@ -1,0 +1,20 @@
+{
+  "$id": "http://willrudolph.com/schemas/sdj-schema.json",
+  "description": {
+    "sdInfo": {
+      "created": 1701390090598,
+      "modified": 1701390090598,
+      "name": "betadesc",
+      "uniqId": "3rh28R-Qlbx4-i6Xy-gqB03Ac"
+    },
+    "lexicons": ["min-ang"],
+    "lang": "en"
+  },
+  "sdInfo": {
+    "created": 1701390090598,
+    "modified": 1701390090598,
+    "name": "testMinAngLex",
+    "uniqId": "3rh28R-Qlbx4-i6Xy-gq103MA"
+  },
+  "data": []
+}

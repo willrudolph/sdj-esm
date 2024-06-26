@@ -1,0 +1,126 @@
+{
+  "$id": "http://willrudolph.com/schemas/sdj-schema.json",
+  "description": {
+    "sdInfo": {
+      "created": 1701390090598,
+      "modified": 1701390090598,
+      "name": "testadesc",
+      "uniqId": "3rh28R-Qlbx4-i6Xy-gqB03mA"
+    },
+    "graph": [
+      {
+        "sdId": 1,
+        "sdKey": "folder",
+        "sdItems": [2, 3],
+        "parentIds": [0, 1],
+        "childIds": [1, 2]
+      },
+      {
+        "sdId": 2,
+        "sdKey": "page",
+        "sdItems": [2, 3],
+        "parentIds": [0, 1],
+        "childIds": [3]
+      },
+      {
+        "sdId": 3,
+        "sdKey": "article",
+        "sdItems": [2, 3],
+        "parentIds": [2]
+      }
+    ],
+    "items": [
+      {
+        "sdId": 2,
+        "sdKey": "title",
+        "type": "string",
+        "limiter": "req"
+      },
+      {
+        "sdId": 3,
+        "sdKey": "htmlText",
+        "type": "html"
+      }
+    ],
+    "lang": "en"
+  },
+  "sdInfo": {
+    "created": 1701390090598,
+    "modified": 1701390090598,
+    "name": "testFileA",
+    "uniqId": "3rh28R-Qlbx4-i6Xy-gq103MA"
+  },
+  "data": [{
+    "sdId": 1,
+    "sdKey": "home",
+    "title": "Home",
+    "sdChildren": [
+      {
+        "sdId": 2,
+        "sdKey": "home_page1",
+        "title": "Home Page 1",
+        "sdChildren": [
+          {
+            "sdId": 3,
+            "sdKey": "article1",
+            "title": "Article 1"
+          },
+          {
+            "sdId": 3,
+            "sdKey": "article2",
+            "title": "Article 2"
+          },
+          {
+            "sdId": 3,
+            "sdKey": "article3",
+            "title": "Article 3"
+          }
+        ]
+      },
+      {
+        "sdId": 2,
+        "sdKey": "home_page2",
+        "title": "Home Page 2",
+        "sdChildren": [
+          {
+            "sdId": 3,
+            "sdKey": "article1",
+            "title": "Article 1"
+          },
+          {
+            "sdId": 3,
+            "sdKey": "article2",
+            "title": "Article 2"
+          },
+          {
+            "sdId": 3,
+            "sdKey": "article3",
+            "title": "Article 3"
+          }
+        ]
+      },
+      {
+        "sdId": 2,
+        "sdKey": "home_page3",
+        "title": "Home Page 3",
+        "sdChildren": [
+          {
+
+            "sdKey": "article1",
+            "title": "Article 1"
+          },
+          {
+            "sdId": 3,
+            "sdKey": "article2",
+            "title": "Article 2"
+          },
+          {
+            "sdId": 3,
+            "sdKey": "article3",
+            "title": "Article 3"
+          }
+        ]
+      }
+    ]
+  }]
+}

@@ -1,0 +1,20 @@
+{
+  "$id": "http://willrudolph.com/schemas/sdj-schema.json",
+  "description": {
+    "sdInfo": {
+      "created": 1701390090598,
+      "modified": 1701390090598,
+      "name": "descName",
+      "uniqId": "3rh28R-Qlbx4-i6Xy-gqB03MA"
+    },
+    "graph": [],
+    "items": []
+  },
+  "sdInfo": {
+    "created": 1701390090598,
+    "modified": 1701390090598,
+    "name": "sdjFileName",
+    "uniqId": "4rh28R-Qlbx4-i6Xy-g3B03MA"
+  },
+  "data": []
+}
