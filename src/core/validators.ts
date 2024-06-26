@@ -238,11 +238,7 @@ export const rtnSdjItemName = (nameStr: string): string | undefined => {
           return true;
         }
       });
-      if (isUndefined(rtnName)) {
-        return true;
-      } else {
-        return false;
-      }
+      return !!isUndefined(rtnName);
     }
   });
 
