@@ -6,7 +6,7 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import type {CoreSD, DataJI, DataJIValues, EntityJI, FuncJsonValueValidator, Info} from "../core/interfaces.js";
+import type {CoreSD, DataJI, DataJIValues, FuncJsonValueValidator, Info} from "../core/interfaces.js";
 import {each, find, isUndefined, uniq, UUID} from "./std.funcs.js";
 
 export const validObjKeys = (inArray: string[], chkObj: DataJI,

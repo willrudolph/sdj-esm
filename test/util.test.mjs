@@ -1,4 +1,4 @@
-import {ESDJ_LOG, UUID, getRegEx, newInfoJI} from "../dist/index.js";
+import {UUID, newInfoJI} from "../dist/index.js";
 import {expect, test, afterEach, beforeEach, describe} from "@jest/globals";
 import {isString} from "lodash-es";
 
@@ -12,7 +12,7 @@ describe("Util Tests", () => {
       created: newInfo.created,
       modified: newInfo.modified
     })
-    expect(newInfoJI("value")).toBeTruthy();
+    expect(newInfoJI("value")).toeTruthy();
   });
 
 

@@ -7,26 +7,26 @@
  */
 
 import type {
-  DataJI,
-  DescriptionJI,
-  EntitySearch,
-  FuncStrNumVoid,
-  Info,
-  ItemSearch,
-  SdJsonJI
+    DataJI,
+    DescriptionJI,
+    EntitySearch,
+    FuncStrNumVoid,
+    Info,
+    ItemSearch,
+    SdJsonJI
 } from "../core/interfaces.js";
 import {
-  cloneDeep,
-  cloneJI,
-  each,
-  find,
-  has,
-  isArray,
-  isEmpty,
-  isEqual,
-  isObject,
-  isString,
-  UUID
+    cloneDeep,
+    cloneJI,
+    each,
+    find,
+    has,
+    isArray,
+    isEmpty,
+    isEqual,
+    isObject,
+    isString,
+    UUID
 } from "../util/std.funcs.js";
 
 

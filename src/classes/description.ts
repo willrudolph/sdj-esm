@@ -7,15 +7,16 @@
  */
 
 import type {
-  CoreSD,
-  DescriptionJI,
-  EntityJI,
-  EntitySearch,
-  FuncJsonValueValidator, FuncStrNumVoid,
-  Info,
-  ItemJI,
-  ItemSearch,
-  SdKeyProps
+    CoreSD,
+    DescriptionJI,
+    EntityJI,
+    EntitySearch,
+    FuncJsonValueValidator,
+    FuncStrNumVoid,
+    Info,
+    ItemJI,
+    ItemSearch,
+    SdKeyProps
 } from "../core/interfaces.js";
 import {checkResetInfo, verifyUniqKeys,} from "../util/verify.js";
 import {genEntityJI, genInfoJI, genItemJI} from "../util/immutables.js";

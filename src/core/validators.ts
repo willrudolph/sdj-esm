@@ -6,7 +6,7 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import type {FuncJsonValueValidator, Info,  JIValue, SdjLimiter} from "./interfaces.js";
+import type {FuncJsonValueValidator, Info, JIValue} from "./interfaces.js";
 import {each, isArray, isBoolean, isNumber, isObject, isString, isUndefined, uniq, UUID} from "../util/std.funcs.js";
 import {getRegEx} from "../util/regex.js";
 

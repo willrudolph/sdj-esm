@@ -6,20 +6,11 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import type {
-    DataJI,
-    DescriptionJI,
-    DescriptionSearch,
-    EntityJI,
-    FuncStrNumVoid,
-    ItemJI,
-    SdJsonJI
-} from "../core/interfaces.js";
+import type {DataJI, DescriptionJI, DescriptionSearch, EntityJI, FuncStrNumVoid, ItemJI} from "../core/interfaces.js";
 import {type DescriptSearchResult, SdjDescription} from "../classes/description.js";
 import {find, isEqual, isString} from "../util/std.funcs.js";
 import {ESDJ_CLASS, ESDJ_LOG} from "../core/enums.js";
-import {isInfo} from "../core/validators.js";
-import type {IDescriptionSdj, IJsonSdj} from "../classes/class-interfaces.js";
+import type {IDescriptionSdj} from "../classes/class-interfaces.js";
 import type {AllSdjTypes, ISdjHost, ISdjLexicons, ISdjSettings, SdjJITypes, Settings} from "./global-interfaces.js";
 import {SdjSettings} from "./settings.js";
 import {SdjLexicons} from "./lexicons.js";
