@@ -236,9 +236,7 @@ export class SdjDescription implements IDescriptionSdj {
   }
 
   verifyJIbyType(ji: SdjJITypes, jiType: ESDJ_CLASS, strict: boolean = false): boolean {
-    let rtnVal = false;
-    rtnVal = this._host.verifyJIbyType(ji, jiType, strict);
-    return rtnVal;
+    return this._host.verifyJIbyType(ji, jiType, strict);
   }
 
   private entityItemBuild(inDescJI: DescriptionJI) {

@@ -87,8 +87,8 @@ export class SdjItem implements IItemSdj {
   }
   
   validateValue(inVal: JIValue): boolean {
-    let rtnValid = true,
-      validatorFunc: FuncJsonValueValidator;
+    let validatorFunc: FuncJsonValueValidator,
+        rtnValid = true;
     if (!this._description) {
       rtnValid = false;
     } else {

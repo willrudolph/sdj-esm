@@ -132,6 +132,7 @@ export class SdJson implements IJsonSdj{
 
     if (data.length > 0) {
       // TODO: Entity search
+      this.log("TODO: dataByEntity;" + foundEnts.length);
     }
     return rtnAry;
   }
@@ -144,6 +145,7 @@ export class SdJson implements IJsonSdj{
 
     if (data.length > 0) {
       // TODO: Item Search
+      this.log("TODO: dataByItem;" + foundItems.length);
     }
     return rtnAry;
   }

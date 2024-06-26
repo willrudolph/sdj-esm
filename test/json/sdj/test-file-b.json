@@ -12,7 +12,7 @@
         "sdId": 1,
         "sdKey": "alpha",
         "sdItems": [2, 3],
-        "parentIds": [0],
+        "parentIds": [0]
       },
       {
         "sdId": 2,
