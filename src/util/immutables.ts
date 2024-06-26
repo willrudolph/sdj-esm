@@ -8,14 +8,14 @@
 
 import {cloneDeep, each, isBoolean, isNumber, isString, isUndefined, uniq, UUID} from "../util/std.funcs.js";
 import type {
-    CoreSD,
-    DataJI,
-    DataJIValues,
-    DescriptionJI,
-    EntityJI,
-    Info,
-    ItemJI,
-    SdKeyProps
+  CoreSD,
+  DataJI,
+  DataJIValues,
+  DescriptionJI,
+  EntityJI,
+  Info,
+  ItemJI,
+  SdKeyProps
 } from "../core/interfaces.js";
 import {DEF_DESC, RESERVED_WORDS} from "../core/statics.js";
 import {isArrayWithLen, isInfo, validSDKey} from "../core/validators.js";

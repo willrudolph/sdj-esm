@@ -7,38 +7,38 @@
  */
 
 import type {
-    CoreSD,
-    DescriptionJI,
-    EntityJI,
-    FuncJsonValueValidator,
-    ILexicon,
-    ItemJI,
-    SdKeyProps
+  CoreSD,
+  DescriptionJI,
+  EntityJI,
+  FuncJsonValueValidator,
+  ILexicon,
+  ItemJI,
+  SdKeyProps
 } from "../core/interfaces.js";
 import {
-    cloneDeep,
-    each,
-    find,
-    findIndex,
-    has,
-    isArray,
-    isEmpty,
-    isFunction,
-    isObject,
-    isUndefined,
-    map,
-    uniq
+  cloneDeep,
+  each,
+  find,
+  findIndex,
+  has,
+  isArray,
+  isEmpty,
+  isFunction,
+  isObject,
+  isUndefined,
+  map,
+  uniq
 } from "../util/std.funcs.js";
 import {
-    getStrValidLenFunc,
-    getValidNumberFunc,
-    getValidObjFunc,
-    rtnSdjItemName,
-    type SdjValidators,
-    validBoolean,
-    validSDKey,
-    validTypeLexName,
-    validUtcDate
+  getStrValidLenFunc,
+  getValidNumberFunc,
+  getValidObjFunc,
+  rtnSdjItemName,
+  type SdjValidators,
+  validBoolean,
+  validSDKey,
+  validTypeLexName,
+  validUtcDate
 } from "../core/validators.js";
 import {getRegEx} from "../util/regex.js";
 import {verifySequenceKeys, verifyUniqKeys} from "../util/verify.js";
