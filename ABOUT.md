@@ -18,7 +18,7 @@ Needed an extremely flexible universal storage and data transport file that is w
 - Provide internal routines for JSONs, import/loading, cryptography, security, compression, or sanitization
     - Test and correspond with as much default JSON/JavaScript functionality as possible
     - Via Lexicon extensions some options can created/provided for internal content.
-    -  @sdj-angular* provides an example of sanitization/html content
+    - sdj-editor will provide an example of sanitization/html content
     - Whole/Partial file security/compression/cryptography should always be preferred over internal file optimizations/shortcuts
 - Natively implement non-JSON/JavaScript objects inside JSON structures
     - Customizations can/could occur via lexicons, but should not be directly part of this library.

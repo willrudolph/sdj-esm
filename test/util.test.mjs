@@ -12,7 +12,7 @@ describe("Util Tests", () => {
       created: newInfo.created,
       modified: newInfo.modified
     })
-    expect(newInfoJI("value")).toeTruthy();
+    expect(newInfoJI("value")).toBeTruthy();
   });
 
 
