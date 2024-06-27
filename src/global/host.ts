@@ -37,8 +37,8 @@ export class SdjHost implements ISdjHost {
       throw new Error("[SDJ] Illegal attempt create SdjHost");
     }
     this._settings = new SdjSettings(this, initialSet?.options);
-    this._lexicons = new SdjLexicons(this, initialSet?.lexicons);
     this.gLog = this.settings.logs.getLogFunc("ISdjHost");
+    this._lexicons = new SdjLexicons(this, initialSet?.lexicons);
     if (initialSet?.options?.logMode && initialSet.options.logMode !== ESDJ_LOG.PROD) {
       this.gLog("Set logMode:" + initialSet.options.logMode);
     }
