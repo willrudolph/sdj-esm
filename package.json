@@ -1,9 +1,9 @@
 {
   "name": "sdj-esm",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "SDJ Library",
   "main": "./dist/index.js",
-  "module": "./dist/index.js",
+  "import": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "typings": "./dist/index.d.ts",
   "type": "module",
@@ -14,19 +14,6 @@
     "dist",
     "src"
   ],
-  "exports": {
-    ".": {
-      "types": "./dist/*.d.ts",
-      "import": "./dist/*.js",
-      "default": "./dist/*.js"
-    },
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "import": "./dist/*.js",
-      "default": "./dist/*.js"
-    },
-    "./package.json": "./package.json"
-  },
   "scripts": {
     "compile": "tsc -b",
     "build": "npm-run-all compile schema:copy",
