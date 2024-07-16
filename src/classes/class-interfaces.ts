@@ -11,30 +11,31 @@ import type {
     DescriptionJI,
     EntityJI,
     EntitySearch,
-    FuncJsonValueValidator,
+    ExtAllowedValue,
     FuncStrNumVoid,
+    GenKeyStore,
     Info,
     ItemJI,
     ItemSearch,
-    JIValue,
-    SdjLimiter,
+    IValidator,
+    NumKeyStore,
     SdJsonJI,
     SdKeyProps
 } from "../core/interfaces.js";
 
 import type {ISdjHost, SdjJITypes} from "../global/global-interfaces.js";
-import type {ESDJ_CLASS} from "../core/enums.js";
+import type {ESDJ_CLASS, ESDJ_LIMIT} from "../core/enums.js";
 
 
 export declare interface IItemSdj {
     sdId: number;
     sdKey: string;
     type: string;
-    limiter: SdjLimiter;
+    limiter: ESDJ_LIMIT;
     // eslint-disable-next-line no-use-before-define
     description: IDescriptionSdj;
     genJI: () => ItemJI;
-    validateValue: (inVal: JIValue) => boolean;
+    validator: IValidator;
 }
 export declare interface IEntitySdj {
     sdId: number;
@@ -44,24 +45,34 @@ export declare interface IEntitySdj {
     extendIds?: number[];
     childIds?: number[];
     sdProps?: SdKeyProps;
-    limiter: SdjLimiter;
+    limiter: ESDJ_LIMIT;
+    readonly childRefs: NumKeyStore<IEntitySdj>;
+    readonly itemRefs: GenKeyStore<IItemSdj>;
+    validStruct: (dataSdj: DataJI, parentRef: DataJI | undefined, strict?:boolean) => boolean;
+    validData: (dataSdj: DataJI, strict?: boolean) => boolean;
     // eslint-disable-next-line no-use-before-define
     description: IDescriptionSdj;
-    getItemRefs: () => IItemSdj[];
     genJI:() => EntityJI;
 }
 
 export declare interface IDataSdj {
     sdKey: string;
     sdId: number;
-    parentRef?: IDataSdj | undefined;
-    sdChildren?: IDataSdj[];
+    parentRef: IDataSdj | undefined;
+    sdChildren: IDataSdj[] | undefined;
+    hasChildren: boolean;
+    readonly data: DataJI;
     readonly depth: number;
     readonly path: string;
-    entity: IEntitySdj | undefined;
-    getItemRefs: () => IItemSdj[];
+    readonly entity: IEntitySdj | undefined;
+    sdIndex: number;
+    getChild:(childRef: string | number | IDataSdj) => IDataSdj | undefined;
+    addChild: (childRef: IDataSdj) => void;
+    isValid: () => boolean;
+    // removeChild: (childRef: string | number | IDataSdj) => IDataSdj | undefined;
+    getDataKey: (dataKey: string) => ExtAllowedValue;
+    setDataKey: (dataKey: string, value: ExtAllowedValue) => void;
     genJI: (withChildren: boolean) => DataJI;
-    validateData: (strict: boolean) => boolean;
 }
 
 export declare interface IDescriptionSdj {
@@ -73,12 +84,11 @@ export declare interface IDescriptionSdj {
     searchEntities: (searchEnt: EntitySearch) => IEntitySdj[];
     searchItems: (searchItem: ItemSearch) => IItemSdj[];
     getEntityProps: (entity: IEntitySdj) => SdKeyProps | undefined;
-    getEntityRefs: (intAry: number[]) => IEntitySdj[];
+    getItemsByEntity: (entKeyNum: string | number) => IItemSdj[];
     getEntityRefById: (entId: number) => IEntitySdj | undefined;
     getItemRefs: (intAry: number[]) => IItemSdj[];
-    getValidator: (validatorId: string) => FuncJsonValueValidator;
+    getValidator: (validatorId: string) => IValidator;
     genJI: () => DescriptionJI;
-    verifyParent: (sdData: IDataSdj, strict: boolean) => boolean;
     verifyJIbyType: (ji: SdjJITypes, jiType: ESDJ_CLASS, strict?: boolean) => boolean;
     // Sub items of description use this log access point
     log: FuncStrNumVoid

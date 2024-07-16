@@ -6,18 +6,18 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import type {FuncJsonValueValidator, ItemJI, JIValue, SdjLimiter} from "../core/interfaces.js";
-import {isFunction, isString} from "../util/std.funcs.js";
-
-import {validTypeLexName} from "../core/validators.js";
-import {isNull, isUndefined} from "lodash-es";
+import type {ItemJI, IValidator} from "../core/interfaces.js";
+import {validTypeLexName} from "../util/func.std.js";
+import {autoFailValidator} from "../core/validators.js";
+import {isFunction, isNull, isString, isUndefined} from "lodash-es";
 import {restrictCoreSD, restrictLimiter, restrictToAllowedKeys} from "../core/restrict.js";
 import {ESDJ_CLASS, ESDJ_LIMIT} from "../core/enums.js";
 import type {IDescriptionSdj, IItemSdj} from "./class-interfaces.js";
+import {rtnSdjItemName} from "../core/sdj-types.js";
 
 /*
   SdjItem
-  sdId: Item id for Entity
+  sdId: Item id for Entity sdItems ref
   sdKey: name for data reference
   type: type
 
@@ -33,14 +33,15 @@ export class SdjItem implements IItemSdj {
   sdId: number;
   sdKey: string;
   type: string;
-  limiter: SdjLimiter;
+  limiter: ESDJ_LIMIT;
+  validator: IValidator = autoFailValidator;
 
   private _description?: IDescriptionSdj;
 
   constructor(inItem: ItemJI, description: IDescriptionSdj | undefined) {
     this.description = description;
     if (this._description) {
-      this._description.host.checkClassInst(inItem, ESDJ_CLASS.ENTITY, false);
+      this._description.host.checkClassInst(inItem, ESDJ_CLASS.ITEM, false);
     }
     SdjItem.VerifyJI(inItem);
 
@@ -48,6 +49,9 @@ export class SdjItem implements IItemSdj {
     this.sdKey = inItem.sdKey;
     this.type = inItem.type;
     this.limiter = inItem.limiter || ESDJ_LIMIT.NONE;
+    if (this._description) {
+      this.initDescription();
+    }
   }
 
   get description(): IDescriptionSdj {
@@ -63,6 +67,9 @@ export class SdjItem implements IItemSdj {
         if (inDesc.host?.checkClassInst && isFunction(inDesc.host.checkClassInst)) {
           inDesc.host.checkClassInst(inDesc, ESDJ_CLASS.DESCRIPTION, true);
           this._description = inDesc;
+          if (this.type) {
+            this.initDescription();
+          }
         } else {
           throw new Error("[SDJ] Incorrect or missing description/host;");
         }
@@ -85,18 +92,13 @@ export class SdjItem implements IItemSdj {
     
     return rtnItemJI;
   }
-  
-  validateValue(inVal: JIValue): boolean {
-    let validatorFunc: FuncJsonValueValidator,
-        rtnValid;
-    if (!this._description) {
-      rtnValid = false;
-    } else {
-      validatorFunc = this.description.getValidator(this.type);
-      rtnValid = validatorFunc(inVal);
+  private initDescription() {
+    const replaceName: string | undefined = rtnSdjItemName(this.type);
+    if (replaceName) {
+      this._description!.log(`Item '${this.sdKey}' has type '${this.type}' which has been replaced as too similar to default '${replaceName}';`);
+      this.type = replaceName;
     }
-
-    return rtnValid;
+    this.validator = this._description!.getValidator(this.type);
   }
 
   static VerifyJI(inItem: ItemJI) {

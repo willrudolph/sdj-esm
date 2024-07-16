@@ -6,7 +6,7 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import {cloneDeep, each, isBoolean, isNumber, isString, isUndefined, uniq, UUID} from "../util/std.funcs.js";
+import {UUID} from "./func.std.js";
 import type {
   CoreSD,
   DataJI,
@@ -17,9 +17,11 @@ import type {
   ItemJI,
   SdKeyProps
 } from "../core/interfaces.js";
-import {DEF_DESC, RESERVED_WORDS} from "../core/statics.js";
-import {isArrayWithLen, isInfo, validSDKey} from "../core/validators.js";
+import {DATAJI_WORDS, DEF_DESC} from "../core/statics.js";
+import {isArrayWithLen, isInfo} from "../core/validators.js";
 import {ESDJ_LIMIT} from "../core/enums.js";
+import {cloneDeep, each, isBoolean, isNumber, isString, isUndefined, uniq} from "lodash-es";
+import {validSDKey} from "../core/sdj-types.js";
 
 
 export function newInfoJI(name: string = "", compress: boolean = false): Info {
@@ -152,7 +154,7 @@ export function blankDescriptionJI(descName: string): DescriptionJI {
 }
 
 export function genKeyDataJI(orgData: DataJI): DataJI {
-  const nonKeys = RESERVED_WORDS,
+  const nonKeys = DATAJI_WORDS,
     rtnJI: DataJI = {
       sdId: orgData.sdId,
       sdKey: orgData.sdKey,

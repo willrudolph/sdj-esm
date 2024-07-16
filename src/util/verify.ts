@@ -7,7 +7,8 @@
  */
 
 import type {CoreSD, DataJI, DataJIValues, FuncJsonValueValidator, Info} from "../core/interfaces.js";
-import {each, find, isUndefined, uniq, UUID} from "./std.funcs.js";
+import {UUID} from "./func.std.js";
+import {each, find, isUndefined, uniq} from "lodash-es";
 
 export const validObjKeys = (inArray: string[], chkObj: DataJI,
   validateFuncs: FuncJsonValueValidator[] = []): string[] | boolean => {

@@ -8,7 +8,6 @@
 
 import type {DataJI, DescriptionJI, DescriptionSearch, EntityJI, FuncStrNumVoid, ItemJI} from "../core/interfaces.js";
 import {type DescriptSearchResult, SdjDescription} from "../classes/description.js";
-import {find, isEqual, isString} from "../util/std.funcs.js";
 import {ESDJ_CLASS, ESDJ_LOG} from "../core/enums.js";
 import type {IDescriptionSdj} from "../classes/class-interfaces.js";
 import type {AllSdjTypes, ISdjHost, ISdjLexicons, ISdjSettings, SdjJITypes, Settings} from "./global-interfaces.js";
@@ -17,6 +16,7 @@ import {SdjLexicons} from "./lexicons.js";
 import {SdjEntity} from "../classes/entity.js";
 import {SdjItem} from "../classes/item.js";
 import {SdjData} from "../classes/data.js";
+import {find, isEqual, isString} from "lodash-es";
 
 class IntSingletonLock {
   constructor() {
@@ -87,7 +87,7 @@ export class SdjHost implements ISdjHost {
     }
   }
 
-  validateGraph(inDescJI: DescriptionJI): DescriptionJI {
+  fullDescription(inDescJI: DescriptionJI): DescriptionJI {
     if (inDescJI.lexicons && this.lexiconMgr.names.length > 0) {
       if (!this.lexiconMgr.validateRequires(inDescJI)) {
         throw new Error("[SDJ] There has been an unknown lexicon error");

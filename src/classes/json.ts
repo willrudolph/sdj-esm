@@ -15,20 +15,7 @@ import type {
   ItemSearch,
   SdJsonJI
 } from "../core/interfaces.js";
-import {
-  cloneDeep,
-  cloneJI,
-  each,
-  find,
-  has,
-  isArray,
-  isEmpty,
-  isEqual,
-  isObject,
-  isString,
-  UUID
-} from "../util/std.funcs.js";
-
+import {UUID} from "../util/func.std.js";
 
 import {SDJ_SCHEMA} from "../core/statics.js";
 import {blankInfoJI, genInfoJI, isBlankInfo, newInfoJI} from "../util/immutables.js";
@@ -39,6 +26,7 @@ import type {IDataSdj, IDescriptionSdj, IEntitySdj, IItemSdj, IJsonSdj} from "./
 import {SdjHost} from "../global/host.js";
 import {SdjData} from "./data.js";
 import {ESDJ_CLASS} from "../core/enums.js";
+import {cloneDeep, each, find, has, isArray, isEmpty, isEqual, isObject, isString} from "lodash-es";
 
 export class SdJson implements IJsonSdj{
   _sdInfo: Info;
@@ -62,7 +50,7 @@ export class SdJson implements IJsonSdj{
     }
     this._description = this._host.makeDescript(inJson.description);
     this._sdInfo = genInfoJI(inJson.sdInfo);
-
+    this._host.lexiconMgr.verifyData(inJson, true);
     this.build(inJson);
     this.log("JSON Build Complete");
   }
@@ -166,26 +154,39 @@ export class SdJson implements IJsonSdj{
   }
 
   private build(inJson: SdJsonJI) {
-    this.log("In Json: " + inJson.sdInfo.name);
+    this.log("In Json: " + inJson.sdInfo.name)
     each(inJson.data, (topDataJI: DataJI) => {
       const entRef = this._description.getEntityRefById(topDataJI.sdId);
-      let topBuildData: SdjData;
+      entRef!.validStruct(topDataJI, undefined, true);
+    });
+
+    let idxCount = -1;
+    each(inJson.data, (topDataJI: DataJI) => {
+      const entRef = this._description.getEntityRefById(topDataJI.sdId);
+      let topBuildData: SdjData | IDataSdj;
       if (!entRef) {
         throw new Error(`[SDJ] Description '${this._description.name}' has no entity with sdId:'${topDataJI.sdId}';`);
       }
-      topBuildData = new SdjData(cloneJI(topDataJI), entRef, undefined);
-      topBuildData.validateData(true);
+      try {
+        topBuildData = new SdjData(topDataJI, entRef, undefined);
+      } catch(err) {
+        throw new Error(`[SDJ] SdJson Data create/valid err:${err};`);
+      }
+
       if (topDataJI.sdChildren) {
         this.createSubData(topDataJI.sdChildren, topBuildData);
       }
-      if (!this._description.verifyParent(topBuildData, true)) {
-        throw new Error("[SDJ] Data violates child/Parent/Entity rules;");
-      }
-      this._data.push(topBuildData);
+      topBuildData.sdIndex = idxCount + 1;
+      this._data.push(<IDataSdj>topBuildData);
     });
   }
 
-  private createSubData(childrenJI: DataJI[], parentRef: SdjData) {
+  private createSubData(childrenJI: DataJI[], parentRef: IDataSdj) {
+    each(childrenJI, (childRef) => {
+      const entRef = this._description.getEntityRefById(childRef.sdId);
+      entRef!.validStruct(childRef, parentRef.genJI(false), true);
+    });
+
     each(childrenJI, (childJI: DataJI) => {
       const entRef = this._description.getEntityRefById(childJI.sdId);
       let newSdjData: SdjData;
@@ -193,21 +194,14 @@ export class SdJson implements IJsonSdj{
         throw new Error(`[SDJ] Description '${this._description.name}' has no entity with sdId:'${childJI.sdId}';`);
       }
       try {
-        newSdjData = new SdjData(cloneJI(childJI), entRef, parentRef);
-        newSdjData.validateData(true);
+        newSdjData = new SdjData(childJI, entRef, parentRef);
       } catch (err) {
-        throw new Error(`[SDJ] SdJson Data create err:${err};`);
+        throw new Error(`[SDJ] SdJson Data create/valid err:${err};`);
       }
       if (childJI.sdChildren) {
         this.createSubData(childJI.sdChildren, newSdjData);
       }
-      if (!this._description.verifyParent(newSdjData, true)) {
-        throw new Error("[SDJ] Data violates Child/Parent/Entity rules");
-      }
-      if (!parentRef.sdChildren) {
-        parentRef.sdChildren = [];
-      }
-      parentRef.sdChildren.push(newSdjData);
+      parentRef.addChild(newSdjData);
     });
   }
 

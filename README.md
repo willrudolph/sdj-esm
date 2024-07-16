@@ -26,7 +26,7 @@ npm install lodash-es
 npm install sdj-esm
 ```
 
-- Example SDJ files and SDJ Editor coming soon --
+-- Still work progress Example SDJ files and SDJ Editor coming soon --
 
 ### Load in the JSON file:
 Since JSON files are allowed by ES modules you can use the following syntax for local/static linked files.
@@ -50,7 +50,9 @@ Note; the SDJ Library is fault intolerant and will throw errors on invalid files
 Try...Catch. Or use standalone ```genJson(json)``` function for an error safe version.
 
 ### Release Notes:
-0.0.7 Initial NPM/Git testing release
+
+0.1.0 - Overhaul of Validators, Data/Structure validation, add sdjIndex functionality<br>
+0.0.7 - Initial NPM/Git testing release
 
 [About](https://github.com/willrudolph/sdj-esm/blob/main/ABOUT.md) this library, about the [SDJ project](https://github.com/willrudolph/sdj) roadmap, and [Copyright](https://github.com/willrudolph/sdj-esm/blob/main/COPYRIGHT) info. 
 

@@ -10,12 +10,22 @@ import type {
   CoreSD,
   DescriptionJI,
   EntityJI,
-  FuncJsonValueValidator,
+  GenKeyStore,
   ILexicon,
   ItemJI,
-  SdKeyProps
+  IValidator,
+  SdJsonJI,
+  SdKeyProps,
+  ValidatorJI
 } from "../core/interfaces.js";
+import {validTypeLexName} from "../util/func.std.js";
+import {autoFailValidator, SdjValidator,} from "../core/validators.js";
+import {getRegEx} from "../util/regex.js";
+import {verifySequenceKeys, verifyUniqKeys} from "../util/verify.js";
+import {BASE_ITEMS_JI} from "../core/statics.js";
 import {
+  assign,
+  clone,
   cloneDeep,
   each,
   find,
@@ -25,30 +35,18 @@ import {
   isEmpty,
   isFunction,
   isObject,
+  isString,
   isUndefined,
   map,
   uniq
-} from "../util/std.funcs.js";
-import {
-  getStrValidLenFunc,
-  getValidNumberFunc,
-  getValidObjFunc,
-  rtnSdjItemName,
-  type SdjValidators,
-  validBoolean,
-  validSDKey,
-  validTypeLexName,
-  validUtcDate
-} from "../core/validators.js";
-import {getRegEx} from "../util/regex.js";
-import {verifySequenceKeys, verifyUniqKeys} from "../util/verify.js";
-import {BASE_ITEMS_JI, DEF_MAX_STR_LEN, STR_LEN_LNG, STR_LEN_SHRT} from "../core/statics.js";
-import {assign, clone} from "lodash-es";
+} from "lodash-es";
 import {genSdKeyProps} from "../util/immutables.js";
 import {restrictToAllowedKeys} from "../core/restrict.js";
 import type {ISdjHost, ISdjLexicons} from "./global-interfaces.js";
 import type {IEntitySdj} from "../classes/class-interfaces.js";
 import {ESDJ_CLASS} from "../core/enums.js";
+import {type DefaultInitItem, rtnSdjItemName, SdjDefaultTypes} from "../core/sdj-types.js";
+
 /*
   SdjLexicons are the dictionary/library extension system of SDJ.
 
@@ -89,38 +87,22 @@ import {ESDJ_CLASS} from "../core/enums.js";
 
  */
 
-// Note this list must correspond and match with the ESDJ_VALID constants + SdjValidTypes found in enums.ts / lexicons.ts
-// Defer to NOT changing these lists, if something is needed / missing -> ADD via custom lexicon validators
-const SdjValidTypes: SdjValidators = {
-  "sdkey": validSDKey,
-  "sdid": getValidNumberFunc("int"),
-  "numb": getValidNumberFunc("none"),
-  "intg": getValidNumberFunc("int"),
-  "flpt": getValidNumberFunc("float"),
-  "bool": validBoolean,
-  "strd": getStrValidLenFunc(DEF_MAX_STR_LEN),
-  "strl": getStrValidLenFunc(STR_LEN_LNG),
-  "strs": getStrValidLenFunc(STR_LEN_SHRT),
-  "date": validUtcDate,
-  "arybol": getValidObjFunc("array", "boolean"),
-  "arynum": getValidObjFunc("array", "number"),
-  "arystrs": getValidObjFunc("array", "string"),
-  "arystrd": getValidObjFunc("array", "string"),
-  "objstr": getValidObjFunc("object", "string"),
-  "objbol": getValidObjFunc("object", "boolean"),
-  "objnum": getValidObjFunc("object", "number")
-};
 
 export class SdjLexicons implements ISdjLexicons {
   private _names: string[] = [];
   private _lexicons: ILexicon[] = [];
-  private _validators: SdjValidators = {};
+  private _validators: GenKeyStore<IValidator> = {};
   private readonly _baseItemIJs: ItemJI[] = BASE_ITEMS_JI;
 
   constructor(private _host: ISdjHost, addLexicons: ILexicon[] | undefined | null) {
-    each(SdjValidTypes, (validatorFunc, key: string) => {
-      this._validators[key] = validatorFunc;
+    // build default validators
+    each(SdjDefaultTypes, (defaultItem: DefaultInitItem) => {
+      this._validators[defaultItem.item] = new SdjValidator({
+        type: defaultItem.item,
+        valid: defaultItem.valid
+      });
     });
+
 
     if (addLexicons && addLexicons.length > 0) {
       each(addLexicons, (lexicon: ILexicon) => this.buildLexicon(lexicon));
@@ -131,13 +113,13 @@ export class SdjLexicons implements ISdjLexicons {
     return this._names;
   }
 
-  getValidator(validatorId: string): FuncJsonValueValidator {
+  getValidator(validatorId: string): IValidator {
     let rtnValidator = this._validators[validatorId];
     if (isUndefined(rtnValidator)) {
-      this._host.gLog(`Lexicons: Unknown validator type '${validatorId}' return autoFail`, 3);
-      rtnValidator = () => false;
+      this._host.gLog(`Lexicons: Unknown validator type '${validatorId}' return autoFailValidator`, 3);
+      rtnValidator = autoFailValidator;
     }
-    return <FuncJsonValueValidator>rtnValidator;
+    return rtnValidator;
   }
   getByName(lexName: string): ILexicon | undefined {
     const lexicon = find(this._lexicons, {name: lexName});
@@ -239,19 +221,37 @@ export class SdjLexicons implements ISdjLexicons {
     return rtnBool;
   }
 
-  validateGraph(inDescJI: DescriptionJI) {
+  validateGraph(inDescJI: DescriptionJI): boolean {
     const rtnVal = true;
     this.defaultValidateGraphItems(inDescJI);
+    this.checkExtendsRecursion(inDescJI.graph);
     // Note, at this point the in library lexicon presence and proper data in DescriptionJI has matched
     // Otherwise an error would already have been thrown
     if (inDescJI.lexicons) {
       each(inDescJI.lexicons, (lexName: string) => {
-        const lexIdx = findIndex(this._lexicons, {name: lexName});
-        if (lexIdx !== -1) {
-          const lexEng = this._lexicons[lexIdx];
-          if (lexEng && lexEng.graphVerify && isFunction(lexEng.graphVerify)) {
-            if (!lexEng.graphVerify(inDescJI.graph)) {
-              throw new Error(`[SDJ] graphVerify error with Lexicon '${lexEng.name}'`);
+        const iLexicon = this.findLexicon(lexName);
+        if (iLexicon.graphVerify && !iLexicon.graphVerify(inDescJI.graph)) {
+          throw new Error(`[SDJ] graphVerify fail with Lexicon '${lexName}'`);
+        }
+      });
+    }
+    return rtnVal;
+  }
+
+  verifyData(inJson: SdJsonJI, strict = false): boolean {
+    let rtnVal = true;
+    // Normal process - At this point SdJsonJI has been description/lexicons validated
+    if (inJson.description.lexicons) {
+      each(inJson.description.lexicons, (lexName: string) => {
+        const iLexicon = this.findLexicon(lexName);
+        if (iLexicon.dataVerify) {
+          try {
+            rtnVal = iLexicon.dataVerify(inJson);
+          } catch (err) {
+            this._host.gLog(`SdJsonJI '${inJson.sdInfo.name}' failed lexicon '${lexName}' validation: ${err};`)
+            rtnVal = false;
+            if (strict) {
+              throw new Error(`[SDJ] SdJsonJI '${inJson.sdInfo.name}' failed lexicon '${lexName}' validation: ${err};`);
             }
           }
         }
@@ -259,6 +259,7 @@ export class SdjLexicons implements ISdjLexicons {
     }
     return rtnVal;
   }
+
   // Returns simplified extended props based on extendIds
   simpleExtendProps(entity:IEntitySdj, graph: IEntitySdj[]): SdKeyProps {
     let rtnProps: SdKeyProps = {},
@@ -317,6 +318,54 @@ export class SdjLexicons implements ISdjLexicons {
     });
   }
 
+  private checkExtendsRecursion(graph: EntityJI[]) {
+    let extendChains: {[key: number]: number[]} = {};
+    const getExtended = (rootExtId: number, extIds: number[]): number[] => {
+      let rtnAry: number[] = [];
+      each(extIds, (entId) => {
+        const refEnt = find(graph, {sdId: entId});
+        if (refEnt) {
+          if (rootExtId === entId) {
+            throw new Error(`[SDJ] extendId ${refEnt.sdKey} creates a circular reference`)
+          }
+          if (extendChains[entId]) {
+            rtnAry.push(...extendChains[entId]!);
+          } else if (refEnt.extendIds) {
+            rtnAry.push(...getExtended(rootExtId, refEnt.extendIds))
+          }
+        } // presence has already been confirmed
+      })
+
+      return rtnAry;
+    }
+
+    each(graph, (entJI: EntityJI) => {
+      if (entJI.extendIds) {
+        extendChains[entJI.sdId] = [];
+
+        const refExtChain = extendChains[entJI.sdId]!;
+        refExtChain.push(...entJI.extendIds);
+        refExtChain.push(...getExtended(entJI.sdId, entJI.extendIds))
+
+        const curLen = refExtChain.length,
+            uniqLen = uniq(refExtChain).length;
+        if (curLen !== uniqLen) {
+          throw new Error(`[SDJ] ${entJI.sdKey} extends contains a circular reference`)
+        }
+      }
+    });
+  }
+
+  private findLexicon(lexName: string): ILexicon {
+    const lexIdx = findIndex(this._lexicons, {name: lexName});
+    let rtnILexicon: ILexicon;
+    if (lexIdx !== -1) {
+      rtnILexicon = <ILexicon>this._lexicons[lexIdx];
+    } else {
+      throw new Error(`[SDJ] Internal call failed to find lexicon '${lexName}';`)
+    }
+    return rtnILexicon;
+  }
   private buildLexicon(lexicon: ILexicon) {
     SdjLexicons.VerifyJI(lexicon);
     const lexRegEx = getRegEx("typeLexName");
@@ -324,17 +373,20 @@ export class SdjLexicons implements ISdjLexicons {
       throw new Error(`[SDJ] Lexicon name '${lexicon.name}' already added`);
     }
     if (lexicon.validators) {
-      each(lexicon.validators, (validatorFunc, key) => {
+      each(lexicon.validators, (validator: ValidatorJI, key) => {
         lexRegEx.lastIndex = 0;
-        if (!lexRegEx.test(key)) {
-          throw new Error(`[SDJ] Lexicon validator key '${key}' format is incorrect (4-24 char only lowercase, starts wtih letter)`);
+        if (isArray(validator) || !isObject(validator) || !isString(key) || !isString(validator?.type)) {
+          throw new Error(`[SDJ] Lexicon validator is malformed ${key} / ${validator?.type};`);
+        } else if (validator.type !== key) {
+          throw new Error(`[SDJ] Lexicon validator typeKey[${validator.type}] !== type[${key}];`)
+        }
+        const replaceName = rtnSdjItemName(validator.type);
+        if (replaceName) {
+          throw new Error(`[SDJ] Lexicon '${lexicon.name}' rejects validator '${key}' as similar to default '${replaceName}';`);
         } else if (has(this._validators, key)) {
           throw new Error(`[SDJ] Lexicon '${lexicon.name}' is attempting to add an identical validator for '${key}';`);
-        } else if (isFunction(validatorFunc)) {
-          this._validators[key] = validatorFunc;
-        } else {
-          throw new Error(`[SDJ] Lexicon validator for '${key}' not a function`);
         }
+        this._validators[key] = new SdjValidator(validator);
       });
     }
     each(lexicon.items, (itemJI: ItemJI) => {
@@ -349,6 +401,7 @@ export class SdjLexicons implements ISdjLexicons {
 
     this._names.push(lexicon.name);
     this._lexicons.push(lexicon);
+    this._host.gLog(`Lexicon added: '${lexicon.name}'`, 3);
   }
 
   // Clear out any duplicate entities, or entities that are already by extension

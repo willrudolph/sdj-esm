@@ -11,24 +11,27 @@ import type {
   DescriptionJI,
   EntityJI,
   EntitySearch,
-  FuncJsonValueValidator,
   FuncStrNumVoid,
   Info,
   ItemJI,
   ItemSearch,
+  IValidator,
+  JIValue,
   SdKeyProps
 } from "../core/interfaces.js";
 import {checkResetInfo, verifyUniqKeys,} from "../util/verify.js";
 import {genEntityJI, genInfoJI, genItemJI} from "../util/immutables.js";
-import {BASE_ITEMS_JI, GRAPH_ZERO, RESERVED_WORDS} from "../core/statics.js";
-import {clone, cloneJI, each, find, isArray, isEqual, isFunction, times, UUID} from "../util/std.funcs.js";
-import {isArrayWithLen, isInfo, validIntArray, validLexiconArray} from "../core/validators.js";
+import {BASE_ITEMS_JI, GRAPH_ZERO, SYS_RESERVED} from "../core/statics.js";
+import {cloneJI, UUID} from "../util/func.std.js";
+import {isArrayWithLen, isInfo, validLexiconArray} from "../core/validators.js";
 import {restrictToAllowedKeys} from "../core/restrict.js";
-import type {IDataSdj, IDescriptionSdj, IEntitySdj, IItemSdj} from "./class-interfaces.js";
+import type {IDescriptionSdj, IEntitySdj, IItemSdj} from "./class-interfaces.js";
 import {SdjEntity} from "./entity.js";
 import {SdjItem} from "./item.js";
 import type {ISdjHost, SdjJITypes} from "../global/global-interfaces.js";
 import {ESDJ_CLASS} from "../core/enums.js";
+import {clone, cloneDeep, each, find, isArray, isEqual, isFunction, isNumber, isString, times, uniq} from "lodash-es";
+import {validIntArray} from "../core/sdj-types.js";
 
 // eslint-disable-next-line no-use-before-define
 export declare type DescriptSearchResult = IDescriptionSdj[];
@@ -39,14 +42,14 @@ export class SdjDescription implements IDescriptionSdj {
 
   log: FuncStrNumVoid;
   private _lexicons: string[] = [];
-  private _graph: SdjEntity[] = [];
+  private _graph: IEntitySdj[] = [];
   private _sdInfo: Info;
   private _items: SdjItem[] = [];
   private _host: ISdjHost;
 
   constructor(refDescJI: DescriptionJI, requiredHost: ISdjHost) {
     this._host = requiredHost;
-    if (requiredHost.checkClassInst && isFunction(requiredHost.checkClassInst)) {
+    if (requiredHost?.checkClassInst && isFunction(requiredHost.checkClassInst)) {
       this.host.checkClassInst(requiredHost, ESDJ_CLASS.HOST, true);
       this.host.checkClassInst(refDescJI, ESDJ_CLASS.DESCRIPTION, false);
     } else {
@@ -66,7 +69,7 @@ export class SdjDescription implements IDescriptionSdj {
       this._host.gLog(`Existing description conflict creating Description now renamed '${inDescJI.sdInfo.name}'`, 3);
     }
     inDescJI.sdInfo = checkResetInfo(inDescJI.sdInfo);
-    inDescJI = this._host.validateGraph(inDescJI);
+    inDescJI = this._host.fullDescription(inDescJI);
 
     this._sdInfo = inDescJI.sdInfo;
     this.dataInfo = inDescJI.dataInfo || false;
@@ -78,7 +81,7 @@ export class SdjDescription implements IDescriptionSdj {
   }
 
   get graph(): IEntitySdj[] {
-    return this._graph;
+    return <IEntitySdj[]>this._graph;
   }
 
   get name(): string {
@@ -97,43 +100,100 @@ export class SdjDescription implements IDescriptionSdj {
     return this._host;
   }
   searchEntities(searchEnt: EntitySearch): IEntitySdj[] {
-    const rtnAry: IEntitySdj[] = [];
+    const rtnAry: IEntitySdj[] = [],
+        pushIfAvail = (ent: IEntitySdj | undefined) => {
+          if (ent) {
+            rtnAry.push(ent);
+          }
+        };
 
-    if (searchEnt.sdId || searchEnt.sdKey) {
-      //
+    if (searchEnt) {
+      if (searchEnt.sdId) {
+        pushIfAvail(<IEntitySdj>this.getRefByType(searchEnt.sdId, "entity"));
+      } else if (searchEnt.sdKey) {
+        pushIfAvail(<IEntitySdj>this.getRefByType(searchEnt.sdKey, "entity"));
+      } else if (searchEnt.limiter) {
+        each(this._graph, (sdjEnt: IEntitySdj) => {
+          if (sdjEnt.limiter === searchEnt.limiter) {
+            rtnAry.push(sdjEnt);
+          }
+        })
+      } else if (validIntArray(searchEnt.parentIds)) {
+        each(searchEnt.parentIds, (sdId: number)=> {
+          each(this._graph, (entRef: IEntitySdj) => {
+            if (entRef.parentIds.indexOf(sdId) !== -1) {
+              rtnAry.push(entRef);
+            }
+          });
+        });
+      } else if (validIntArray(searchEnt.extendIds)) {
+        each(searchEnt.extendIds, (sdId: number)=> {
+          each(this._graph, (entRef: IEntitySdj) => {
+            if (entRef.extendIds?.indexOf(sdId) !== -1) {
+              rtnAry.push(entRef);
+            }
+          });
+        });
+      } else if (validIntArray(searchEnt.sdItems)) {
+        each(searchEnt.sdItems, (sdId: number)=> {
+          each(this._graph, (entRef: IEntitySdj) => {
+            if (entRef.sdItems.indexOf(sdId) !== -1) {
+              rtnAry.push(entRef);
+            }
+          });
+        });
+      } else if (validIntArray(searchEnt.childIds)) {
+        each(searchEnt.childIds, (sdId: number)=> {
+          each(this._graph, (entRef: IEntitySdj) => {
+            if (entRef.childIds?.indexOf(sdId) !== -1) {
+              rtnAry.push(entRef);
+            }
+          });
+        });
+      } else if (searchEnt.sdProps) {
+        each(searchEnt.sdProps, (sdPropVal: JIValue, key: string)=> {
+          each(this._graph, (entRef: IEntitySdj) => {
+            if (sdPropVal && entRef.sdProps && Object.keys(entRef.sdProps).indexOf(key) !== -1){
+              rtnAry.push(entRef);
+            }
+          });
+        });
+      }
     }
     return rtnAry;
   }
-
   searchItems(searchItem: ItemSearch): IItemSdj[] {
-    const rtnAry: IItemSdj[] = [];
-
-    if (searchItem.sdId || searchItem.sdKey) {
-      //
+    const rtnAry: IItemSdj[] = [],
+        pushIfAvail = (item: IItemSdj | undefined) => {
+          if (item) {
+            rtnAry.push(item);
+          }
+        }
+    if (searchItem) {
+      if (searchItem.sdId) {
+        pushIfAvail(<IItemSdj>this.getRefByType(searchItem.sdId, "item"));
+      } else if (searchItem.sdKey) {
+        pushIfAvail(<IItemSdj>this.getRefByType(searchItem.sdKey, "item"));
+      } else if (searchItem.type) {
+        each(this._items, (sdjItem: IItemSdj) => {
+          if (sdjItem.type === searchItem.type) {
+            rtnAry.push(sdjItem);
+          }
+        });
+      } else if (searchItem.limiter) {
+        each(this._items, (sdjItem: IItemSdj) => {
+          if (sdjItem.limiter === searchItem.limiter) {
+            rtnAry.push(sdjItem);
+          }
+        })
+      }
     }
-
     return rtnAry;
   }
 
   getEntityProps(entity: IEntitySdj): SdKeyProps {
     return this._host.lexiconMgr.simpleExtendProps(entity, this._graph);
   }
-
-  getEntityRefs(intAry: number[]): IEntitySdj[] {
-    const rtnAry: IEntitySdj[] = [];
-    if (validIntArray(intAry)) {
-      each(intAry, (sdNum: number) => {
-        const entRef: IEntitySdj | undefined = find(this._graph, {sdId: sdNum});
-        if (entRef) {
-          rtnAry.push(entRef);
-        } else {
-          this.log(`Unable to find entity sdId ${sdNum}`, 3);
-        }
-      });
-    }
-    return rtnAry;
-  }
-
   getItemRefs(intAry: number[]): IItemSdj[] {
     const rtnAry: IItemSdj[] = [];
     if (validIntArray(intAry)) {
@@ -149,7 +209,7 @@ export class SdjDescription implements IDescriptionSdj {
     return rtnAry;
   }
 
-  getValidator(validatorId: string): FuncJsonValueValidator {
+  getValidator(validatorId: string): IValidator {
     return this._host.lexiconMgr.getValidator(validatorId);
   }
 
@@ -196,49 +256,45 @@ export class SdjDescription implements IDescriptionSdj {
     return find(this._graph, {sdId: entId});
   }
 
-  verifyParent(sdData: IDataSdj, strict = false): boolean {
-    let rtnBool = true;
-    const parentEntRef = sdData.entity;
-    if (parentEntRef && !isArrayWithLen(parentEntRef.childIds) && isArrayWithLen(sdData.sdChildren)) {
-      this.strictLogError("[SDJ] Data entity has children it's not suppose to;", strict);
-      rtnBool = false;
-    } else if (!parentEntRef) {
-      throw new Error ("[SDJ] Unknown error");
-    
-    } else if (parentEntRef.childIds && sdData.sdChildren) {
-      //     each(sdData.sdChildren, (dataObj: SdjData) => {
-      //   }
-    }
-    /*   
-      
-      each(this.getEntityRefs(parentEntRef.childIds), (childRef: SdjEntity) => {
-        const childData: CoreSD[] = (sdData.sdChildren) ? findCoreIds(sdData.sdChildren, childRef.sdId) : [];
-        if (childRef.limiter === ESDJ_LIMIT.REQ || childRef.limiter === ESDJ_LIMIT.REQ_HIDE) {
-          if (childData.length !== 1) {
-            this.strictLogError(`[SDJ] Data entity '${sdData.sdKey}' required child '${childRef.sdKey}`, strict);
+  getItemsByEntity(entKeyNum: string | number): IItemSdj[] {
+    let actualEnt: IEntitySdj | undefined = this.getRefByType<IEntitySdj>(entKeyNum, "entity");
+    if (!actualEnt) return [];
+    let extendsList = (actualEnt.extendIds) ? clone(actualEnt.extendIds) : [],
+        fullItemList: number[] = cloneDeep(actualEnt.sdItems),
+        getEnts = (entRef: IEntitySdj) => {
+          let rtnSdItems = cloneDeep(entRef.sdItems);
+          if (entRef.extendIds && isArrayWithLen(entRef.extendIds)) {
+            each(entRef.extendIds, (num: number) => {
+              const subEntRef = this.getRefByType<IEntitySdj>(num, "entity");
+              if (subEntRef) {
+                rtnSdItems = rtnSdItems.concat(getEnts(subEntRef));
+              }
+            });
           }
-        }
-        if (isArrayWithLen(childData)) {
-          if (childData.length > 1 && childRef.limiter === ESDJ_LIMIT.ONE_NONE) {
-            this.strictLogError(`[SDJ] Data '${sdData.sdKey}' item '${childRef.sdKey}' limited to 'one or none';`, strict);
-          } else if ((childData.length === 0 || childData.length > 1) && childRef.limiter === ESDJ_LIMIT.REQ_ONE) {
-            this.strictLogError(`[SDJ] Data '${sdData.sdKey}' item '${childRef.sdKey}' limited to 'requires at least one';`, strict);
-          }
-        }
-        // child + parent confirmation
-        if (parentEntRef.childIds && parentEntRef.childIds.indexOf(childRef.sdId) === -1) {
-          this.strictLogError(`[SDJ] Data '${childRef.sdKey}' not allowed child of '${parentEntRef.sdKey}'`, strict);
-        } else if (childRef.parentIds && childRef.parentIds.indexOf(parentEntRef.sdId) === -1) {
-          this.strictLogError(`[SDJ] Data '${parentEntRef.sdKey}' not allowed parent of '${childRef.sdKey}'`, strict);
-        }
-*/
-    return rtnBool;
+          return rtnSdItems;
+        };
+
+    each(extendsList, (entNum: number) => {
+      const topExtendRef = this.getRefByType<IEntitySdj>(entNum, "entity");
+      if (topExtendRef) {
+        fullItemList = fullItemList.concat(getEnts(topExtendRef));
+      }
+    });
+
+    fullItemList = uniq(fullItemList.sort());
+    return this.getItemRefs(fullItemList);
   }
 
   verifyJIbyType(ji: SdjJITypes, jiType: ESDJ_CLASS, strict: boolean = false): boolean {
     return this._host.verifyJIbyType(ji, jiType, strict);
   }
 
+  private getRefByType<Type>(idOrKey: number | string, type: string): Type | undefined {
+    if (!idOrKey || !isString(idOrKey) || !isNumber(idOrKey)) return undefined;
+    const searchGroup = (type === "entity") ? this._graph : this._items;
+
+    return (isNumber(idOrKey)) ? <Type>find(searchGroup, {sdId: idOrKey}) : <Type>find(searchGroup, {sdKey: idOrKey});
+  }
   private entityItemBuild(inDescJI: DescriptionJI) {
     this._items = this.buildBaseItems();
 
@@ -259,6 +315,11 @@ export class SdjDescription implements IDescriptionSdj {
     });
     this._graph.unshift(new SdjEntity(genEntityJI(GRAPH_ZERO), this));
     this._lexicons = (inDescJI.lexicons) ? inDescJI.lexicons : [];
+
+    each(this._graph, (entity: IEntitySdj) => {
+      const classRef: SdjEntity = <SdjEntity>entity;
+      classRef.$refreshRefs();
+    });
   }
   private buildBaseItems(): SdjItem[] {
     const newBaseItems: ItemJI[] = this._host.lexiconMgr.newBaseItems(),
@@ -271,7 +332,7 @@ export class SdjDescription implements IDescriptionSdj {
   private checkBase(itemBase: CoreSD, isItem: boolean) {
     const checkArray = (isItem) ? this._items : this._graph,
       errorType = (isItem) ? "Item" : "Entity";
-    if (RESERVED_WORDS.indexOf(itemBase.sdKey) !== -1) {
+    if (SYS_RESERVED.indexOf(itemBase.sdKey) !== -1) {
       throw new Error(`[SDJ] Description: ${errorType} sdKey '${itemBase.sdKey}' is reserved;`);
     }
     if (find(checkArray, {sdKey: itemBase.sdKey})) {

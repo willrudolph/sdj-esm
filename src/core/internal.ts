@@ -30,3 +30,5 @@ export declare type FuncTwoVoid = (firstVal: IntAny, secondVal?: IntAny) => void
 export declare type FuncStrStr = (input: string) => string;
 export declare type FuncArgsAnyValid = (...args: IntAny[]) => IntAny;
 export declare type GenOneArg = <Type>(arg: Type) => Type;
+
+export declare type RawFunction = (...args: unknown[]) => unknown;

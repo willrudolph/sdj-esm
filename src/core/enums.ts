@@ -13,14 +13,13 @@ export const ESDJ_CLASS = <const>{
   ITEM: "SdjItem",
   JSON: "SdJson",
   HOST: "SdjHost"
-
 };
 
 export declare type ESDJ_CLASS = typeof ESDJ_CLASS[keyof typeof ESDJ_CLASS];
 
 // Note this list must correspond and match with the IntSdjTypes + SdjValidTypes found in validators.ts / lexicons.ts
 // Defer to NOT changing these lists, if something is needed / missing -> ADD via custom lexicon validators
-export const ESDJ_VALID = <const>{
+export const ESDJ_TYPE = <const>{
   KEY: "sdkey",
   ID: "sdid",
   NUM: "numb",
@@ -37,10 +36,11 @@ export const ESDJ_VALID = <const>{
   ART_STR_DF: "arystrd",
   OBJ_STR: "objstr",
   OBJ_BOOL: "objbool",
-  OBJ_NUM: "objnum"
+  OBJ_NUM: "objnum",
+  INDEX: "sdindex"
 };
 
-export declare type ESDJ_VALID = typeof ESDJ_VALID[keyof typeof ESDJ_VALID];
+export declare type ESDJ_TYPE = typeof ESDJ_TYPE[keyof typeof ESDJ_TYPE];
 export const ESDJ_LOG = <const>{
   PROD: "prod", // 0:0:0
   DEV: "dev", // 5:5:0
@@ -53,13 +53,19 @@ export declare type ESDJ_LOG = typeof ESDJ_LOG[keyof typeof ESDJ_LOG];
 
 export const ESDJ_LIMIT = <const>{
   NONE: "none",
-  REQ: "req", // Required Item or Entity
-  REQ_HIDE: "req_user_hide", // Required Item or Entity(multiple of Entity cannot be hidden), hide option
-  SYS_REQ: "sdj_sys",
-  KEY_IDX: "key_idx", // Force singular type and index???
-  ONE_NONE: "one_none", // Entity, only one or none
-  REQ_ONE: "at_least_one", // Entity, require at least one
+  REQ: "req",                 // Required Item or Entity
+  REQ_HIDE: "req_user_hide",  // Required Item or Entity(multiple of Entity cannot be hidden), hide option
+  SYS_REQ: "sdj_sys",         // Used only by sdKey, sdId // TODO: Check/confirm
+  KEY_IDX: "sdj_index",       // Entity subChildren have maintained index, and named key
+  ONE_NONE: "one_none",       // Entity, only one or none
+  REQ_ONE: "at_least_one",    // Entity, require at least one
 };
+
+export const ESDJ_LIMIT_REQ: ESDJ_LIMIT[] = [
+    ESDJ_LIMIT.REQ,
+    ESDJ_LIMIT.SYS_REQ,
+    ESDJ_LIMIT.REQ_HIDE
+];
 
 export declare type ESDJ_LIMIT = typeof ESDJ_LIMIT[keyof typeof ESDJ_LIMIT];
 

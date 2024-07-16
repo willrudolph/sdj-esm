@@ -6,17 +6,20 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import {type CoreSD, type DataJI, type DataJIValues, type SdjLimiter, SdjLimiterGroup} from "./interfaces.js";
-
-import {each, has, isNull, isNumber, isString, isUndefined} from "../util/std.funcs.js";
-import {getValidNumberFunc, validSDKey} from "./validators.js";
-import {RESERVED_WORDS} from "./statics.js";
+import {type CoreSD, type DataJI, type DataJIValues, SdjLimiterGroup} from "./interfaces.js";
+import {DATAJI_WORDS, RESTRICT_WORDS} from "./statics.js";
+import type {ESDJ_LIMIT} from "./enums.js";
+import {each, has, isNull, isNumber, isString, isUndefined} from "lodash-es";
+import {getValidNumberFunc, validSDKey} from "./sdj-types.js";
 
 export const restrictDataJIKeys = (dataJI: DataJI) => {
   let rtnVal = true;
 
   each(dataJI, (value: DataJIValues, key: string) => {
-    if (RESERVED_WORDS.indexOf(key) === -1) {
+    if (RESTRICT_WORDS.indexOf(key) !== -1) {
+      throw new Error(`[SDJ] key: '${key}' in dataJI '${dataJI.sdKey}' is restricted for system use;`);
+    }
+    if (DATAJI_WORDS.indexOf(key) === -1) {
       if (!validSDKey(key) || isUndefined(value) || isNull(value)) {
         throw new Error(`[SDJ] key: '${key}' in dataJI '${dataJI.sdKey}' contains bad characters/value;`);
       }
@@ -63,4 +66,4 @@ export const restrictCoreSD = (dataJI: CoreSD): boolean => {
   return hasKey && keyValid && hasId && entityValid;
 };
 
-export const restrictLimiter = (inLimStr: SdjLimiter): boolean => SdjLimiterGroup.indexOf(inLimStr) !== -1;
+export const restrictLimiter = (inLimStr: ESDJ_LIMIT): boolean => SdjLimiterGroup.indexOf(inLimStr) !== -1;

@@ -8,9 +8,8 @@
 
 import {type ILogManager, LogManager} from "../util/log.js";
 import {ESDJ_LOG} from "../core/enums.js";
-import {isFunction} from "../util/std.funcs.js";
 import type {GlobalOptions, ISdjHost, ISdjSettings} from "./global-interfaces.js";
-
+import {isFunction} from "lodash-es";
 
 export class SdjSettings implements ISdjSettings{
   logs: ILogManager;

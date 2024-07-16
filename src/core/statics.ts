@@ -20,8 +20,10 @@ export const DEF_DESC = "def_desc",
     "../src/schemas/sdj-schema.json",
     "./src/schemas/sdj-schema.json"],
   GRAPH_ID = "sdGraphZero",
-  RESERVED_WORDS = ["sdId", "sdKey", "sdChildren", "sdInfo", "$id", "sdItems"],
-
+  SD_IDX ="sdIndex",
+  RESTRICT_WORDS = ["$id", "sdItems", SD_IDX, GRAPH_ID],
+  DATAJI_WORDS = ["sdId", "sdKey", "sdChildren", "sdInfo"],
+  SYS_RESERVED = [...RESTRICT_WORDS, ...DATAJI_WORDS],
   GRAPH_ZERO: EntityJI = {
     sdId: 0,
     sdKey: GRAPH_ID,
@@ -44,28 +46,7 @@ export const DEF_DESC = "def_desc",
       limiter: ESDJ_LIMIT.SYS_REQ,
       type: "sdkey"
     }
-  ];
-
-
-
-/*
-export const SD_ITEM_TYPES = [
-  ItemType.BOL, ItemType.NUM, ItemType.NUM_INT, ItemType.NUM_FLOAT,
-  ItemType.STR, ItemType.STR_SHRT, ItemType.STR_LNG,
-  ItemType.DATE, ItemType.ARY_STR, ItemType.ARY_NUM,
-  ItemType.ARY_BOL, ItemType.OBJ_KEY_STR,
-  ItemType.OBJ_KEY_NUM, ItemType.OBJ_KEY_BOL
-];
-*/
-
-/*
-export const ITEM_VALID_FUNC = [
-  validBoolean, getValidNumberFunc(), getValidNumberFunc("int"), getValidNumberFunc("float"),
-  getStrValidLenFunc(DEF_MAX_STR_LEN), getStrValidLenFunc(STR_LEN_SHRT), getStrValidLenFunc(STR_LEN_LNG),
-  validUtcDate, getValidObjFunc("array", "string"), getValidObjFunc("array", "number"),
-  getValidObjFunc("array", "boolean"), getValidObjFunc("object", "string"),
-  getValidObjFunc("object", "number"), getValidObjFunc("object", "boolean")
-];
-*/
-
-
+  ],
+    MIN_NAME_CHAR = 3,
+    MIN_INFO_DATE = 1693709655818,
+    MAX_OBJ_ARY_LEN = 200;

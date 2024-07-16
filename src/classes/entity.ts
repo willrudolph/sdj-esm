@@ -6,18 +6,20 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import type {CoreSD, EntityJI, JIValue, SdjLimiter, SdKeyProps} from "../core/interfaces.js";
-import {GRAPH_ID, RESERVED_WORDS} from "../core/statics.js";
+import type {CoreSD, DataJI, EntityJI, GenKeyStore, JIValue, NumKeyStore, SdKeyProps} from "../core/interfaces.js";
+import {GRAPH_ID, SD_IDX, SYS_RESERVED} from "../core/statics.js";
 import {genSdKeyProps} from "../util/immutables.js";
 
-import {isArrayWithLen, validIntArray, validSDKey} from "../core/validators.js";
+import {isArrayWithLen} from "../core/validators.js";
 import {restrictCoreSD, restrictLimiter, restrictToAllowedKeys} from "../core/restrict.js";
+
+import {ESDJ_CLASS, ESDJ_LIMIT} from "../core/enums.js";
+import type {IDescriptionSdj, IEntitySdj, IItemSdj} from "./class-interfaces.js";
 import {
-  clone,
-  cloneDeep,
   each,
   isBoolean,
   isEmpty,
+  isEqual,
   isFunction,
   isNull,
   isNumber,
@@ -25,10 +27,9 @@ import {
   isString,
   isUndefined,
   uniq
-} from "../util/std.funcs.js";
+} from "lodash-es";
+import {validIntArray, validSDKey} from "../core/sdj-types.js";
 
-import {ESDJ_CLASS, ESDJ_LIMIT} from "../core/enums.js";
-import type {IDescriptionSdj, IEntitySdj, IItemSdj} from "./class-interfaces.js";
 
 /*
   Entities provide the connective information between the data represented
@@ -55,6 +56,10 @@ import type {IDescriptionSdj, IEntitySdj, IItemSdj} from "./class-interfaces.js"
   - sdProps are chained assigned based on entity/order - genJI sdProps will show final values
   - limiter value matches last extended item if not provided
 
+
+  Introduction of "$" functions for deliberate class-only implementations which don't appear on IEntitySdj
+  and should only be used by classes/files that implement "new SdjEntity" in anyway.
+
  */
 export class SdjEntity implements CoreSD, IEntitySdj {
   sdId: number;
@@ -66,12 +71,14 @@ export class SdjEntity implements CoreSD, IEntitySdj {
   extendIds?: number[];
   childIds?: number[];
   sdProps?: SdKeyProps;
-  limiter: SdjLimiter;
+  limiter: ESDJ_LIMIT;
 
-  private _description?: IDescriptionSdj;
+  private _description: IDescriptionSdj | undefined;
+  private _childRefs?: NumKeyStore<IEntitySdj>;
+  private _itemRefs?: GenKeyStore<IItemSdj>;
 
   constructor(inEnt: EntityJI, description: IDescriptionSdj | undefined) {
-    this.description = description;
+    this._description = this.confirmDescript(description);
     if (this._description) {
       this._description.host.checkClassInst(inEnt, ESDJ_CLASS.ENTITY, false);
     }
@@ -103,6 +110,14 @@ export class SdjEntity implements CoreSD, IEntitySdj {
     this.limiter = inEnt.limiter || ESDJ_LIMIT.NONE;
   }
 
+  get childRefs(): NumKeyStore<IEntitySdj> {
+    return (this._childRefs) ? this._childRefs : {};
+  }
+
+  get itemRefs(): GenKeyStore<IItemSdj> {
+    return (this._itemRefs) ? this._itemRefs : {};
+  }
+
   get description(): IDescriptionSdj {
     if (!this._description) {
       throw new ReferenceError("[SDJ] Entity has no description;");
@@ -111,48 +126,65 @@ export class SdjEntity implements CoreSD, IEntitySdj {
   }
 
   set description(inDesc: IDescriptionSdj | undefined) {
-    if (!isNull(inDesc) && !isUndefined(inDesc)) {
-      if (!this._description) {
-        if (inDesc.host?.checkClassInst && isFunction(inDesc.host.checkClassInst)) {
-          inDesc.host.checkClassInst(inDesc, ESDJ_CLASS.DESCRIPTION, true);
-          this._description = inDesc;
-        } else {
-          throw new Error("[SDJ] Incorrect or missing description/host;");
-        }
+    if (!this._description) {
+      this._description = this.confirmDescript(inDesc);
+      if (this._description) {
+        this.$refreshRefs();
       } else {
-        throw new Error("[SDJ] an Entity item is prevented from having its description overwritten");
+        throw new Error("[SDJ] Incorrect or missing description/host;");
       }
+    } else {
+      throw new Error("[SDJ] an Entity item is prevented from having its description overwritten;");
     }
   }
+  validStruct(dataSdj: DataJI, parentRef: DataJI | undefined, strict = false): boolean {
+    let rtnVal = true,
+        errorResults: string[] = this.structValidate(dataSdj, parentRef),
+        splits: string[];
 
-  getItemRefs(): IItemSdj[] {
-    let extendsList = (this.extendIds) ? clone(this.extendIds) : [],
-      fullItemList: number[] = cloneDeep(this.sdItems),
-      getEnts = (entRef: IEntitySdj) => {
-        let rtnSdItems = cloneDeep(entRef.sdItems);
-        if (entRef.extendIds && isArrayWithLen(entRef.extendIds)) {
-          if (entRef.extendIds.indexOf(this.sdId) !== -1) {
-            throw new Error(`[SDJ] Entity '${this.sdId}' can't extend itself via other entity;`);
-          }
-          each(entRef.extendIds, (num: number) => {
-            const subEntRef = this.description.getEntityRefs([num])[0];
-            if (subEntRef) {
-              rtnSdItems = rtnSdItems.concat(getEnts(subEntRef));
-            }
-          });
-        }
-        return rtnSdItems;
-      };
-
-    each(extendsList, (entNum: number) => {
-      const topExtendRef = this.description.getEntityRefs([entNum])[0];
-      if (topExtendRef) {
-        fullItemList = fullItemList.concat(getEnts(topExtendRef));
-      }
+    each(errorResults, (errSptStr) => {
+      splits = errSptStr.split(",");
+      this.description.log(
+          `Entity '${this.sdKey}' with data '${splits[0]}' error '${splits[1]}' with data/ent '${splits[2]}'`
+          , 3);
+      rtnVal = false;
     });
 
-    fullItemList = uniq(fullItemList.sort());
-    return this.description.getItemRefs(fullItemList);
+    if (strict && errorResults?.length > 0) {
+      const singleErr = errorResults.shift();
+      if (singleErr) {
+        splits = singleErr.split(",");
+        throw new Error(
+            `[SDJ] Entity '${this.sdKey}' with data '${splits[0]}' error '${splits[1]}' with data/ent '${splits[2]}'`);
+      }
+    }
+
+    return rtnVal;
+  }
+
+  validData(dataSdj: DataJI, strict = false): boolean {
+    let rtnVal = true,
+        errorResults: string[] = this.dataValidate(dataSdj),
+        splits: string[];
+
+    each(errorResults, (errSptStr) => {
+      splits = errSptStr.split(",");
+      this.description.log(
+          `SdjEntity '${this.sdKey}' struct '${splits[0]}' is '${splits[1]}' should be type '${splits[2]}'`
+          , 3);
+      rtnVal = false;
+    });
+
+    if (strict && errorResults?.length > 0) {
+      const singleErr = errorResults.shift();
+      if (singleErr) {
+        splits = singleErr.split(",");
+        throw new Error(
+            `SdjData key '${this.sdKey}' validate item '${splits[0]}' is '${splits[1]}' should be type '${splits[2]}'`);
+      }
+    }
+
+    return rtnVal;
   }
 
   genJI(): EntityJI {
@@ -194,6 +226,127 @@ export class SdjEntity implements CoreSD, IEntitySdj {
     }
 
     return rtnEntJI;
+  }
+
+  $refreshRefs() {
+    if (this._description) {
+      this._itemRefs = {};
+      this._childRefs = {};
+      each(this.childIds, (num: number) => {
+        const childRef = this._description?.getEntityRefById(num);
+        if (childRef) {
+          this._childRefs![num] = childRef;
+        } else {
+          throw new Error("[SDJ] if this happens something else was missed presence of entity refs should be confirmed;");
+        }
+      });
+
+      each(this._description.getItemsByEntity(this.sdId), (sdItem: IItemSdj) => {
+        this._itemRefs![sdItem.sdKey] = sdItem;
+      })
+    }
+  }
+
+  private confirmDescript(inDesc: IDescriptionSdj | undefined): IDescriptionSdj | undefined {
+    let rtnVal = false;
+    if (!isNull(inDesc) && !isUndefined(inDesc)) {
+      if (inDesc.host?.checkClassInst && isFunction(inDesc.host.checkClassInst)) {
+        inDesc.host.checkClassInst(inDesc, ESDJ_CLASS.DESCRIPTION, true);
+        rtnVal = true;
+      } else if (!inDesc.host && isObject(inDesc)) {
+        throw new Error("[SDJ] Improper Entity init attempt use IDescriptionSdj;");
+      }
+    }
+    return (rtnVal) ? inDesc : undefined;
+  }
+
+  private structValidate(dataJI: DataJI, parentData: DataJI | undefined): string[] {
+    if (!this._description) return [this.sdKey + ",description,not available"];
+    let rtnErrs: string[] = [],
+        childPresent: NumKeyStore<number> = {},
+        parentEnt: IEntitySdj | undefined = (parentData) ? this.description.getEntityRefById(parentData.sdId)
+            : undefined,
+        checkIndexing: boolean = (parentEnt?.limiter === ESDJ_LIMIT.KEY_IDX)
+
+    each(this._childRefs, (childRef) => {
+      childPresent[childRef.sdId] = 0;
+    });
+
+    if (!parentData && this.parentIds.indexOf(0) === -1) {
+      rtnErrs.push(this.sdKey + ",requires parent,parent undefined");
+    } else if (parentEnt && this.parentIds.indexOf(parentEnt.sdId) === -1) {
+      rtnErrs.push(this.sdKey + ",entity does not allow parent," + parentEnt.sdKey);
+    } else if (parentEnt && (!parentEnt.childIds || parentEnt.childIds.indexOf(this.sdId) === -1)) {
+      rtnErrs.push(parentEnt.sdKey + ",parent does not allow child," + this.sdKey);
+    }
+
+    each(dataJI.sdChildren, (childItem: DataJI, idx: number) => {
+      const entRef = this._childRefs![childItem.sdId];
+      if (this.childIds?.indexOf(childItem.sdId) === -1) {
+        rtnErrs.push(this.sdKey +",doesn't allow child," + childItem.sdId);
+      }
+      if (entRef) {
+        if (entRef.limiter !== ESDJ_LIMIT.NONE) {
+          childPresent[childItem.sdId] += 1;
+        }
+      } else {
+        rtnErrs.push(this.sdKey + ",unknown child entity," + childItem.sdKey);
+      }
+      if (checkIndexing && childItem.sdKey !== (SD_IDX + idx)) {
+        rtnErrs.push(dataJI.sdKey + ",KEY_IDX out of order or wrong," + childItem.sdKey + "!=" + SD_IDX + idx);
+      }
+    });
+
+    each(childPresent, (totals, sdId) => {
+      const childEnt = this._childRefs![sdId];
+      switch(childEnt!.limiter) {
+        case ESDJ_LIMIT.REQ:
+          if (totals === 0) {
+            rtnErrs.push(this.sdKey + ",missing req'd," + childEnt!.sdKey);
+          }
+          break
+        case ESDJ_LIMIT.REQ_HIDE:
+          if (totals !== 1) {
+            rtnErrs.push(this.sdKey + `,single req hidden 1 != '${totals}',` + childEnt!.sdKey);
+          }
+          break
+        case ESDJ_LIMIT.ONE_NONE:
+          if (totals > 1) {
+            rtnErrs.push(this.sdKey + ",can only have one or none," + childEnt!.sdKey);
+          }
+          break
+        case ESDJ_LIMIT.REQ_ONE:
+          if (totals > 1 || totals === 0) {
+            rtnErrs.push(this.sdKey + ",requires one single," + childEnt!.sdKey);
+          }
+          break
+        default:
+          // default would be NONE/SD_IDX
+      }
+    });
+
+    return rtnErrs;
+  }
+  private dataValidate(dataJI: DataJI): string[] {
+    let rtnErrStrs: string[] = [];
+    each(this._itemRefs, (itemRef: IItemSdj) => {
+      const key = itemRef.sdKey,
+          possibleValue = dataJI[key],
+          isPresent: boolean = (!isNull(possibleValue) && !isUndefined(possibleValue)),
+          actualValue: JIValue = isPresent ? <JIValue>possibleValue : false,
+          isRequired = (itemRef.limiter === ESDJ_LIMIT.SYS_REQ
+              || itemRef.limiter === ESDJ_LIMIT.REQ || itemRef.limiter === ESDJ_LIMIT.REQ_HIDE),
+          isValid = (isPresent) ? itemRef.validator.valid(actualValue) : false;
+
+      if (isRequired && !isPresent) {
+        rtnErrStrs.push(key + ",required," + itemRef.type);
+      } else if (isRequired && isPresent && !isValid) {
+        rtnErrStrs.push(key + ",invalid," + itemRef.type);
+      } else if (!isRequired && isPresent && !isValid) {
+        rtnErrStrs.push(key + ",invalid," + itemRef.type);
+      }
+    });
+    return rtnErrStrs;
   }
 
   private graphZeroLockout(inEnt: EntityJI) {
@@ -245,7 +398,7 @@ export class SdjEntity implements CoreSD, IEntitySdj {
       throw new TypeError(`[SDJ] Entity '${inEnt.sdKey}' invalid keyValues;`);
     } else if (inEnt.sdProps) {
       each(inEnt.sdProps, (jValue: JIValue, key: string) => {
-        if (RESERVED_WORDS.indexOf(key) !== -1 || !validSDKey(key)) {
+        if (SYS_RESERVED.indexOf(key) !== -1 || !validSDKey(key)) {
           throw new TypeError(`[SDJ] Entity '${inEnt.sdKey}' has an illegal keyName: ${key};`);
         } else if (!(isString(jValue) || isNumber(jValue) || isBoolean(jValue))) {
           throw new TypeError(`[SDJ] Entity '${inEnt.sdKey}' key '${key}' has illegal value, not string|number|boolean;`);
@@ -254,6 +407,13 @@ export class SdjEntity implements CoreSD, IEntitySdj {
     }
     if (inEnt.limiter && !restrictLimiter(inEnt.limiter)) {
       throw new TypeError(`[SDJ] Entity '${inEnt.sdKey}' has unrecognized limiter;`);
+    } else if (inEnt.limiter && inEnt.limiter === ESDJ_LIMIT.KEY_IDX) {
+      if (inEnt.parentIds && !isEqual(inEnt.parentIds, [0])) {
+        throw new TypeError("[SDJ] sdIndexed Entities can only exist on root;");
+      }
+      if (!inEnt.childIds) {
+        throw new TypeError("[SDJ] sdIndexed Entities are required to have children;")
+      }
     }
     restrictToAllowedKeys("EntityJI: "+ inEnt.sdKey,
       ["sdKey", "sdId", "sdItems", "extendIds", "parentIds", "childIds", "limiter", "sdProps"], inEnt);

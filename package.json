@@ -1,6 +1,6 @@
 {
   "name": "sdj-esm",
-  "version": "0.0.10",
+  "version": "0.1.0",
   "description": "SDJ Library",
   "main": "./dist/index.js",
   "import": "./dist/index.js",

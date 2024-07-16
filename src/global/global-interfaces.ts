@@ -11,11 +11,11 @@ import type {
     DescriptionJI,
     DescriptionSearch,
     EntityJI,
-    FuncJsonValueValidator,
     FuncLexGraphVerify,
     FuncStrNumVoid,
     ILexicon,
     ItemJI,
+    IValidator,
     SdJsonJI,
     SdKeyProps
 } from "../core/interfaces.js";
@@ -44,12 +44,13 @@ export interface ISdjSettings {
 }
 export declare interface ISdjLexicons {
     readonly names: string[];
-    getValidator: (validatorId: string) => FuncJsonValueValidator;
+    getValidator: (validatorId: string) => IValidator;
     getByName: (lexId: string) => ILexicon | undefined;
     fullGraphJI: (inDescJI: DescriptionJI) => EntityJI[];
     newBaseItems: () => ItemJI[];
     fullItemJI: (inDescJI: DescriptionJI) => ItemJI[];
     validateRequires: (descJI: DescriptionJI) => boolean;
+    verifyData: (inJson: SdJsonJI, strict: boolean) => boolean;
     validateGraph: (inDescJI: DescriptionJI) => boolean;
     simpleExtendProps: (entity: IEntitySdj, graph: IEntitySdj[]) => SdKeyProps;
 }
@@ -69,7 +70,7 @@ export declare interface ISdjHost {
     searchDescriptions: (search: DescriptionSearch) => DescriptSearchResult;
     descriptByName: (name: string) => IDescriptionSdj | undefined
     addDescription: (addDesc: IDescriptionSdj) => void;
-    validateGraph: (inDescJI: DescriptionJI) => DescriptionJI;
+    fullDescription: (inDescJI: DescriptionJI) => DescriptionJI;
     verifyJIbyType: (ji: SdjJITypes, jiType: ESDJ_CLASS, strict?: boolean) => boolean;
     checkClassInst: (ji: AllSdjTypes, jiType: ESDJ_CLASS, isClass?: boolean ) => void;
     createDescription: (descJI: DescriptionJI) => IDescriptionSdj;

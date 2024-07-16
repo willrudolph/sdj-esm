@@ -9,7 +9,7 @@ import sdjAlmost from "./json/sdj-almost-0.json";
 
 import testA from "./json/sdj/test-file-a.json";
 import badTestA from "./json/sdj/test-bad-a.json";
-//import testC from "./json/sdj/test-file-c.json";
+import entityTestA from "./json/entity-test-a.json";
 
 describe("SdjJson Init and Setup", () => {
   afterEach(() => {
@@ -129,4 +129,15 @@ describe("import json testing", () => {
 
     expect(reGen.genJI()).toMatchObject(genOut);
   });
+
+  test("Simple SdIndexed Table", () => {
+    const sdjClass = new SdJson(entityTestA);
+    expect(sdjClass).toBeTruthy();
+
+    const genOut = sdjClass.genJI();
+    const reGen = new SdJson(genOut);
+
+    expect(reGen.genJI()).toMatchObject(genOut);
+  });
+
 });

@@ -98,9 +98,6 @@ describe("Lexicon Initial Tests", ()=> {
 		lexicon = {
 			name: "angsdj",
 			items: [],
-			validators: {
-				"aname": () => false
-			},
 			required: ["valuea","valueb"]
 		};
 		host = SdjHost.getISdjHost({lexicons: [lexicon]});
@@ -114,10 +111,7 @@ describe("Lexicon Initial Tests", ()=> {
 			items: [],
 			entities: [],
 			graphVerify: () => false,
-			required: ["valuea","valueb"],
-			validators: {
-				"aname": () => false
-			},
+			required: ["valuea","valueb"]
 		};
 		host = SdjHost.getISdjHost({lexicons: [lexiconB]});
 		expect(host).toBeTruthy();
@@ -227,7 +221,7 @@ describe("Lexicon Initial Tests", ()=> {
 
 		lexicon = {
 			name: "bob1",
-			validators: []
+			someOther: "value"
 		};
 		expect(() =>{
 			host = SdjHost.getISdjHost({lexicons: [lexicon]});
@@ -244,6 +238,23 @@ describe("Lexicon Initial Tests", ()=> {
 		}).toThrowError();
 		SdjHost.setTestingInstance(undefined);
 
+		lexicon = {
+			name: "bob1",
+			validator: { "nbob": {}}
+		};
+		expect(() =>{
+			host = SdjHost.getISdjHost({lexicons: [lexicon]});
+		}).toThrowError();
+		SdjHost.setTestingInstance(undefined);
+
+		lexicon = {
+			name: "bob1",
+			validator: { "nbob": { "type": "nbob" }}
+		};
+		expect(() =>{
+			host = SdjHost.getISdjHost({lexicons: [lexicon]});
+		}).toThrowError();
+		SdjHost.setTestingInstance(undefined);
 	});
 
 	test("test more bad lexicons", () => {
@@ -255,10 +266,7 @@ describe("Lexicon Initial Tests", ()=> {
 			entities: [],
 			graphVerify: () => true,
 			dataVerify: () => true,
-			required: ["valuea","valueb"],
-			validators: {
-				"aname": () => false
-			}
+			required: ["valuea","valueb"]
 		};
 
 		clone = cloneDeep(lexiconB);
@@ -283,7 +291,8 @@ describe("Lexicon Initial Tests", ()=> {
 		SdjHost.setTestingInstance(undefined);
 
 		clone = cloneDeep(lexiconB);
-		clone.validators = () => true;
+		clone.alienValue = "somealien";
+		//clone.validators = () => true;
 		expect(() =>{
 			host = SdjHost.getISdjHost({lexicons: [clone]});
 		}).toThrowError();

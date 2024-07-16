@@ -59,6 +59,48 @@ const wrongDataH = {
   "%$%": "value"
 };
 
+const wrongDataI = {
+  "sdId": 3,
+  "sdKey": "Example",
+  "sdChildren": [{"sdId" : 3, "sdKey": "something"}, {}]
+};
+
+const wrongDataJ = {
+  "sdId": 3,
+  "sdKey": "Example",
+  "dfa f aa": "data value",
+  "sdChildren": [{"sdId" : 3, "sdKey": "something"}]
+};
+
+
+const wrongDataK = {
+  "sdId": 3,
+  "sdKey": "Example",
+  "badValue": "afsdf",
+  "sdChildren": [{"sdId" : 3, "sdKey": "something"}, {}]
+};
+
+const wrongDataL = {
+  "sdId": 3,
+  "sdKey": "Example",
+  "bsfzbslur": () => {return true},
+  "sdChildren": [{"sdId" : 3, "sdKey": "something"}]
+};
+
+const wrongDataM = {
+  "sdId": 3,
+  "sdKey": "Example",
+  "$id": "valeiu",
+  "sdChildren": [{"sdId" : 3, "sdKey": "something"}]
+};
+
+const wrongDataN = {
+  "sdId": 3,
+  "sdKey": "Example",
+  "sdItems": [3,3,2],
+  "sdChildren": [{"sdId" : 3, "sdKey": "something"}]
+};
+
 const goodDataA = {
   "sdId": 3,
   "sdKey": "Example",
@@ -104,12 +146,13 @@ describe("Data Base Testing", () => {
       const classObj = new SdjData({}, goodDataA);
     }).toThrowError();
 
-    const entity = new SdjData(goodDataA, sampleEntity);
-    expect(entity).toBeTruthy();
+    const dataObj = new SdjData(goodDataA, sampleEntity);
+    expect(dataObj).toBeTruthy();
 
-    const sdjDataity = new SdjData(goodDataA);
-    expect(sdjDataity).toBeTruthy();
-    expect(sdjDataity.path).toBe(goodDataA.sdKey)
+    expect(dataObj.path).toBe(goodDataA.sdKey);
+    expect(dataObj.sdId).toBe(goodDataA.sdId);
+    expect(dataObj.sdKey).toBe(goodDataA.sdKey);
+    expect(dataObj.entity).toBe(sampleEntity);
 
   });
 
@@ -149,15 +192,41 @@ describe("Data Base Testing", () => {
     }).toThrowError();
   });
 
+  test("item input error set 3", () => {
+    expect(() => {
+      const failCons = new SdjData(wrongDataI, sampleEntity);
+    }).toThrowError();
+
+    expect(() => {
+      const failCons = new SdjData(wrongDataJ, sampleEntity);
+    }).toThrowError();
+
+    expect(() => {
+      const failCons = new SdjData(wrongDataK, sampleEntity);
+    }).toThrowError();
+
+    const notFailCons2 = new SdjData(wrongDataL, sampleEntity);
+    expect(notFailCons2.getDataKey('bsfzbslur')).toBeFalsy();
+
+    expect(() => {
+      const failCons = new SdjData(wrongDataM, sampleEntity);
+    }).toThrowError();
+
+    expect(() => {
+      const failCons = new SdjData(wrongDataN, sampleEntity);
+    }).toThrowError();
+  });
+
 });
 
 describe("Data Test set 1", () => {
-  let hostSdj, sampDesc, sampleEntity;
+  let hostSdj, sampDesc, entYesDec, entNoDec
 
   beforeEach(() => {
     hostSdj = SdjHost.getHost();
     sampDesc = new SdjDescription(blankDesc, hostSdj);
-    sampleEntity = new SdjEntity(emptyEnt, sampDesc);
+    entYesDec = new SdjEntity(emptyEnt, sampDesc);
+    entNoDec = new SdjEntity(emptyEnt);
   })
 
   afterEach(() => {
@@ -165,24 +234,25 @@ describe("Data Test set 1", () => {
     hostSdj = undefined;
   })
 
-  test("Validate Test", () => {
-    const rootSdj = new SdjData(goodData, sampleEntity),
-        emptySdjData = new SdjData(goodDataA);
+  test("Simple Validate Test", () => {
+    const dataYesDesc = new SdjData(goodData, entYesDec);
 
-    expect(rootSdj.validateData()).toBe(true);
-    expect(rootSdj.validateData(true)).toBe(true);
+    expect(entNoDec).toBeTruthy();
 
-    expect(emptySdjData.validateData()).toBe(false);
-    expect(() => {
-      let checkVal = emptySdjData.validateData(true);
-    }).toThrowError();
+    expect(()=> {
+      let dataNoDesc = new SdjData(goodData, entNoDec);
+    }).toThrowError()
+
+    expect(dataYesDesc).toBeTruthy();
+
+    expect(dataYesDesc.isValid()).toBe(true);
 
   });
 
   test("Simple Path", () => {
-    const rootSdj = new SdjData(goodData, sampleEntity);
-    const parentSdj = new SdjData(goodData, sampleEntity, rootSdj);
-    const dataSdj = new SdjData(goodDataA, sampleEntity, parentSdj);
+    const rootSdj = new SdjData(goodData, entYesDec);
+    const parentSdj = new SdjData(goodData, entYesDec, rootSdj);
+    const dataSdj = new SdjData(goodDataA, entYesDec, parentSdj);
 
     expect(rootSdj.path).toBe(goodData.sdKey);
     expect(rootSdj.depth).toBe(0);
@@ -194,6 +264,12 @@ describe("Data Test set 1", () => {
     expect(dataSdj.genJI()).toMatchObject(goodDataA);
     expect(parentSdj.genJI()).toMatchObject(goodData);
     expect(rootSdj.genJI()).toMatchObject(goodData);
+  });
+
+  test("Simple Validate Test", () => {
+    const dataYesDesc = new SdjData(goodData, entYesDec);
+
+
   });
 });
 

@@ -1,7 +1,7 @@
-import {SdjHost, SdjEntity, SdjDescription} from "../../dist/index.js";
+import {SdjHost, SdjEntity, SdjDescription, SdJson, ESDJ_LIMIT} from "../../dist/index.js";
 import blankDesc from "../json/desc.only.json";
 import {expect, test, afterEach, beforeEach, describe} from "@jest/globals";
-
+import testa from "../json/entity-test-a.json";
 const emptyEnt = {
   "sdId": 3,
   "sdKey": "example",
@@ -119,18 +119,74 @@ describe("Entity Test set 1", () => {
     SdjHost.setTestingInstance(undefined);
   })
 
-  test("Test something", () => {
-    expect(false).toBe(false);
+  test("Entity good Create", () => {
+    const entJI = {
+      sdKey: "basicEnt",
+      sdId: 1,
+      extendIds: [2]
+    }
+
+    let ent = new SdjEntity(entJI)
+    expect(ent).toBeTruthy();
+  });
+  test("Limiter Tests Alpha", () => {
+    // Bad - parnent id, if present required to be 0
+    const entJIA = {
+      sdKey: "basicEntA",
+      sdId: 1,
+      limiter: ESDJ_LIMIT.KEY_IDX,
+      sdItems: [3],
+      parentIds: [2],
+    };
+    // Bad - No child ids for sdIndexed
+    const entJIB = {
+      sdKey: "basicEntB",
+      sdId: 1,
+      limiter: ESDJ_LIMIT.KEY_IDX,
+      sdItems: [3],
+      parentIds: [0],
+    };
+    // Bad - pointless entity, does not extend nor has sdItems
+    const entJIC = {
+      sdKey: "basicEntC",
+      sdId: 1,
+    };
+
+    let ent;
+    expect(() => {
+      ent = new SdjEntity(entJIA)
+    }).toThrowError();
+    expect(() => {
+      ent = new SdjEntity(entJIB)
+    }).toThrowError();
+    expect(() => {
+      ent = new SdjEntity(entJIC)
+    }).toThrowError();
   });
 });
 
-describe("Entity Test set 2", () => {
+describe("Entity SdIndex Test 1", () => {
   let hostSdj;
 
   afterEach(() => {
     SdjHost.setTestingInstance(undefined);
   })
 
+  test("Test something ELSE", () => {
+    let sdJ = new SdJson(testa);
+
+    expect(sdJ).toBeTruthy();
+
+  });
+  test("Test something ELSE", () => {
+    expect(false).toBe(false);
+  });
+  test("Test something ELSE", () => {
+    expect(false).toBe(false);
+  });
+  test("Test something ELSE", () => {
+    expect(false).toBe(false);
+  });
   test("Test something ELSE", () => {
     expect(false).toBe(false);
   });

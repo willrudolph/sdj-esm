@@ -1,4 +1,5 @@
 import {SdjHost, SdjDescription} from "../../dist/index.js";
+import {cloneDeep} from "lodash-es";
 import {expect, test, afterEach, beforeEach, describe} from "@jest/globals";
 
 const emptyDesc = {
@@ -97,7 +98,56 @@ describe("Description Test set 1", () => {
     SdjHost.setTestingInstance(undefined);
   })
 
-  test("Test something", () => {
+  beforeEach(() => {
+    hostSdj = SdjHost.getISdjHost();
+  })
+
+  test("extendsId recursion exclusions", () => {
+    let newBlank = cloneDeep(blankDesc);
+    let newDesc;
+
+    newBlank.graph.push({
+      sdId: 1,
+      sdKey: "subObj"
+    }, {
+      sdId: 2,
+      sdKey: "subObjA",
+      extendIds: [4]
+    },{
+      sdId: 3,
+      sdKey: "subObjB",
+      extendIds: [2]
+    },{
+      sdId: 4,
+      sdKey: "subObjC",
+      extendIds: [3]
+    });
+
+    expect(()=>{
+      newDesc = new SdjDescription(newBlank, hostSdj);
+    }).toThrowError();
+
+    newBlank = cloneDeep(blankDesc);
+
+    newBlank.graph.push({
+      sdId: 1,
+    sdKey: "subObj"
+    }, {
+      sdId: 2,
+      sdKey: "subObjA",
+    },{
+      sdId: 3,
+      sdKey: "subObjB",
+      extendIds: [1,2]
+    },{
+      sdId: 4,
+      sdKey: "subObjC",
+      extendIds: [1,2,3]
+    });
+
+    expect(()=>{
+      newDesc = new SdjDescription(newBlank, hostSdj);
+    }).toThrowError();
   });
 });
 

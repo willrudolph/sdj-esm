@@ -7,7 +7,6 @@
  */
 
 import {ESDJ_LIMIT} from "./enums.js";
-import type {SdjValidators} from "./validators.js";
 
 // * Typescript Notes for SDJ *
 // SDJ primarily focuses on JSON/JavaScript compatibility - not full range/all-possible TypeScript support
@@ -24,6 +23,7 @@ import type {SdjValidators} from "./validators.js";
 
 // JI / JSON Immutable Primitives
 
+export type ExtAllowedValue = JIValue | undefined | null;
 // eslint-disable-next-line no-use-before-define
 export type JIValue = JIPrimitive | JIObject | JIArray;
 export interface JIObject {
@@ -33,17 +33,29 @@ export type JIArray = JIValue[] | readonly JIValue[];
 export type JIPrimitive = string | boolean | number | null;
 
 export declare type ArrayFlatType = number[] | string[] | boolean[];
-export declare type SdjLimiter = string | ESDJ_LIMIT;
-export const SdjLimiterGroup: SdjLimiter[] = [ESDJ_LIMIT.NONE, ESDJ_LIMIT.REQ,
-  ESDJ_LIMIT.REQ_HIDE, ESDJ_LIMIT.REQ_ONE, ESDJ_LIMIT.ONE_NONE, ESDJ_LIMIT.SYS_REQ];
+export const SdjLimiterGroup: ESDJ_LIMIT[] = [ESDJ_LIMIT.NONE, ESDJ_LIMIT.REQ,
+  ESDJ_LIMIT.REQ_HIDE, ESDJ_LIMIT.REQ_ONE, ESDJ_LIMIT.ONE_NONE,
+  ESDJ_LIMIT.KEY_IDX, ESDJ_LIMIT.SYS_REQ];
 export interface SdKeyProps {
   [key: string]: JIPrimitive;
+}
+
+// Support interfaces
+
+export interface NumKeyStore<Type> {
+  [numKey: number | string]: Type;
+}
+
+export interface GenKeyStore<Type> {
+  [key: string]: Type;
 }
 
 // Standard Function signatures available outside of library; this list may grow
 export declare type FuncStrNumVoid = (input: string, num?: number) => void;
 
+export declare type FuncValueInput = (inputVal: ExtAllowedValue) => JIValue;
 export declare type FuncJsonValueValidator = (value: JIValue) => boolean;
+export declare type FuncValueOutput = (value: JIValue | undefined) => ExtAllowedValue;
 export interface Info extends JIObject {
   name: string;
   uniqId: string;
@@ -63,27 +75,28 @@ export interface CoreSD {
   sdId: number;
 }
 
-export interface CoreSDSearch {
+export interface CoreSDSearch extends JIObject {
   sdId?: number;
   sdKey?: string;
 }
 
 // eslint-disable-next-line no-use-before-define
-export type DataJIValues = Info | DataJI[] | JIValue | undefined;
+export type DataKeyValue = JIValue | undefined;
+export type DataJIValues = Info | DataJI[] | DataKeyValue;
 export interface DataJI extends CoreSD, JIObject {
-  [key: string]: DataJIValues;
+  [dataKey: string]: DataJIValues;
   sdInfo?: Info;
   sdChildren?: DataJI[];
 }
 
 export interface ItemSearch extends CoreSDSearch {
   type?: string;
-  limiter?: SdjLimiter;
+  limiter?: ESDJ_LIMIT;
 }
 
 export interface ItemJI extends CoreSD, JIObject {
   type: string;
-  limiter?: SdjLimiter;
+  limiter?: ESDJ_LIMIT;
 }
 
 export interface EntityCore {
@@ -91,7 +104,7 @@ export interface EntityCore {
   extendIds?: number[]; // Entity sdId(s) from which the entity extends
   parentIds?: number[]; // Entity sdId(s) which this item can be a child of
   childIds?: number[]; // Entity sdId(s) which can be children
-  limiter?: SdjLimiter;
+  limiter?: ESDJ_LIMIT;
   // assigned/optional key values that can be assigned to the entity
   sdProps?: SdKeyProps;
 }
@@ -100,15 +113,26 @@ export interface EntityJI extends EntityCore, CoreSD, JIObject {}
 
 export interface EntitySearch extends CoreSDSearch, EntityCore {}
 export declare type FuncLexGraphVerify = (entities: EntityJI[]) => boolean;
-export declare type FuncLexDataVerify = (entities: EntityJI[]) => boolean;
+export declare type FuncLexDataVerify = (sdJsonJI: SdJsonJI) => boolean;
 export interface ILexicon {
   name: string;
   required?: string[];
   entities?: EntityJI[];
   items?: ItemJI[];
-  validators?: SdjValidators;
+  validators?: GenKeyStore<ValidatorJI>;
   graphVerify?: FuncLexGraphVerify;
   dataVerify?: FuncLexDataVerify;
+}
+
+export interface ValidatorJI {
+  type: string;
+  input?: FuncValueInput;
+  valid: FuncJsonValueValidator;
+  output?: FuncValueOutput
+}
+
+export interface IValidator extends ValidatorJI {
+  input: FuncValueInput;
 }
 
 export interface DescriptionJI extends JIObject {

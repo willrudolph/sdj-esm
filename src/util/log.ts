@@ -6,9 +6,9 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import {find, isArray} from "./std.funcs.js";
 import {ESDJ_LOG} from "../core/enums.js";
-import type {FuncStrNumVoid} from "../core/interfaces";
+import type {FuncStrNumVoid} from "../core/interfaces.js";
+import {find, isArray} from "lodash-es";
 
 const ECODES: string[] = [
   "CRIT ", // 0 - Will throw Error in PROD
