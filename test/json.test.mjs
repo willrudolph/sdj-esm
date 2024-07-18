@@ -1,5 +1,5 @@
-import {isInfo, blankJsonJI, blankDescriptionJI, newInfoJI, ESDJ_LOG, SdjHost, SdJson} from "../dist/index.js";
-import {expect, test, afterEach, beforeEach, describe} from "@jest/globals";
+import {blankDescriptionJI, blankJsonJI, isInfo, newInfoJI, SdjHost, SdJson} from "../dist/index.js";
+import {afterEach, beforeEach, describe, expect, test} from "@jest/globals";
 import sdjEmptyGoodJson from "./json/sdj-empty-good.json";
 import emptyJson from "./json/empty.json";
 import wrong0 from "./json/wrong/wrong-0.json";
@@ -10,6 +10,9 @@ import sdjAlmost from "./json/sdj-almost-0.json";
 import testA from "./json/sdj/test-file-a.json";
 import badTestA from "./json/sdj/test-bad-a.json";
 import entityTestA from "./json/entity-test-a.json";
+//import {extLexicon} from "../node/lexicons/other.quick.lex.js";
+import {SimpleSdjLexicon} from "../local/node/lexicons/simple.lex.js";
+import simpleJI from "../test/json/sdj/example-simple-lex.json";
 
 describe("SdjJson Init and Setup", () => {
   afterEach(() => {
@@ -138,6 +141,121 @@ describe("import json testing", () => {
     const reGen = new SdJson(genOut);
 
     expect(reGen.genJI()).toMatchObject(genOut);
+  });
+
+  test("Simple Entity Searches", () => {
+    const sdj = new SdJson(testA);
+    expect(sdj).toBeTruthy();
+
+    const search01 = sdj.dataByEntity({sdId: 3})
+    expect(search01.length).toBe(9);
+    const search02 = sdj.dataByEntity({sdKey: "article"})
+    expect(search02.length).toBe(9);
+    const search03 = sdj.dataByEntity({sdId: 2})
+    expect(search03.length).toBe(3);
+    const search04 = sdj.dataByEntity({sdKey: "page"})
+    expect(search04.length).toBe(3);
+    const search05 = sdj.dataByEntity({sdId: 1})
+    expect(search05.length).toBe(1);
+    const search06 = sdj.dataByEntity({sdKey: "folder"})
+    expect(search06.length).toBe(1);
+    const search07 = sdj.dataByEntity({childIds: [3]})
+    expect(search07.length).toBe(3);
+    const search08 = sdj.dataByEntity({parentIds: [0]})
+    expect(search08.length).toBe(4);
+    const searchA = sdj.dataByEntity({sdItems: [1]});
+    expect(searchA.length).toBe(13);
+
+  });
+
+  test("Entity SdProps Searches", () => {
+    const hostSdj = SdjHost.getISdjHost({lexicons: [new SimpleSdjLexicon()]});
+    const sdj = new SdJson(simpleJI);
+    expect(sdj).toBeTruthy();
+    const search01 = sdj.dataByEntity({sdProps:{route: false}});
+    expect(search01.length).toBe(26);
+    const search02 = sdj.dataByEntity({sdProps:{route: false}, checkData: true});
+    expect(search02.length).toBe(0);
+    const search03 = sdj.dataByEntity({sdProps:{route: true}});
+    expect(search03.length).toBe(8);
+    const search04 = sdj.dataByEntity({sdProps:{route: true}, checkData: true});
+    expect(search04.length).toBe(0);
+    const search05 = sdj.dataByEntity({sdProps:{route: true, comp: false}});
+    expect(search05.length).toBe(0);
+    const search06 = sdj.dataByEntity({sdProps:{route: true, comp: true}});
+    expect(search06.length).toBe(8);
+    const search07 = sdj.dataByEntity({sdProps:{route: false, comp: false}});
+    expect(search07.length).toBe(23);
+    const search08 = sdj.dataByEntity({sdProps:{route: true, comp: false}, checkData: true});
+    expect(search08.length).toBe(0);
+    const search09 = sdj.dataByEntity({sdProps:{route: false, comp: false}, checkData: true});
+    expect(search09.length).toBe(23);
+    const search10 = sdj.dataByEntity({sdProps:{route: false, comp: true}, checkData: true});
+    expect(search10.length).toBe(3);
+  });
+
+
+  test("Bad Searches", () => {
+    const sdj = new SdJson(testA);
+    expect(sdj).toBeTruthy();
+    const search01 = sdj.dataByEntity({})
+    expect(search01.length).toBe(0);
+    const search02 = sdj.dataByEntity({sdKedfasy: "article"})
+    expect(search02.length).toBe(0);
+    const search03 = sdj.dataByEntity({sdId: -1})
+    expect(search03.length).toBe(0);
+    const search04 = sdj.dataByEntity({limiter: "0"})
+    expect(search04.length).toBe(0);
+    const search05 = sdj.dataByEntity(() => {});
+    expect(search05.length).toBe(0);
+    const search06 = sdj.dataByEntity([])
+    expect(search06.length).toBe(0);
+    const search07 = sdj.dataByEntity({type: 3})
+    expect(search07.length).toBe(0);
+    const search08 = sdj.dataByEntity({type: "bob"})
+    expect(search08.length).toBe(0);
+    const search09 = sdj.dataByEntity({sdId: "numb"})
+    expect(search09.length).toBe(0);
+  });
+
+  test("Simple Item Searches", () => {
+    const sdj = new SdJson(testA);
+    expect(sdj).toBeTruthy();
+
+    const search01 = sdj.dataByItem({sdId: 2})
+    expect(search01.length).toBe(13);
+    const search02 = sdj.dataByItem({sdKey: "title"})
+    expect(search02.length).toBe(13);
+    const search03 = sdj.dataByItem({sdId: 3})
+    expect(search03.length).toBe(13);
+/*    const search04 = sdj.dataByItem({sdKey: "htmlText"})
+    expect(search04.length).toBe(0);
+    const search05 = sdj.dataByItem({sdId: 1});
+    expect(search05.length).toBe(13);
+    const search06 = sdj.dataByItem({sdId: 2})
+    expect(search06.length).toBe(13);
+    const search07 = sdj.dataByItem({type: "strl"})
+    expect(search07.length).toBe(0);
+    const search08 = sdj.dataByItem({type: "title"})
+    expect(search08.length).toBe(0);
+    const search09 = sdj.dataByItem({type: "strl"})
+    expect(search09.length).toBe(0);*/
+  });
+
+  test("Bad Item Searches", () => {
+    const sdj = new SdJson(testA);
+    expect(sdj).toBeTruthy();
+
+/*    const search01 = sdj.dataByItem()
+    expect(search01.length).toBe(9);
+    const search02 = sdj.dataByItem({sdKey: "article"})
+    expect(search02.length).toBe(9);
+    const search03 = sdj.dataByItem({sdId: 2})
+    expect(search03.length).toBe(3);
+    const search04 = sdj.dataByItem({sdKey: "page"})
+    expect(search04.length).toBe(3);*/
+
+
   });
 
 });

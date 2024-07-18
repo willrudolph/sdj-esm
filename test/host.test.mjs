@@ -1,5 +1,5 @@
-import {SdjHost, ESDJ_LOG} from "../dist/index.js";
-import {expect, test, afterEach, beforeEach, describe} from "@jest/globals";
+import {ESDJ_LOG, SdjDescription, SdjHost} from "../dist/index.js";
+import {afterEach, describe, expect, test} from "@jest/globals";
 
 describe("Sdj Host / Global Testing / Dictionary", () => {
   let hostSdj;
@@ -46,6 +46,12 @@ describe("Sdj Host / Global Testing / Dictionary", () => {
     expect(() => {
       let initial = SdjHost.getHost();
       let second = SdjHost.getISdjHost({});
+    }).toThrow();
+  });
+
+  test('Host Error - wrong place', () => {
+    expect(() => {
+      let initial = new SdjDescription(SdjHost.getHost());
     }).toThrow();
   });
 

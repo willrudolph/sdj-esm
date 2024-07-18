@@ -1,14 +1,14 @@
 # About SDJ
 
 ## Why?
-Needed an extremely flexible universal storage and data transport file that is web accessible & content validated.
+Needed an extremely flexible and customizable storage data protocol file that is web accessible, content validated, and easily transmitted/stored.
 
 ### Project Goals - 12/5/23
 
 - Maintain the SDJ (.sdj) file format and JSON schema
 - Centralize controls/development/code implementation for SDJ TS/JavaScript
-- Keep the library small and maintainable with specialized function
-- Minimize size of active library, refraining from adding any new dependencies
+- Keep the library small and maintainable with specialized function, while still providing error/log info
+- Minimize dependencies constraining to use only 'lo-dash-es' as it's single peer-dependency
 - Perform and maintain unit tests
 
 ### What it Does NOT (or should not) Do:
@@ -17,8 +17,8 @@ Needed an extremely flexible universal storage and data transport file that is w
   - Separate and discrete code/libraries should be constructed to interact with SDJs
 - Provide internal routines for JSONs, import/loading, cryptography, security, compression, or sanitization
     - Test and correspond with as much default JSON/JavaScript functionality as possible
-    - Via Lexicon extensions some options can created/provided for internal content.
-    - sdj-editor will provide an example of sanitization/html content
+    - Via Lexicon extensions some options can created/provided/shared for variety of custom content
+    - sdj-editor* will provide an example of sanitization/html content
     - Whole/Partial file security/compression/cryptography should always be preferred over internal file optimizations/shortcuts
 - Natively implement non-JSON/JavaScript objects inside JSON structures
     - Customizations can/could occur via lexicons, but should not be directly part of this library.
@@ -42,7 +42,7 @@ However, there should be concerns about creating Lexicons that:
 - Allow storing code / commands
 - Allow storing of binary(or non-text) data in text format
 - Allow storing framework/html templating
-- Allow for cyclical storage of SDJs within SDJ
+- Allow for cyclical storage of SDJs within an SDJ
 - Miss-use the system for unsafe behavior (such as using eval on content)
 
 ## MPLv2 License Q&A

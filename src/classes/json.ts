@@ -19,14 +19,14 @@ import {UUID} from "../util/func.std.js";
 
 import {SDJ_SCHEMA} from "../core/statics.js";
 import {blankInfoJI, genInfoJI, isBlankInfo, newInfoJI} from "../util/immutables.js";
-import {verifyUniqKeys} from "../util/verify.js";
+import {checkResetInfo, verifyUniqKeys} from "../util/verify.js";
 import {restrictToAllowedKeys} from "../core/restrict.js";
 import {isInfo} from "../core/validators.js";
 import type {IDataSdj, IDescriptionSdj, IEntitySdj, IItemSdj, IJsonSdj} from "./class-interfaces.js";
 import {SdjHost} from "../global/host.js";
 import {SdjData} from "./data.js";
 import {ESDJ_CLASS} from "../core/enums.js";
-import {cloneDeep, each, find, has, isArray, isEmpty, isEqual, isObject, isString} from "lodash-es";
+import {cloneDeep, each, find, has, isArray, isEmpty, isEqual, isObject, isString, isUndefined} from "lodash-es";
 
 export class SdJson implements IJsonSdj{
   _sdInfo: Info;
@@ -90,7 +90,7 @@ export class SdJson implements IJsonSdj{
     if (!rtnData) {
       this.log(`Error finding sdKey:${routeSplit[0]}`, 3);
       return undefined;
-    } else if (rtnData && routeSplit.length > 1) {
+    } else if (rtnData && routeSplit.length === 1) {
       return rtnData;
     }
 
@@ -111,16 +111,30 @@ export class SdJson implements IJsonSdj{
 
     return rtnData;
   }
-
-  dataByEntity(searchEnt: EntitySearch, dataPath?: string): SdjData[] {
+  dataByEntity(searchEnt: EntitySearch, dataPath?: string): IDataSdj[] {
     const dataPathItem: IDataSdj | undefined = (dataPath) ? this.dataByPath(dataPath) : undefined,
       data: IDataSdj[] = (dataPath && dataPathItem) ? [dataPathItem] : this._data,
       foundEnts: IEntitySdj[] = this._description.searchEntities(searchEnt),
-      rtnAry: SdjData[] = [];
+      rtnAry: IDataSdj[] = [],
+      subChildSearch = (children: IDataSdj[]) => {
+        each(children, (dataObj: IDataSdj) => {
+          const matchedEnt = find(foundEnts, {sdId: dataObj.sdId});
+          if (dataObj.entity && matchedEnt) {
+            if (!searchEnt.checkData) {
+              rtnAry.push(dataObj);
+            } else if (searchEnt.checkData && this.checkEntityData(searchEnt, dataObj, matchedEnt)){
+              rtnAry.push(dataObj);
+            }
+          }
+          if (dataObj.sdChildren && dataObj.sdChildren?.length > 0) {
+            subChildSearch(dataObj.sdChildren);
+          }
+        });
+      };
 
     if (data.length > 0) {
-      // TODO: Entity search
-      this.log("TODO: dataByEntity;" + foundEnts.length);
+      subChildSearch(data);
+      this.log("dataByEntity;" + foundEnts.length);
     }
     return rtnAry;
   }
@@ -129,11 +143,26 @@ export class SdJson implements IJsonSdj{
     const dataPathItem: IDataSdj | undefined = (dataPath) ? this.dataByPath(dataPath) : undefined,
       data: IDataSdj[] = (dataPath && dataPathItem) ? [dataPathItem] : this._data,
       foundItems: IItemSdj[] = this._description.searchItems(searchItem),
-      rtnAry: SdjData[] = [];
+      rtnAry: IDataSdj[] = [],
+      subChildSearch = (children: IDataSdj[]) => {
+        each(children, (dataObj: IDataSdj) => {
+          each(foundItems, (item: IItemSdj): boolean => {
+            if (dataObj.entity && dataObj.entity.itemRefs[item.sdKey]) {
+              rtnAry.push(dataObj);
+              return false;
+            } else {
+              return true;
+            }
+          });
+          if (dataObj.sdChildren && dataObj.sdChildren?.length > 0) {
+            subChildSearch(dataObj.sdChildren);
+          }
+        });
+      };
 
     if (data.length > 0) {
-      // TODO: Item Search
-      this.log("TODO: dataByItem;" + foundItems.length);
+      subChildSearch(data);
+      this.log("dataByEntity;" + foundItems.length);
     }
     return rtnAry;
   }
@@ -155,12 +184,11 @@ export class SdJson implements IJsonSdj{
 
   private build(inJson: SdJsonJI) {
     this.log("In Json: " + inJson.sdInfo.name)
+    let quickLocRef: SdjData[] = [];
     each(inJson.data, (topDataJI: DataJI) => {
       const entRef = this._description.getEntityRefById(topDataJI.sdId);
       entRef!.validStruct(topDataJI, undefined, true);
     });
-
-    let idxCount = -1;
     each(inJson.data, (topDataJI: DataJI) => {
       const entRef = this._description.getEntityRefById(topDataJI.sdId);
       let topBuildData: SdjData | IDataSdj;
@@ -176,8 +204,11 @@ export class SdJson implements IJsonSdj{
       if (topDataJI.sdChildren) {
         this.createSubData(topDataJI.sdChildren, topBuildData);
       }
-      topBuildData.sdIndex = idxCount + 1;
+      quickLocRef.push(<SdjData>topBuildData);
       this._data.push(<IDataSdj>topBuildData);
+    });
+    each(quickLocRef, (sdjData, idx) => {
+      sdjData.$sdIndex = idx;
     });
   }
 
@@ -186,6 +217,7 @@ export class SdJson implements IJsonSdj{
       const entRef = this._description.getEntityRefById(childRef.sdId);
       entRef!.validStruct(childRef, parentRef.genJI(false), true);
     });
+    const quickLocRef: SdjData[] = [];
 
     each(childrenJI, (childJI: DataJI) => {
       const entRef = this._description.getEntityRefById(childJI.sdId);
@@ -201,8 +233,37 @@ export class SdJson implements IJsonSdj{
       if (childJI.sdChildren) {
         this.createSubData(childJI.sdChildren, newSdjData);
       }
+      quickLocRef.push(newSdjData);
       parentRef.addChild(newSdjData);
     });
+
+    each(quickLocRef, (sdjData, idx) => {
+      sdjData.$sdIndex = idx;
+    })
+  }
+
+  private checkEntityData(searchEnt: EntitySearch, inData: IDataSdj, checkEnt: IEntitySdj): boolean {
+    let rtnVal = false;
+    // Assume single value array for now
+    if (searchEnt.childIds) {
+      if (find(inData.sdChildren, {sdId: checkEnt.sdId})) {
+        rtnVal = true;
+      }
+    } else if (searchEnt.parentIds) {
+      if (inData.parentRef && inData.parentRef.sdId === checkEnt.sdId) {
+        rtnVal = true;
+      }
+    } else if (searchEnt.sdItems) {
+      const checksdId = searchEnt.sdItems[0],
+          foundItem = (checksdId) ? find(checkEnt.itemRefs, {sdId: checksdId}) : undefined;
+      if (foundItem) {
+        rtnVal = Boolean(!isUndefined(inData.getDataKey(foundItem.sdKey)));
+      }
+    } else {
+      rtnVal = true;
+    }
+
+    return rtnVal
   }
 
   private modifyInJson(inJI: SdJsonJI | DescriptionJI): SdJsonJI {
@@ -214,15 +275,16 @@ export class SdJson implements IJsonSdj{
       throw new Error("[SDJ] Input JSON is not an object;");
     } else {
       descOrJson = <SdJsonJI | DescriptionJI>inJI;
-      if (has(descOrJson, "data") || (!has(descOrJson, "items") && !has(descOrJson, "graph"))) {
+      if (!has(descOrJson, "items") && !has(descOrJson, "graph") && has(descOrJson, "description")) {
         rtnJson = <SdJsonJI>descOrJson;
-        if (!isArray(rtnJson.data)) {
+        if (!rtnJson.data || !isArray(rtnJson.data)) {
           rtnJson = cloneDeep(rtnJson);
           rtnJson.data = [];
         }
-      } else {
+      } else if (!inJI.data && inJI.sdInfo && has(descOrJson, "items") && has(descOrJson, "graph")) {
+        descJI = <DescriptionJI>descOrJson;
+        descJI.sdInfo = checkResetInfo(inJI.sdInfo);
         try {
-          descJI = <DescriptionJI>descOrJson;
           this._host.verifyJIbyType(descJI, ESDJ_CLASS.DESCRIPTION, true);
           this._host.checkClassInst(descJI, ESDJ_CLASS.DESCRIPTION, false);
           rtnJson = {
@@ -232,9 +294,11 @@ export class SdJson implements IJsonSdj{
             data: []
           };
         } catch (e) {
-          // Doesn't have data but isn't a description, will still send through std error process
-          rtnJson = <SdJsonJI>inJI;
+          throw new Error(`[SDJ] Improper Description :${e}`);
         }
+      } else {
+        // don't know what it is - send through std error
+        rtnJson = <SdJsonJI>inJI;
       }
     }
 

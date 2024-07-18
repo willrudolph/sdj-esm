@@ -1,0 +1,216 @@
+{
+  "$id": "http://willrudolph.com/schemas/sdj-schema.json",
+  "description": {
+    "sdInfo": {
+      "created": 1701390090598,
+      "modified": 1701390090598,
+      "name": "simple-lex",
+      "uniqId": "3rh28R-Qlbx4-i6Xy-gqB03Ac"
+    },
+    "lexicons": ["simple"],
+    "graph": [],
+    "items": [],
+    "lang": "en"
+  },
+  "sdInfo": {
+    "created": 1701390090598,
+    "modified": 1701390090598,
+    "name": "simpleLexicon",
+    "uniqId": "3rh28R-Qlbx4-i6Xy-gq103MA"
+  },
+  "data": [{
+      "sdId": 2,
+      "sdKey": "home",
+      "routeTitle": "Home",
+      "compClassName": "HomeComponent",
+      "sdChildren": [
+        {
+          "sdId": 1,
+          "sdKey": "home_comp1",
+          "compClassName": "SubHomeComp",
+          "sdChildren": [
+            {
+              "sdId": 3,
+              "sdKey": "article1",
+              "title": "Article 1"
+            },
+            {
+              "sdId": 3,
+              "sdKey": "article2",
+              "title": "Article 2"
+            },
+            {
+              "sdId": 3,
+              "sdKey": "article3",
+              "title": "Article 3"
+            }
+          ]
+        },
+        {
+          "sdId": 1,
+          "sdKey": "home_page2",
+          "compClassName": "SubHomeComp",
+          "sdChildren": [
+            {
+              "sdId": 3,
+              "sdKey": "article1",
+              "title": "Article 1"
+            },
+            {
+              "sdId": 3,
+              "sdKey": "article2",
+              "title": "Article 2"
+            },
+            {
+              "sdId": 3,
+              "sdKey": "article3",
+              "title": "Article 3"
+            }
+          ]
+        },
+        {
+          "sdId": 2,
+          "sdKey": "home_page3",
+          "compClassName": "SubHomeComp",
+          "sdChildren": [
+            {
+              "sdId": 3,
+              "sdKey": "article1",
+              "title": "Article 1"
+            },
+            {
+              "sdId": 3,
+              "sdKey": "article2",
+              "title": "Article 2"
+            },
+            {
+              "sdId": 3,
+              "sdKey": "article3",
+              "title": "Article 3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sdId": 2,
+      "sdKey": "projects",
+      "routeTitle": "Projects",
+      "compClassName": "HomeComponent",
+      "sdChildren": [
+        {
+          "sdId": 2,
+          "sdKey": "alpha_project",
+          "routeTitle": "Alpha Project",
+          "compClassName": "SubHomeComp",
+          "sdChildren": [
+            {
+              "sdId": 3,
+              "sdKey": "article1",
+              "title": "Article 1"
+            },
+            {
+              "sdId": 3,
+              "sdKey": "article2",
+              "title": "Article 2"
+            },
+            {
+              "sdId": 3,
+              "sdKey": "article3",
+              "title": "Article 3"
+            }
+          ]
+        },
+        {
+          "sdId": 2,
+          "sdKey": "beta_project",
+          "compClassName": "SubHomeComp",
+          "routeTitle": "Beta Project",
+          "sdChildren": [
+            {
+              "sdId": 3,
+              "sdKey": "article1",
+              "title": "Article 1"
+            },
+            {
+              "sdId": 3,
+              "sdKey": "article2",
+              "title": "Article 2"
+            },
+            {
+              "sdId": 3,
+              "sdKey": "article3",
+              "title": "Article 3"
+            }
+          ]
+        },
+        {
+          "sdId": 2,
+          "sdKey": "gamma_project",
+          "compClassName": "SubHomeComp",
+          "sdChildren": [
+            {
+              "sdId": 3,
+              "sdKey": "article1",
+              "title": "Article 1"
+            },
+            {
+              "sdId": 3,
+              "sdKey": "article2",
+              "title": "Article 2"
+            },
+            {
+              "sdId": 3,
+              "sdKey": "article3",
+              "title": "Article 3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sdId": 2,
+      "sdKey": "resume",
+      "routeTitle": "Resume",
+      "compClassName": "HomeComponent",
+      "sdChildren": [{
+        "sdId": 3,
+        "sdKey": "article1",
+        "title": "Article 1"
+      },
+      {
+        "sdId": 3,
+        "sdKey": "article2",
+        "title": "Article 2"
+      },
+      {
+        "sdId": 3,
+        "sdKey": "article3",
+        "title": "Article 3"
+      }
+    ]
+    },
+    {
+      "sdId": 2,
+      "sdKey": "contact",
+      "routeTitle": "Contact",
+      "compClassName": "HomeComponent",
+      "sdChildren": [{
+        "sdId": 1,
+        "compClassName": "ContactSubComponent",
+        "sdKey": "article1",
+        "title": "Article 1"
+        },
+        {
+          "sdId": 3,
+          "sdKey": "article2",
+          "title": "Article 2"
+        },
+        {
+          "sdId": 3,
+          "sdKey": "article3",
+          "title": "Article 3"
+        }
+      ]
+    }]
+}

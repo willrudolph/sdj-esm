@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.json",
+  "include": ["local.run.ts", "../src/**/*.ts"],
+  "exclude": ["../dist", "../test", "../local"],
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "../local",
+  }
+}

@@ -28,6 +28,7 @@ import {cloneJI} from "../util/func.std.js";
  */
 
 export class SdjData implements CoreSD, IDataSdj {
+  $sdIndex = 0;
 
   private _sdChildren: IDataSdj[] | undefined;
   private _parentRef: IDataSdj | undefined;
@@ -35,7 +36,6 @@ export class SdjData implements CoreSD, IDataSdj {
   private _entity: IEntitySdj;
   private _sdId: number; // corresponds to assigned entityRef sdId
   private _sdKey: string; // data path id
-  private _sdIndex = 0; //
   private _depth: number = 0; //
   private _sdInfo?: Info;
 
@@ -62,13 +62,6 @@ export class SdjData implements CoreSD, IDataSdj {
 
   get sdId() {
     return this._sdId;
-  }
-
-  get sdIndex() {
-    return this._sdIndex;
-  }
-  set sdIndex(index: number) {
-    this._sdIndex = index;
   }
   get data() {
     return this._data;
@@ -102,10 +95,6 @@ export class SdjData implements CoreSD, IDataSdj {
         this._entity.description.host.checkClassInst(inParent, ESDJ_CLASS.DATA, true);
         this._parentRef = inParent;
         this._depth = inParent.depth + 1;
-        // assumes sequence insertion for now
-        if (this._sdIndex === -1) {
-          this._sdIndex = (inParent.sdChildren) ? inParent.sdChildren.length : -1;
-        }
       } else {
         // allows assignment with entity but no parent
       }
@@ -164,7 +153,7 @@ export class SdjData implements CoreSD, IDataSdj {
         curIdx = this._sdChildren.length + 1;
       }
       sdData.parentRef = this;
-      sdData.sdIndex = curIdx;
+      (<SdjData>sdData).$sdIndex = curIdx;
       this._sdChildren.push(sdData);
     }
   }
@@ -179,7 +168,7 @@ export class SdjData implements CoreSD, IDataSdj {
     let rtnIData: IDataSdj | undefined;
 
     if (isNumber(optChildRef) && optChildRef !== -1) {
-      rtnIData = find(this._sdChildren, {sdIndex: <number>optChildRef});
+      rtnIData = <IDataSdj | undefined>find(this._sdChildren, {sdIndex: <number>optChildRef});
     } else if (isString(optChildRef)) {
       rtnIData = find(this._sdChildren, {sdKey: optChildRef});
     } else if (isObject(optChildRef)) {

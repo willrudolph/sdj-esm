@@ -1,6 +1,6 @@
-import {SdjDescription, SdjHost, SdjData, SdjEntity} from "../../dist/index.js";
+import {SdjData, SdjDescription, SdjEntity, SdjHost} from "../../dist/index.js";
 import blankDesc from "../json/desc.only.json";
-import {expect, test, afterEach, beforeEach, describe} from "@jest/globals";
+import {afterEach, beforeEach, describe, expect, test} from "@jest/globals";
 
 
 const emptyEnt = {

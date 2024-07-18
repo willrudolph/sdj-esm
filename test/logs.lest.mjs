@@ -1,5 +1,5 @@
-import {SdjHost, ESDJ_LOG} from "../dist/index.js";
-import {expect, test, afterEach, beforeEach, describe} from "@jest/globals";
+import {ESDJ_LOG, SdjHost} from "../dist/index.js";
+import {afterEach, describe, expect, test} from "@jest/globals";
 
 // This file is renamed (to log.lest.js) in the repository for its propensity for throwing console log statements
 //

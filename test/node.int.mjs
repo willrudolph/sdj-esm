@@ -1,20 +1,11 @@
-import {
-  ESDJ_LOG,
-  SdjHost,
-  SdJson, validIntArray,
-} from "../dist/index.js";
+import {ESDJ_LOG, SdjHost, SdJson,} from "../dist/index.js";
 import {isEqual} from "lodash-es";
 import testA from "./json/sdj/test-file-a.json" assert {type: "json"};
-
+import testB from "./json/sdj/test-file-b.json" assert {type: "json"};
 
 const hostSdj = SdjHost.getISdjHost({options:{logMode: ESDJ_LOG.DEV}});
-const classDesA = new SdJson(testA);
+const aJson = new SdJson(testA);
+const bJson = new SdJson(testB);
 
-const dataOut = classDesA.genJI().data;
-const orgData = testA.data;
-
-const reallyEQJson = isEqual(classDesA.genJI(), testA);
-const reallyEQDesc = isEqual(classDesA.description.genJI(), testA.description);
-const reallyEQData = isEqual(classDesA.genJI().data, testA.data);
-const reallyEQInfo = isEqual(classDesA.sdInfo, testA.sdInfo);
+const isEq = isEqual(bJson.genJI(), bJson);
 console.log();

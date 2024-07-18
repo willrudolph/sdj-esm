@@ -16,17 +16,17 @@ import {restrictCoreSD, restrictLimiter, restrictToAllowedKeys} from "../core/re
 import {ESDJ_CLASS, ESDJ_LIMIT} from "../core/enums.js";
 import type {IDescriptionSdj, IEntitySdj, IItemSdj} from "./class-interfaces.js";
 import {
-  each,
-  isBoolean,
-  isEmpty,
-  isEqual,
-  isFunction,
-  isNull,
-  isNumber,
-  isObject,
-  isString,
-  isUndefined,
-  uniq
+    each,
+    isBoolean,
+    isEmpty,
+    isEqual,
+    isFunction,
+    isNull,
+    isNumber,
+    isObject,
+    isString,
+    isUndefined,
+    uniq
 } from "lodash-es";
 import {validIntArray, validSDKey} from "../core/sdj-types.js";
 
@@ -70,7 +70,7 @@ export class SdjEntity implements CoreSD, IEntitySdj {
 
   extendIds?: number[];
   childIds?: number[];
-  sdProps?: SdKeyProps;
+  readonly sdProps?: SdKeyProps;
   limiter: ESDJ_LIMIT;
 
   private _description: IDescriptionSdj | undefined;
@@ -243,7 +243,7 @@ export class SdjEntity implements CoreSD, IEntitySdj {
 
       each(this._description.getItemsByEntity(this.sdId), (sdItem: IItemSdj) => {
         this._itemRefs![sdItem.sdKey] = sdItem;
-      })
+      });
     }
   }
 

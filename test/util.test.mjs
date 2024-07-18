@@ -1,5 +1,5 @@
-import {UUID, newInfoJI} from "../dist/index.js";
-import {expect, test, afterEach, beforeEach, describe} from "@jest/globals";
+import {newInfoJI, UUID} from "../dist/index.js";
+import {describe, expect, test} from "@jest/globals";
 import {isString} from "lodash-es";
 
 

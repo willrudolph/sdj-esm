@@ -1,6 +1,6 @@
-import {SdjHost, SdjDescription} from "../../dist/index.js";
+import {SdjDescription, SdjHost} from "../../dist/index.js";
 import {cloneDeep} from "lodash-es";
-import {expect, test, afterEach, beforeEach, describe} from "@jest/globals";
+import {afterEach, beforeEach, describe, expect, test} from "@jest/globals";
 
 const emptyDesc = {
   "sdInfo": {
@@ -9,8 +9,18 @@ const emptyDesc = {
     "name": "descName",
     "uniqId": "3rh28R-Qlbx4-i6Xy-gqB03MA"
   },
-  "graph": [],
-  "items": []
+  "graph": [
+    {
+      "sdId": 1,
+      "sdKey": "dataEnt",
+      "sdItems": [2]
+    }
+  ],
+  "items": [{
+    "sdId": 2,
+    "sdKey": "someValue",
+    "type": "strd"
+  }]
 };
 
 const blankDesc = {

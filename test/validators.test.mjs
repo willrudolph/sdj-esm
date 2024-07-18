@@ -1,5 +1,5 @@
 import {describe, expect, test} from "@jest/globals";
-import {newInfoJI, UUID, validIntArray, isArrayWithLen} from "../dist/index.js";
+import {isArrayWithLen, validIntArray} from "../dist/index.js";
 
 describe("Validator Tests", () => {
     test("validIntArray tests", () => {

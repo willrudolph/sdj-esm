@@ -7,16 +7,8 @@
       "name": "descName",
       "uniqId": "3rh28R-Qlbx4-i6Xy-gqB03MA"
     },
-    "graph": [{
-      "sdId": 1,
-      "sdKey": "dataEnt",
-      "sdItems": [2]
-    }],
-    "items": [{
-      "sdId": 2,
-      "sdKey": "someValue",
-      "type": "strd"
-    }],
+    "graph": [],
+    "items": [],
     "lang": "en"
   },
   "sdInfo": {

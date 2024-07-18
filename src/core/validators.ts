@@ -7,14 +7,14 @@
  */
 
 import type {
-  ExtAllowedValue,
-  FuncJsonValueValidator,
-  FuncValueInput,
-  FuncValueOutput,
-  Info,
-  IValidator,
-  JIValue,
-  ValidatorJI
+    ExtAllowedValue,
+    FuncJsonValueValidator,
+    FuncValueInput,
+    FuncValueOutput,
+    Info,
+    IValidator,
+    JIValue,
+    ValidatorJI
 } from "./interfaces.js";
 import {UUID, validTypeLexName} from "../util/func.std.js";
 import type {__ANY, IntAny} from "./internal.js";

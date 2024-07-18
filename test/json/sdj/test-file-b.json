@@ -12,28 +12,31 @@
         "sdId": 1,
         "sdKey": "alpha",
         "sdItems": [2, 3],
-        "parentIds": [0]
+        "childIds": [1, 2, 3],
+        "parentIds": [0, 1, 2, 3]
       },
       {
         "sdId": 2,
         "sdKey": "beta",
-        "extendIds": [2],
-        "sdItems": [2, 3],
-        "parentIds": [0]
+        "extendIds": [1],
+        "sdItems": [4],
+        "childIds": [1, 2, 3],
+        "parentIds": [0, 1, 2, 3]
       },
       {
         "sdId": 3,
         "sdKey": "gamma",
         "extendIds": [2],
+        "childIds": [1, 2, 3],
         "sdItems": [5],
-        "parentIds": [0]
+        "parentIds": [0, 1, 2, 3]
       }
     ],
     "items": [
       {
         "sdId": 2,
         "sdKey": "title",
-        "type": "string",
+        "type": "strd",
         "limiter": "req"
       },
       {
@@ -44,7 +47,8 @@
       {
         "sdId": 4,
         "sdKey": "counts",
-        "type": "numb"
+        "type": "numb",
+        "limiter": "req"
       },
       {
         "sdId": 5,
@@ -57,7 +61,7 @@
   "sdInfo": {
     "created": 1701390090598,
     "modified": 1701390090598,
-    "name": "testFileA",
+    "name": "testFileB",
     "uniqId": "3rh28R-Qlbx4-i6Xy-gq103MA"
   },
   "data": [{
@@ -69,21 +73,25 @@
         "sdId": 2,
         "sdKey": "home_page1",
         "title": "Home Page 1",
+        "counts": 34,
         "sdChildren": [
           {
             "sdId": 3,
             "sdKey": "article1",
-            "title": "Article 1"
+            "title": "Article 1",
+            "counts": 43
           },
           {
             "sdId": 3,
             "sdKey": "article2",
-            "title": "Article 2"
+            "title": "Article 2",
+            "counts": 43
           },
           {
             "sdId": 3,
             "sdKey": "article3",
-            "title": "Article 3"
+            "title": "Article 3",
+            "counts": 43
           }
         ]
       },
@@ -91,21 +99,25 @@
         "sdId": 2,
         "sdKey": "home_page2",
         "title": "Home Page 2",
+        "counts": 22,
         "sdChildren": [
           {
             "sdId": 3,
             "sdKey": "article1",
-            "title": "Article 1"
+            "title": "Article 1",
+            "counts": 43
           },
           {
             "sdId": 3,
             "sdKey": "article2",
-            "title": "Article 2"
+            "title": "Article 2",
+            "counts": 43
           },
           {
             "sdId": 3,
             "sdKey": "article3",
-            "title": "Article 3"
+            "title": "Article 3",
+            "counts": 43
           }
         ]
       },
@@ -113,21 +125,25 @@
         "sdId": 2,
         "sdKey": "home_page3",
         "title": "Home Page 3",
+        "counts": 43,
         "sdChildren": [
           {
             "sdId": 3,
             "sdKey": "article1",
-            "title": "Article 1"
+            "title": "Article 1",
+            "counts": 43
           },
           {
             "sdId": 3,
             "sdKey": "article2",
-            "title": "Article 2"
+            "title": "Article 2",
+            "counts": 43
           },
           {
             "sdId": 3,
             "sdKey": "article3",
-            "title": "Article 3"
+            "title": "Article 3",
+            "counts": 43
           }
         ]
       }

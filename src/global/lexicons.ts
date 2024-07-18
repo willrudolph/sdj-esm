@@ -7,16 +7,16 @@
  */
 
 import type {
-  CoreSD,
-  DescriptionJI,
-  EntityJI,
-  GenKeyStore,
-  ILexicon,
-  ItemJI,
-  IValidator,
-  SdJsonJI,
-  SdKeyProps,
-  ValidatorJI
+    CoreSD,
+    DescriptionJI,
+    EntityJI,
+    GenKeyStore,
+    ILexicon,
+    ItemJI,
+    IValidator,
+    SdJsonJI,
+    SdKeyProps,
+    ValidatorJI
 } from "../core/interfaces.js";
 import {validTypeLexName} from "../util/func.std.js";
 import {autoFailValidator, SdjValidator,} from "../core/validators.js";
@@ -24,21 +24,21 @@ import {getRegEx} from "../util/regex.js";
 import {verifySequenceKeys, verifyUniqKeys} from "../util/verify.js";
 import {BASE_ITEMS_JI} from "../core/statics.js";
 import {
-  assign,
-  clone,
-  cloneDeep,
-  each,
-  find,
-  findIndex,
-  has,
-  isArray,
-  isEmpty,
-  isFunction,
-  isObject,
-  isString,
-  isUndefined,
-  map,
-  uniq
+    assign,
+    clone,
+    cloneDeep,
+    each,
+    find,
+    findIndex,
+    has,
+    isArray,
+    isEmpty,
+    isFunction,
+    isObject,
+    isString,
+    isUndefined,
+    map,
+    uniq
 } from "lodash-es";
 import {genSdKeyProps} from "../util/immutables.js";
 import {restrictToAllowedKeys} from "../core/restrict.js";
@@ -224,13 +224,16 @@ export class SdjLexicons implements ISdjLexicons {
   validateGraph(inDescJI: DescriptionJI): boolean {
     const rtnVal = true;
     this.defaultValidateGraphItems(inDescJI);
-    this.checkExtendsRecursion(inDescJI.graph);
+    if (inDescJI.graph) {
+      this.checkExtendsRecursion(inDescJI.graph);
+    }
+
     // Note, at this point the in library lexicon presence and proper data in DescriptionJI has matched
     // Otherwise an error would already have been thrown
-    if (inDescJI.lexicons) {
+    if (inDescJI.lexicons && inDescJI.graph) {
       each(inDescJI.lexicons, (lexName: string) => {
         const iLexicon = this.findLexicon(lexName);
-        if (iLexicon.graphVerify && !iLexicon.graphVerify(inDescJI.graph)) {
+        if (iLexicon.graphVerify && inDescJI.graph && !iLexicon.graphVerify(inDescJI.graph)) {
           throw new Error(`[SDJ] graphVerify fail with Lexicon '${lexName}'`);
         }
       });
@@ -283,7 +286,7 @@ export class SdjLexicons implements ISdjLexicons {
 
   private defaultValidateGraphItems(inDescJI: DescriptionJI) {
     const graph: EntityJI[] = (inDescJI.graph) ? inDescJI.graph : [],
-      items: ItemJI[] = inDescJI.items,
+      items: ItemJI[] = inDescJI.items || [],
       definedEnts: number[] = [0],
       definedItems: number[] = map(items, "sdId");
     let mentionedEnts: number[] = [],
@@ -510,7 +513,7 @@ export class SdjLexicons implements ISdjLexicons {
       throw new Error("[SDJ] Lexicon missing name;");
     }
     if (!validTypeLexName(lexicon.name)) {
-      throw new Error("[SDJ] Lexicon name invalid /^[a-z]{1}[a-z0-9_-]{2,14}[/a-z0-9]{1}/;");
+      throw new Error(`[SDJ] Lexicon name '${lexicon.name}' invalid /^[a-z]{1}[a-z0-9_-]{2,14}[/a-z0-9]{1}/;`);
     }
 
     if (!lexicon.validators && !lexicon.items && !lexicon.entities && !lexicon.graphVerify && !lexicon.dataVerify) {

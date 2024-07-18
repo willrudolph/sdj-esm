@@ -44,8 +44,8 @@ export declare interface IEntitySdj {
     sdItems: number[];
     extendIds?: number[];
     childIds?: number[];
-    sdProps?: SdKeyProps;
-    limiter: ESDJ_LIMIT;
+    readonly sdProps?: SdKeyProps;
+    readonly limiter: ESDJ_LIMIT;
     readonly childRefs: NumKeyStore<IEntitySdj>;
     readonly itemRefs: GenKeyStore<IItemSdj>;
     validStruct: (dataSdj: DataJI, parentRef: DataJI | undefined, strict?:boolean) => boolean;
@@ -60,12 +60,11 @@ export declare interface IDataSdj {
     sdId: number;
     parentRef: IDataSdj | undefined;
     sdChildren: IDataSdj[] | undefined;
-    hasChildren: boolean;
+    readonly hasChildren: boolean;
     readonly data: DataJI;
     readonly depth: number;
     readonly path: string;
     readonly entity: IEntitySdj | undefined;
-    sdIndex: number;
     getChild:(childRef: string | number | IDataSdj) => IDataSdj | undefined;
     addChild: (childRef: IDataSdj) => void;
     isValid: () => boolean;

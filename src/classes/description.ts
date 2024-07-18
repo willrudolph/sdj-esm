@@ -16,7 +16,6 @@ import type {
   ItemJI,
   ItemSearch,
   IValidator,
-  JIValue,
   SdKeyProps
 } from "../core/interfaces.js";
 import {checkResetInfo, verifyUniqKeys,} from "../util/verify.js";
@@ -30,7 +29,20 @@ import {SdjEntity} from "./entity.js";
 import {SdjItem} from "./item.js";
 import type {ISdjHost, SdjJITypes} from "../global/global-interfaces.js";
 import {ESDJ_CLASS} from "../core/enums.js";
-import {clone, cloneDeep, each, find, isArray, isEqual, isFunction, isNumber, isString, times, uniq} from "lodash-es";
+import {
+  clone,
+  cloneDeep,
+  each,
+  find,
+  isArray,
+  isEqual,
+  isFunction,
+  isNumber,
+  isString,
+  isUndefined,
+  times,
+  uniq
+} from "lodash-es";
 import {validIntArray} from "../core/sdj-types.js";
 
 // eslint-disable-next-line no-use-before-define
@@ -67,6 +79,8 @@ export class SdjDescription implements IDescriptionSdj {
       inDescJI.sdInfo.name += "_alt";
       inDescJI.sdInfo.uniqId = UUID.GetEmpty();
       this._host.gLog(`Existing description conflict creating Description now renamed '${inDescJI.sdInfo.name}'`, 3);
+    } else if (!inDescJI.lexicons && inDescJI.graph.length === 0 && inDescJI.items.length === 0) {
+      this._host.gLog(`Description '${inDescJI.sdInfo.name}' contains no items, graph, or lexicon reference`, 3);
     }
     inDescJI.sdInfo = checkResetInfo(inDescJI.sdInfo);
     inDescJI = this._host.fullDescription(inDescJI);
@@ -99,6 +113,10 @@ export class SdjDescription implements IDescriptionSdj {
   get host(): ISdjHost {
     return this._host;
   }
+  // Both of these searches are single prop search term/item cut-out searches
+  // Adding multiple terms will be ignored after the first is found in below order
+  // Unclear if multiple item search should be supported
+  // but that could be achieved by external methodologies
   searchEntities(searchEnt: EntitySearch): IEntitySdj[] {
     const rtnAry: IEntitySdj[] = [],
         pushIfAvail = (ent: IEntitySdj | undefined) => {
@@ -129,7 +147,7 @@ export class SdjDescription implements IDescriptionSdj {
       } else if (validIntArray(searchEnt.extendIds)) {
         each(searchEnt.extendIds, (sdId: number)=> {
           each(this._graph, (entRef: IEntitySdj) => {
-            if (entRef.extendIds?.indexOf(sdId) !== -1) {
+            if (entRef.extendIds && entRef.extendIds.indexOf(sdId) !== -1) {
               rtnAry.push(entRef);
             }
           });
@@ -145,19 +163,32 @@ export class SdjDescription implements IDescriptionSdj {
       } else if (validIntArray(searchEnt.childIds)) {
         each(searchEnt.childIds, (sdId: number)=> {
           each(this._graph, (entRef: IEntitySdj) => {
-            if (entRef.childIds?.indexOf(sdId) !== -1) {
+            if (entRef.sdId === 0) return;
+            if (entRef.childIds && entRef.childIds?.indexOf(sdId) !== -1) {
               rtnAry.push(entRef);
             }
           });
         });
       } else if (searchEnt.sdProps) {
-        each(searchEnt.sdProps, (sdPropVal: JIValue, key: string)=> {
-          each(this._graph, (entRef: IEntitySdj) => {
-            if (sdPropVal && entRef.sdProps && Object.keys(entRef.sdProps).indexOf(key) !== -1){
+        each(this._graph, (entRef: IEntitySdj)=> {
+          if (entRef.sdId === 0) return;
+          if (searchEnt.checkData) {
+            if (entRef.sdProps && isEqual(entRef.sdProps, searchEnt.sdProps)) {
               rtnAry.push(entRef);
             }
-          });
-        });
+          } else {
+            let allValid = true;
+            each(searchEnt.sdProps, (propValue, key) => {
+              if (entRef.sdProps && entRef.sdProps[key] !== propValue) {
+                allValid = false;
+                return false;
+              }
+              return true;
+            });
+            if (allValid) {
+              rtnAry.push(entRef);
+            }
+        }});
       }
     }
     return rtnAry;
@@ -214,14 +245,14 @@ export class SdjDescription implements IDescriptionSdj {
   }
 
   genJI(): DescriptionJI {
-    const itemStart = BASE_ITEMS_JI.length,
-      itemEnd = this._items.length,
-      rtnDescJI: DescriptionJI = {
+    const rtnDescJI: DescriptionJI = {
         sdInfo: genInfoJI(this._sdInfo),
-        items: [],
         graph: [],
+        items: [],
         lang: this.lang
       };
+    let lexEntRefs: EntityJI[] = [],
+        lexItemRefs: ItemJI[] = [];
 
     if (this.dataInfo) {
       rtnDescJI.dataInfo = true;
@@ -229,19 +260,24 @@ export class SdjDescription implements IDescriptionSdj {
 
     if (this._lexicons && this._lexicons.length > 0) {
       rtnDescJI.lexicons = clone(this._lexicons);
+      each(this._lexicons, (lexId) => {
+        const workLex = this._host.lexiconMgr.getByName(lexId);
+        lexEntRefs = (workLex?.entities) ? lexEntRefs.concat(workLex.entities) :lexEntRefs;
+        lexItemRefs = (workLex?.items) ? lexItemRefs.concat(workLex.items) : lexItemRefs;
+      });
     }
 
-    for (let d = itemStart; d < itemEnd; d += 1) {
-      const item: IItemSdj | undefined = this._items[d];
-      if (item) {
-        rtnDescJI.items.push(item.genJI());
-      } else {
-        throw new Error(`[SDJ] Description item config error ${this._sdInfo.name}`);
+    each(this._items, (sdjItem: IItemSdj) => {
+      const itemInLex =  find(lexItemRefs, {sdId: sdjItem.sdId}),
+          itemInBase = find(BASE_ITEMS_JI, {sdId: sdjItem.sdId});
+      if (!itemInLex && !itemInBase) {
+        rtnDescJI.items.push(sdjItem.genJI());
       }
-    }
+    });
 
     each(this._graph, (sdjEnt: IEntitySdj) => {
-      if (sdjEnt.sdId !== 0) {
+      const entInLex =  find(lexEntRefs, {sdId: sdjEnt.sdId});
+      if (sdjEnt.sdId !== 0 && !entInLex) {
         rtnDescJI.graph.push(sdjEnt.genJI());
       }
     });
@@ -290,9 +326,8 @@ export class SdjDescription implements IDescriptionSdj {
   }
 
   private getRefByType<Type>(idOrKey: number | string, type: string): Type | undefined {
-    if (!idOrKey || !isString(idOrKey) || !isNumber(idOrKey)) return undefined;
+    if (isUndefined(idOrKey) || (!isString(idOrKey) && !isNumber(idOrKey))) return undefined;
     const searchGroup = (type === "entity") ? this._graph : this._items;
-
     return (isNumber(idOrKey)) ? <Type>find(searchGroup, {sdId: idOrKey}) : <Type>find(searchGroup, {sdKey: idOrKey});
   }
   private entityItemBuild(inDescJI: DescriptionJI) {

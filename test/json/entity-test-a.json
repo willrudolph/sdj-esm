@@ -1,0 +1,88 @@
+{
+  "$id": "http://willrudolph.com/schemas/sdj-schema.json",
+  "description": {
+    "sdInfo": {
+      "created": 1701390090598,
+      "modified": 1701390090598,
+      "name": "descName",
+      "uniqId": "3rh28R-Qlbx4-i6Xy-gqB03MA"
+    },
+    "graph": [{
+        "sdId": 1,
+        "sdKey": "table",
+        "limiter": "sdj_index",
+        "parentIds": [0],
+        "childIds": [2]
+      },
+      {
+        "sdId": 2,
+        "sdKey": "tableRow",
+        "parentIds": [1],
+        "sdItems": [2, 3]
+      },
+      {
+        "sdId": 3,
+        "sdKey": "otherEnt",
+        "parentIds": [0],
+        "sdItems": [4]
+      }
+    ],
+    "items": [
+      {
+        "sdId": 2,
+        "sdKey": "tableRowValue01",
+        "limiter": "req",
+        "type": "string"
+      },
+      {
+        "sdId": 3,
+        "sdKey": "tableRowValue02",
+        "limiter": "req",
+        "type": "numb"
+      },
+      {
+        "sdId": 4,
+        "sdKey": "firstTable",
+        "type": "sdindex"
+      }
+    ],
+    "lang": "en"
+  },
+  "sdInfo": {
+    "created": 1701390090598,
+    "modified": 1701390090598,
+    "name": "jsonName",
+    "uniqId": "4rh28R-Qlbx4-i6Xy-g3B03MA"
+  },
+  "data": [
+    {
+      "sdKey": "firstTable",
+      "sdId": 1,
+      "subChildren": [
+        {
+          "sdKey": "sdIndex0",
+          "sdId": 2,
+          "tableRowValue01": "sadfasf",
+          "tableRowValue02": 22
+        },
+        {
+          "sdKey": "sdIndex1",
+          "sdId": 2,
+          "tableRowValue01": "sadfasf",
+          "tableRowValue02": 22
+        },
+        {
+          "sdKey": "sdIndex2",
+          "sdId": 2,
+          "tableRowValue01": "sadfasf",
+          "tableRowValue02": 22
+        }
+      ]
+    },
+    {
+      "sdKey": "otherData",
+      "sdId": 3,
+      "firstTable": 0
+    }
+  ]
+}

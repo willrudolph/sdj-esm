@@ -1,8 +1,10 @@
 import {SdjHost, SdJson} from "../dist/index.js";
-import {expect, test, afterEach, beforeEach, describe} from "@jest/globals";
+import {beforeEach, describe, expect, test} from "@jest/globals";
 import angLexStdJson from "./json/sdj/test-min-ang-lex.json";
 import angLexEmpJson from "./json/sdj/test-min-ang-lex-empty.json";
+import simpleLexJson from "./json/sdj/example-simple-lex.json";
 import {cloneDeep} from "lodash-es";
+import {SimpleSdjLexicon} from "./lexicons/simple.lex.js";
 
 let lexicon = {
 	name: "min-ang"
@@ -351,6 +353,41 @@ describe("Lexicon Initial Tests", ()=> {
 
 		let sdjJson = new SdJson(angLexStdJson);
 		expect(sdjJson).toBeTruthy();
+	})
+
+	test("Test 4 lexicons same host",() => {
+		let host;
+
+		host = SdjHost.getISdjHost({lexicons: [new SimpleSdjLexicon(), lexicon]});
+		expect(host).toBeTruthy();
+
+		let sdjJson = new SdJson(angLexEmpJson);
+		expect(sdjJson).toBeTruthy();
+
+		let sdjJson2 = new SdJson(simpleLexJson);
+		expect(sdjJson2).toBeTruthy();
+	})
+
+	test("Test 5 incorrect loaded lex1",() => {
+		let host;
+
+		host = SdjHost.getISdjHost({lexicons: [lexicon]});
+		expect(host).toBeTruthy();
+
+		expect(() => {
+			let sdjJson2 = new SdJson(simpleLexJson);
+		}).toThrowError();
+	})
+
+	test("Test 6 Other incorrect load",() => {
+		let host;
+
+		host = SdjHost.getISdjHost({lexicons: [new SimpleSdjLexicon()]});
+		expect(host).toBeTruthy();
+
+		expect(() => {
+			let sdjJson2 = new SdJson(angLexEmpJson);
+		}).toThrowError();
 	})
 
 });

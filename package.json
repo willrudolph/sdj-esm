@@ -1,6 +1,6 @@
 {
   "name": "sdj-esm",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "SDJ Library",
   "main": "./dist/index.js",
   "import": "./dist/index.js",
@@ -19,6 +19,7 @@
     "build": "npm-run-all compile schema:copy",
     "build:reset": "npm-run-all build:clean compile schema:copy",
     "build:clean": "rd /s /q dist",
+    "build:local": "tsc -p ./node/tsconfig.node.json",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:node": "node test/node.int.mjs",
     "schema:copy": "npm run schema:dir && npm run schema:copy:os || npm run schema:copy:win",

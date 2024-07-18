@@ -5,6 +5,16 @@
     "name": "descName",
     "uniqId": "000000-00000-0000-0000000"
   },
-  "graph": [],
-  "items": []
+  "graph": [
+    {
+      "sdId": 1,
+      "sdKey": "dataEnt",
+      "sdItems": [2]
+    }
+  ],
+  "items": [{
+    "sdId": 2,
+    "sdKey": "someValue",
+    "type": "strd"
+  }]
 }

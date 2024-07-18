@@ -1,7 +1,8 @@
-import {SdjHost, SdjEntity, SdjDescription, SdJson, ESDJ_LIMIT} from "../../dist/index.js";
+import {ESDJ_LIMIT, SdjDescription, SdjEntity, SdjHost, SdJson} from "../../dist/index.js";
 import blankDesc from "../json/desc.only.json";
-import {expect, test, afterEach, beforeEach, describe} from "@jest/globals";
+import {afterEach, beforeEach, describe, expect, test} from "@jest/globals";
 import testa from "../json/entity-test-a.json";
+
 const emptyEnt = {
   "sdId": 3,
   "sdKey": "example",

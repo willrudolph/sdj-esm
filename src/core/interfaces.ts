@@ -30,7 +30,7 @@ export interface JIObject {
   [key: string]: JIValue | undefined;
 }
 export type JIArray = JIValue[] | readonly JIValue[];
-export type JIPrimitive = string | boolean | number | null;
+export type JIPrimitive = string | boolean | number;
 
 export declare type ArrayFlatType = number[] | string[] | boolean[];
 export const SdjLimiterGroup: ESDJ_LIMIT[] = [ESDJ_LIMIT.NONE, ESDJ_LIMIT.REQ,
@@ -78,6 +78,12 @@ export interface CoreSD {
 export interface CoreSDSearch extends JIObject {
   sdId?: number;
   sdKey?: string;
+  // flag to check if content has data
+  checkData?: boolean; // default = false | undefined
+  // Entities, does checks if actual parentIds, childIds, sdItems
+  // is populated - when sdProps is used flag performs an exact match
+  //
+  // Items, checks if data is present, does not work for REQ items
 }
 
 // eslint-disable-next-line no-use-before-define

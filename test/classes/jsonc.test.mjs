@@ -1,9 +1,30 @@
-import {SdjHost, SdjDescription, SdJson} from "../../dist/index.js";
+import {SdjHost, SdJson} from "../../dist/index.js";
 import testA from "../json/sdj/test-file-a.json";
-import {expect, test, afterEach, beforeEach, describe} from "@jest/globals";
+import {afterEach, describe, expect, test} from "@jest/globals";
 import {cloneDeep} from "lodash-es";
+import {SimpleSdjLexicon} from "../lexicons/simple.lex.js"
 
-const emptyDesc = {
+const accurateDesc = {
+  "sdInfo": {
+    "created": 1701390090598,
+    "modified": 1701390090598,
+    "name": "descName",
+    "uniqId": "3rh28R-Qlbx4-i6Xy-gqB03MA"
+  },
+  "graph": [{
+      "sdId": 1,
+      "sdKey": "someEnt",
+      "sdItems": [2]
+    }],
+  "items": [{
+    "sdId": 2,
+    "sdKey":"exampleItem",
+    "type": "numb"
+  }]
+}
+
+
+const emptyDescItemOnly = {
   "sdInfo": {
     "created": 1701390090598,
     "modified": 1701390090598,
@@ -11,10 +32,52 @@ const emptyDesc = {
     "uniqId": "3rh28R-Qlbx4-i6Xy-gqB03MA"
   },
   "graph": [],
-  "items": []
+  "items": [{
+    "sdId": 2,
+    "sdKey":"exampleItem",
+    "type": "numb"
+  }]
 };
 
-const blankDesc = {
+const emptyDescEntityOnly = {
+  "sdInfo": {
+    "created": 1701390090598,
+    "modified": 1701390090598,
+    "name": "descName",
+    "uniqId": "3rh28R-Qlbx4-i6Xy-gqB03MA"
+  },
+  "graph": [
+    {
+      "sdId": 1,
+      "sdKey": "someEnt"
+    }
+  ],
+  "items":[]
+};
+
+const blankWLexicon = {
+  "sdInfo": {
+    "created": 0,
+    "modified": 0,
+    "name": "descName",
+    "uniqId": "000000-00000-0000-0000000"
+  },
+  "lexicons":["simple"],
+  "graph": [],
+  "items": []
+}
+
+const badDescA = {
+  "sdInfo": {
+    "created": 0,
+    "modified": 0,
+    "name": "descName",
+  },
+  "graph": [],
+  "items": []
+}
+
+const badDescB = {
   "sdInfo": {
     "created": 0,
     "modified": 0,
@@ -22,9 +85,29 @@ const blankDesc = {
     "uniqId": "000000-00000-0000-0000000"
   },
   "graph": [],
-  "items": []
 }
-let badDescA = {};
+
+let badDescC = {
+  "sdInfo": {
+    "created": 0,
+    "modified": 0,
+    "name": "descName",
+    "uniqId": "000000-00000-0000-0000000"
+  },
+  "items": [],
+};
+
+let badDescD = {
+  "sdInfo": {
+    "created": 0,
+    "modified": 0,
+    "name": "descName",
+    "uniqId": "000000-00000-0000-0000000"
+  },
+  "lexicons": ["dont", "know"],
+  "items": [],
+  "graph": [],
+};
 
 describe("Json Class Base Testing", () => {
   let hostSdj;
@@ -72,6 +155,50 @@ describe("Json Class Base Testing", () => {
 
   });
 
+  test("Json Create with Good/Bad Descriptions", () => {
+    const jsonInst = new SdJson(emptyDescItemOnly);
+    expect(jsonInst).toBeTruthy();
+
+    const secondItem = new SdJson(emptyDescEntityOnly);
+    expect(secondItem).toBeTruthy();
+
+    // Due to no Lexicon
+    expect(() => {
+      const test = new SdJson(blankWLexicon);
+    }).toThrowError();
+
+    expect(() => {
+      const test = new SdJson(badDescA);
+    }).toThrowError()
+
+    expect(() => {
+      const test = new SdJson(badDescB);
+    }).toThrowError()
+
+    expect(() => {
+      const test = new SdJson(badDescC);
+    }).toThrowError()
+
+    expect(() => {
+      const test = new SdJson(badDescD);
+    }).toThrowError()
+
+  });
+
+  test("Blank Description w/Lexicon ", () => {
+    let testLex = new SimpleSdjLexicon()
+    hostSdj = SdjHost.getISdjHost({lexicons: [testLex]});
+    const test = new SdJson(blankWLexicon);
+    expect(test).toBeTruthy();
+
+    expect(test.description.items.length).toBe(4);
+    expect(test.description.graph.length).toBe(4);
+    let newJI = test.genJI();
+    expect(newJI.description.items.length).toBe(0);
+    expect(newJI.description.graph.length).toBe(0);
+    expect(newJI.description.lexicons).toMatchObject(blankWLexicon.lexicons);
+  });
+
   test("Json create check w/Desc Only and Without data", () => {
     const tempTestDataClone = cloneDeep(testA);
     delete tempTestDataClone.data;
@@ -82,9 +209,9 @@ describe("Json Class Base Testing", () => {
     expect(jsonInst).toBeTruthy();
     expect(jsonInst.genJI().data).toMatchObject([]);
 
-    const jsInst2 = new SdJson(emptyDesc);
+    const jsInst2 = new SdJson(accurateDesc);
     expect(jsInst2).toBeTruthy();
-    expect(jsInst2.description.genJI()).toMatchObject(emptyDesc);
+    expect(jsInst2.description.genJI()).toMatchObject(accurateDesc);
   });
 
 });

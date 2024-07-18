@@ -175,7 +175,7 @@ export class SdjHost implements ISdjHost {
 
     if (strict) {
       if (!rtnVal) {
-        throw new Error(`[SDJ] verifyJI '${jiType}' failed: ${ogError};`);
+        throw new Error(`[SDJ] verifyJI '${jiType}' failed: ${ogError}`);
       }
     }
     return rtnVal;
