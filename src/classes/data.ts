@@ -6,7 +6,7 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import type {CoreSD, DataJI, DataJIValues, DataKeyValue, ExtAllowedValue, Info} from "../core/interfaces.js";
+import type {CoreSD, DataJI, DataKeyValue, ExtAllowedValue, Info} from "../core/interfaces.js";
 import {genInfoJI, genKeyDataJI, newInfoJI} from "../util/immutables.js";
 
 import {verifyUniqKeys} from "../util/verify.js";
@@ -15,7 +15,7 @@ import {ESDJ_CLASS, ESDJ_LIMIT, ESDJ_LIMIT_REQ} from "../core/enums.js";
 import {isInfo} from "../core/validators.js";
 import type {IDataSdj, IEntitySdj, IItemSdj} from "./class-interfaces.js";
 import {each, find, isArray, isFunction, isNull, isNumber, isObject, isString, isUndefined} from "lodash-es";
-import {cloneJI} from "../util/func.std.js";
+import {cloneJI, getFromCoreArray} from "../util/func.std.js";
 
 /*
   SdjData / DataJI
@@ -29,6 +29,10 @@ import {cloneJI} from "../util/func.std.js";
 
 export class SdjData implements CoreSD, IDataSdj {
   $sdIndex = 0;
+  private _sdId: number; // corresponds to assigned entityRef sdId
+  private _sdKey: string; // data path id
+  private _depth: number = 0;
+  private _sdInfo?: Info;
 
   // eslint-disable-next-line no-use-before-define
   private _parentRef: SdjData | undefined;
@@ -37,10 +41,6 @@ export class SdjData implements CoreSD, IDataSdj {
 
   private _data: DataJI; // internal mutable central reference
   private _entity: IEntitySdj;
-  private _sdId: number; // corresponds to assigned entityRef sdId
-  private _sdKey: string; // data path id
-  private _depth: number = 0; //
-  private _sdInfo?: Info;
 
   constructor(inData: DataJI, entityRef: IEntitySdj, parentRef: SdjData | undefined) {
     this._entity = this.confirmEntity(entityRef);
@@ -49,7 +49,7 @@ export class SdjData implements CoreSD, IDataSdj {
     SdjData.VerifyJI(workData);
     if (workData.sdInfo && isInfo(workData.sdInfo, true)) {
       this._sdInfo = genInfoJI(workData.sdInfo);
-    } else if ((!workData.sdInfo || !isInfo(workData.sdInfo, true)) && this._entity?.description.dataInfo) {
+    } else if ((!workData.sdInfo || !isInfo(workData.sdInfo, true)) && this._entity.dataInfo) {
       this._sdInfo = newInfoJI(workData.sdKey, true);
     }
     this._data = genKeyDataJI(workData);
@@ -141,6 +141,7 @@ export class SdjData implements CoreSD, IDataSdj {
   }
   setDataKey(dataKey: string, value: ExtAllowedValue) {
     let itemRef: IItemSdj | undefined = this._entity.itemRefs[dataKey],
+      changed = false,
       inValue: DataKeyValue;
     if (itemRef) {
       inValue = itemRef.validator.input(value);
@@ -149,10 +150,15 @@ export class SdjData implements CoreSD, IDataSdj {
           throw new Error(`[SDJ] item '${itemRef.sdKey}' is required cannot be set to undefined;`);
         }
         delete this._data[dataKey];
+        changed = true;
       } else if (itemRef.validator.valid(inValue)){
         this._data[dataKey] = inValue;
+        changed = true;
       } else {
         throw new Error(`[SDJ] item '${itemRef.sdKey}' does not validate on input;`);
+      }
+      if (changed && this._parentRef && !this._entity.dataInfo) {
+        this._parentRef.$modifySdInfo();
       }
     }
   }
@@ -185,12 +191,21 @@ export class SdjData implements CoreSD, IDataSdj {
     }
   }
 
-  $removeChild(childRef: string | number | IDataSdj): IDataSdj | undefined {
+  $removeChild(childRef: string | number): IDataSdj | undefined {
     return (!this._sdChildren) ? undefined : this.getChild(childRef);
+    // TODO: Remove child routines?
   }
 
+  $modifySdInfo() {
+    if (this._entity.dataInfo && this._sdInfo) {
+      this._sdInfo.modified = Date.now();
+    }
+    if (this._parentRef) {
+      this._parentRef.$modifySdInfo();
+    }
+  }
 
-  getChild(optChildRef: string | number | IDataSdj): IDataSdj | undefined {
+  getChild(optChildRef: string | number): IDataSdj | undefined {
     if (!this._sdChildren) {
       return undefined; 
     }
@@ -199,9 +214,7 @@ export class SdjData implements CoreSD, IDataSdj {
     if (isNumber(optChildRef) && optChildRef !== -1) {
       rtnIData = <IDataSdj | undefined>find(this._sdChildren, {sdIndex: <number>optChildRef});
     } else if (isString(optChildRef)) {
-      rtnIData = find(this._sdChildren, {sdKey: optChildRef});
-    } else if (isObject(optChildRef)) {
-      rtnIData = find(this._sdChildren, {sdKey: (<IDataSdj>optChildRef).sdKey});
+      rtnIData = <IDataSdj>getFromCoreArray(optChildRef, this._sdChildren);
     }
 
     return rtnIData;

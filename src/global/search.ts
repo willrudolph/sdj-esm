@@ -101,6 +101,7 @@ export class SdjSearch implements ISdjSearch {
   // Unclear if multiple item search should be supported
   // but that could be achieved by external methodologies
   searchEntities(sdjDescript: IDescriptionSdj, searchEnt: EntitySearch): IEntitySdj[] {
+    // TODO: Condense/split function
     const asDescSdj: SdjDescription = <SdjDescription>sdjDescript,
       rtnAry: IEntitySdj[] = [],
       pushIfAvail = (ent: IEntitySdj | undefined) => {
@@ -346,6 +347,7 @@ export class SdjSearch implements ISdjSearch {
     return rtnErrStrs;
   }
   private findStructErrors(entity: IEntitySdj, dataJI: DataJI, parentData: DataJI | undefined): string[] {
+    // TODO: Condense split function
     if (!entity.description) {
       return [entity.sdKey + ",description,not available"]; 
     }
@@ -364,7 +366,6 @@ export class SdjSearch implements ISdjSearch {
     } else if (parentEnt && entity.parentIds.indexOf(parentEnt.sdId) === -1) {
       rtnErrs.push(entity.sdKey + ",entity does not allow parent," + parentEnt.sdKey);
     } else if (parentEnt && (!parentEnt.childIds || parentEnt.childIds.indexOf(entity.sdId) === -1)) {
-      console.log(parentEnt.childIds + ":" + parentEnt + ":" + entity.sdId);
       rtnErrs.push(parentEnt.sdKey + ",parent does not allow child," + entity.sdKey);
     }
 

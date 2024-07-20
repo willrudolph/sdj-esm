@@ -22,6 +22,7 @@ export interface IntObject {
     [key: string]: IntAny;
 }
 
+export declare type numArrayOrUnDef = number[] | undefined;
 export declare type IntFunction = (...args: IntAny[]) => IntAny;
 export declare type FuncSymIntAny = (singleArg: IntAny) => IntAny;
 export declare type FuncAnyIsValid = (singleArg: IntAny) => boolean;

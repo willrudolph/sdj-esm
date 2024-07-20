@@ -156,7 +156,7 @@ export class SdjLexicons implements ISdjLexicons {
 
       // sequential entity check; uniforms the system to require all mentioned entities be present + numbered
       // If fails means that lexicon and description are conflicting. ie lex1Ents + lex2Ents + descEnts
-      // have holes which could mean errors and should be corrected outside of the library (ie creation/editor etc.)
+      // have holes which could mean errors and should be corrected outside the library (ie creation/editor etc.)
     } else if (!verifySequenceKeys(rtnGraph)) {
       throw new Error("[SDJ] Full entity graph cannot have missing ids != length;");
     }
@@ -334,7 +334,8 @@ export class SdjLexicons implements ISdjLexicons {
             throw new Error(`[SDJ] extendId ${refEnt.sdKey} creates a circular reference`);
           }
           if (extendChains[entId]) {
-            rtnAry.push(...extendChains[entId]!);
+            const theChain: number[] = (extendChains[entId]) ? <number[]>extendChains[entId] : [];
+            rtnAry.push(...theChain);
           } else if (refEnt.extendIds) {
             rtnAry.push(...getExtended(rootExtId, refEnt.extendIds));
           }
@@ -348,7 +349,7 @@ export class SdjLexicons implements ISdjLexicons {
       if (entJI.extendIds) {
         extendChains[entJI.sdId] = [];
 
-        const refExtChain = extendChains[entJI.sdId]!;
+        const refExtChain = (extendChains[entJI.sdId]) ? <number[]>extendChains[entJI.sdId] : [];
         refExtChain.push(...entJI.extendIds);
         refExtChain.push(...getExtended(entJI.sdId, entJI.extendIds));
 

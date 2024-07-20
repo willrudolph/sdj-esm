@@ -108,6 +108,7 @@ export interface ItemJI extends CoreSD, JIObject {
 }
 
 export interface EntityCore {
+  dataInfo?: boolean;
   sdItems?: number[]; // Item ids associated with Entity, excluding extended
   extendIds?: number[]; // Entity sdId(s) from which the entity extends
   parentIds?: number[]; // Entity sdId(s) which this item can be a child of
@@ -137,7 +138,6 @@ export interface DescriptionJI extends JIObject {
   sdInfo: Info;
   items: ItemJI[];
   graph: EntityJI[];
-  dataInfo?: boolean;
   lexicons?: string[];
   lang?: string;
 }

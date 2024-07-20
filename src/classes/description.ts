@@ -14,7 +14,8 @@ import type {
   FuncStrNumVoid,
   Info,
   ItemJI,
-  ItemSearch, SdKeyProps
+  ItemSearch,
+  SdKeyProps
 } from "../core/interfaces.js";
 import {checkResetInfo, verifyUniqKeys,} from "../util/verify.js";
 import {genEntityJI, genInfoJI, genItemJI} from "../util/immutables.js";
@@ -33,7 +34,6 @@ export class SdjDescription implements IDescriptionSdj {
   lang: string;
 
   log: FuncStrNumVoid;
-  private _dataInfo: boolean;
   private _lexicons: string[] = [];
   private _graph: IEntitySdj[] = [];
   private _sdInfo: Info;
@@ -67,7 +67,6 @@ export class SdjDescription implements IDescriptionSdj {
     inDescJI = this._host.fullDescription(inDescJI);
 
     this._sdInfo = inDescJI.sdInfo;
-    this._dataInfo = inDescJI.dataInfo || false;
     this.lang = inDescJI.lang || "en";
     this.log = this._host.getLogFunc("Desc:" + this._sdInfo.name);
     this.log("created");
@@ -92,12 +91,6 @@ export class SdjDescription implements IDescriptionSdj {
     return this._sdInfo.name;
   }
 
-  get dataInfo(): boolean {
-    return this._dataInfo;
-  }
-  set $dataInfo(changeVal: boolean) {
-    this._dataInfo = changeVal;
-  }
   get sdInfo(): Info {
     return this._sdInfo;
   }
@@ -131,6 +124,11 @@ export class SdjDescription implements IDescriptionSdj {
     return rtnAry;
   }
   calcSdKeyProps(entity: IEntitySdj): SdKeyProps {
+    // confirm entity name and sdId, and get from graph instead
+    const localEnt = (entity && this._graph[entity.sdId]) ? this._graph[entity.sdId] : undefined;
+    if (!localEnt || entity.sdKey !== localEnt.sdKey || !isEqual(localEnt.sdProps, entity.sdProps)) {
+      throw new Error(`[SDJ] entity '${entity.sdKey}' does match description '${this._sdInfo.name}'`);
+    }
     return this._host.lexiconMgr.calcSdKeyProps(entity, this._graph);
   }
   getItem (itemKeyNum: number | string): IItemSdj | undefined {
@@ -158,10 +156,6 @@ export class SdjDescription implements IDescriptionSdj {
     };
     let lexEntRefs: EntityJI[] = [],
       lexItemRefs: ItemJI[] = [];
-
-    if (this.dataInfo) {
-      rtnDescJI.dataInfo = true;
-    }
 
     if (this._lexicons && this._lexicons.length > 0) {
       rtnDescJI.lexicons = clone(this._lexicons);
@@ -320,7 +314,7 @@ export class SdjDescription implements IDescriptionSdj {
     }
 
     restrictToAllowedKeys("DescriptionJI:" + inDesc.sdInfo.name,
-      ["sdInfo", "items", "graph", "dataInfo", "lexicons", "lang"], inDesc);
+      ["sdInfo", "items", "graph", "lexicons", "lang"], inDesc);
   }
   static IsEqual(alpha: SdjDescription | DescriptionJI, beta: SdjDescription | DescriptionJI) {
     const betaJI = (beta instanceof SdjDescription) ? beta.genJI() : beta,

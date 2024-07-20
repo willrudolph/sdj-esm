@@ -34,6 +34,7 @@ class IntSingletonLock {
 }
 
 export class SdjHost implements ISdjHost {
+  // eslint-disable-next-line no-use-before-define
   private static _instance?: SdjHost;
 
   gLog: FuncStrNumVoid;

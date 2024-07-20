@@ -127,7 +127,17 @@ export class UUID {
     return isString(checkVal) ? regEx.test(<string>checkVal) : false;
   }
 }
-
+export const getIdFromKey = (sdKey: string, coreArray: CoreSD[]): number | undefined => {
+  let rtnVal: number | undefined;
+  for (let i = 0; i < coreArray.length; i += 1) {
+    const testItem: CoreSD | undefined = coreArray[i];
+    if (testItem && testItem.sdKey === sdKey) {
+      rtnVal = testItem.sdId;
+      break;
+    }
+  }
+  return rtnVal;
+};
 
 export const getFromCoreArray = (idOrKey: number | string, coreArray: CoreSD[]): CoreSD | undefined => {
   let entId = isString(idOrKey) ? getIdFromKey(<string>idOrKey, coreArray) : idOrKey;
@@ -137,20 +147,9 @@ export const getFromCoreArray = (idOrKey: number | string, coreArray: CoreSD[]):
 export const getKeyFromId = (sdId: number, coreArray: CoreSD[]): string | undefined => {
   let rtnVal: string | undefined;
   for (let i = 0; i < coreArray.length; i += 1) {
-    if (coreArray[i]!.sdId === sdId) {
-      rtnVal = coreArray[i]!.sdKey;
-      break;
-    }
-  }
-  return rtnVal;
-};
-
-
-export const getIdFromKey = (sdKey: string, coreArray: CoreSD[]): number | undefined => {
-  let rtnVal: number | undefined;
-  for (let i = 0; i < coreArray.length; i += 1) {
-    if (coreArray[i]!.sdKey === sdKey) {
-      rtnVal = coreArray[i]!.sdId;
+    const testItem: CoreSD | undefined = coreArray[i];
+    if (testItem && testItem.sdId === sdId) {
+      rtnVal = testItem.sdKey;
       break;
     }
   }

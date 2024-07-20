@@ -29,6 +29,7 @@ import {
   uniq
 } from "lodash-es";
 import {validIntArray, validSDKey} from "../core/sdj-types.js";
+import type {numArrayOrUnDef} from "../core/internal.js";
 
 
 /*
@@ -66,8 +67,10 @@ export class SdjEntity implements CoreSD, IEntitySdj {
 
   private _parentIds: number[];
   private _sdItems: number[];
+
   private _extendIds: number[] | undefined;
   private _childIds: number[] | undefined;
+  private _dataInfo: boolean | undefined;
 
   private _limiter: ESDJ_LIMIT;
 
@@ -102,6 +105,9 @@ export class SdjEntity implements CoreSD, IEntitySdj {
       this._sdItems = uniq([0, 1].concat(inEntItems));
     } else {
       this._sdItems = [0, 1];
+    }
+    if (inEnt.dataInfo) {
+      this._dataInfo = inEnt.dataInfo;
     }
 
     if (inEnt.sdProps) {
@@ -152,6 +158,10 @@ export class SdjEntity implements CoreSD, IEntitySdj {
 
   get limiter(): ESDJ_LIMIT {
     return this._limiter;
+  }
+
+  get dataInfo(): boolean | undefined{
+    return this._dataInfo;
   }
 
   set description(inDesc: IDescriptionSdj | undefined) {
@@ -274,33 +284,7 @@ export class SdjEntity implements CoreSD, IEntitySdj {
     } else if (inEnt.sdId === 0 && inEnt.sdKey === GRAPH_ID) {
       return;
     }
-
-    if (isArrayWithLen(inEnt.childIds)) {
-      if (!validIntArray(inEnt.childIds)) {
-        throw new TypeError(`[SDJ] Entity '${inEnt.sdKey}' invalid childIds array;`);
-      } else if (inEnt.childIds && inEnt.childIds.indexOf(0) !== -1) {
-        throw new Error(`[SDJ] Entity: '${inEnt.sdKey}' GraphZero[0] is not allowed to be a child of an entity;`);
-      }
-    }
-    if (isArrayWithLen(inEnt.extendIds)) {
-      if (!validIntArray(inEnt.extendIds)) {
-        throw new TypeError(`[SDJ] Entity '${inEnt.sdKey}' invalid extendIds array;`);
-      } else if (inEnt.extendIds && inEnt.extendIds.indexOf(0) !== -1) {
-        throw new Error(`[SDJ] Entity '${inEnt.sdKey}' cannot extend graphZero [0];`);
-      } else if (inEnt.extendIds && inEnt.extendIds.indexOf(inEnt.sdId) !== -1) {
-        throw new Error(`[SDJ] Entity: '${inEnt.sdKey}' cannot extend itself;`);
-      }
-    }
-
-    if (isArrayWithLen(inEnt.parentIds) && !validIntArray(inEnt.parentIds)) {
-      throw new TypeError(`[SDJ] Entity '${inEnt.sdKey}' invalid parentIds array;`);
-    }
-
-    if (isArrayWithLen(inEnt.sdItems) && !validIntArray(inEnt.sdItems)) {
-      throw new TypeError(`[SDJ] Entity '${inEnt.sdKey}' invalid itemIds array;`);
-    } else if (!inEnt.sdItems && !inEnt.extendIds && !inEnt.childIds) {
-      throw new Error(`[SDJ] Entity '${inEnt.sdKey}' has no items, does not extend, & has no children;`);
-    }
+    SdjEntity.checkArrays(inEnt);
 
     if (inEnt.sdProps && !isObject(inEnt.sdProps)) {
       throw new TypeError(`[SDJ] Entity '${inEnt.sdKey}' invalid keyValues;`);
@@ -323,7 +307,45 @@ export class SdjEntity implements CoreSD, IEntitySdj {
         throw new TypeError("[SDJ] sdIndexed Entities are required to have children;");
       }
     }
+    if (inEnt.dataInfo && !isBoolean(inEnt.dataInfo)) {
+      throw new TypeError("[SDJ] Entity dataInfo value boolean only if present;");
+    }
+
     restrictToAllowedKeys("EntityJI: "+ inEnt.sdKey,
-      ["sdKey", "sdId", "sdItems", "extendIds", "parentIds", "childIds", "limiter", "sdProps"], inEnt);
+      ["sdKey", "sdId", "sdItems", "extendIds", "parentIds", "childIds", "limiter", "sdProps", "dataInfo"], inEnt);
+  }
+  
+  private static checkArrays(inEnt: EntityJI) {
+    const nameRefs = ["childIds", "parentIds", "extendIds", "childIds", "sdItems"],
+      valueRefArray: numArrayOrUnDef[] = [inEnt.childIds, inEnt.parentIds, inEnt.extendIds, inEnt.childIds, inEnt.sdItems];
+
+    each(nameRefs, (keyId, idx) => {
+      const valueRef = valueRefArray[idx];
+      if (isArrayWithLen(valueRef)) {
+        if (!validIntArray(valueRef)) {
+          throw new TypeError(`[SDJ] Entity '${inEnt.sdKey}' invalid '${keyId}' array;`);
+        } else {
+          switch(keyId) {
+          case "childIds":
+            if (valueRef && valueRef.indexOf(0) !== -1) {
+              throw new Error(`[SDJ] Entity: '${inEnt.sdKey}' GraphZero[0] is not allowed to be a child of an entity;`);
+            }
+            break;
+          case "extendIds":
+            if (valueRef && valueRef.indexOf(0) !== -1) {
+              throw new Error(`[SDJ] Entity '${inEnt.sdKey}' cannot extend graphZero [0];`);
+            } else if (valueRef && valueRef.indexOf(inEnt.sdId) !== -1) {
+              throw new Error(`[SDJ] Entity: '${inEnt.sdKey}' cannot extend itself;`);
+            }
+            break;
+          default:
+              // no default;
+          }
+        }
+      }
+      if (keyId === "sdItems" && !inEnt.sdItems && !inEnt.extendIds && !inEnt.childIds) {
+        throw new Error(`[SDJ] Entity '${inEnt.sdKey}' has no items, does not extend, & has no children;`);
+      }
+    });
   }
 }

@@ -112,9 +112,6 @@ export function genDescriptionJI(descJI: DescriptionJI) {
     items: [],
     graph: [],
   };
-  if (descJI.dataInfo) {
-    rtnJI.dataInfo = descJI.dataInfo;
-  }
 
   if (descJI.lang) {
     rtnJI.lang = descJI.lang;

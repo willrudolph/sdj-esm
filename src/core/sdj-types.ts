@@ -28,6 +28,32 @@ export const validBoolean: FuncJsonValueValidator = (checkVal: JIValue): boolean
   }
   return rtnValid;
 };
+
+export const getStrValidLenFunc = (maxLength: number): FuncJsonValueValidator =>
+  (checkVal: JIValue): boolean => Boolean(isString(checkVal) && (<string>checkVal).length < maxLength);
+
+export const getValidNumberFunc = (preciseType: string, posOnly: boolean = false): FuncJsonValueValidator =>
+  (checkVal: JIValue): boolean => {
+    let rtnValid = false;
+    if (isNumber(checkVal)) {
+      rtnValid = true;
+      switch (preciseType) {
+      case "float":
+        rtnValid = Number.isFinite(checkVal);
+        break;
+      case "int":
+        rtnValid = Number.isFinite(checkVal) && Math.floor(checkVal) === checkVal;
+        break;
+      default:
+            // 'none' is also default
+      }
+    }
+    if (rtnValid && posOnly) {
+      rtnValid = (<number>checkVal >= 0);
+    }
+    return rtnValid;
+  };
+
 export const getValidObjFunc = (objType: string, itemType: string): FuncJsonValueValidator =>
   (checkVal: JIValue): boolean => {
     let rtnValid = false,
@@ -89,35 +115,6 @@ export const validIntArray = (checkValue: number[] | undefined): boolean => {
   const rtnBool = (checkValue && isArray(checkValue) && checkValue.length > 0);
   return (rtnBool) ? getValidObjFunc("array", "int-pos")(<number[]>checkValue) : false;
 };
-
-
-export const getValidNumberFunc = (preciseType: string, posOnly: boolean = false): FuncJsonValueValidator =>
-  (checkVal: JIValue): boolean => {
-    let rtnValid = false;
-    if (isNumber(checkVal)) {
-      rtnValid = true;
-      switch (preciseType) {
-      case "float":
-        rtnValid = Number.isFinite(checkVal);
-        break;
-      case "int":
-        rtnValid = Number.isFinite(checkVal) && Math.floor(checkVal) === checkVal;
-        break;
-      default:
-                // 'none' is also default
-      }
-    }
-    if (rtnValid && posOnly) {
-      rtnValid = (<number>checkVal >= 0);
-    }
-    return rtnValid;
-  };
-
-export const getStrValidLenFunc = (maxLength: number): FuncJsonValueValidator =>
-  (checkVal: JIValue): boolean => Boolean(isString(checkVal) && (<string>checkVal).length < maxLength);
-
-
-
 
 // Fixed name of Std SDJ Items; with all common "alternate spellings" referenced that will be checked and forced
 // to common/standardized (first value)

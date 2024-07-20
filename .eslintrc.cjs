@@ -5,9 +5,15 @@ module.exports = {
 		"node": true
 	},
 	"ignorePatterns": [
+		".eslintrc.cjs",
 		"jest.config.js",
 		"/dist/*",
 		"dist/*",
+		"/local/*",
+		"local/*",
+		"node/*",
+		"/node/*",
+		"/test/lexicons",
 		"/node_modules/*",
 		"node_modules/*",
 		"./node_modules/**",
@@ -129,8 +135,7 @@ module.exports = {
 		"arrow-body-style": ["warn", "as-needed", { "requireReturnForObjectLiteral": true }],
 		"arrow-spacing": "error",
 		"no-empty-function": "off",
-		// too many false positives for enum, therefore off
-		"no-shadow": "off",
+		"no-shadow": "error",
 		"no-unused-expressions": ["error"],
 		"radix": "error",
 		"no-extra-semi": "error",

@@ -98,7 +98,11 @@ export class SdJson implements IJsonSdj{
     let quickLocRef: SdjData[] = [];
     each(inJson.data, (topDataJI: DataJI) => {
       const entRef = this._description.getEntity(topDataJI.sdId);
-      entRef!.validStruct(topDataJI, undefined, true);
+      if (entRef) {
+        entRef.validStruct(topDataJI, undefined, true);
+      } else {
+        throw new Error(`[SDJ] data error '${topDataJI.sdKey}';`);
+      }
     });
     each(inJson.data, (topDataJI: DataJI) => {
       const entRef = this._description.getEntity(topDataJI.sdId);
@@ -111,7 +115,6 @@ export class SdJson implements IJsonSdj{
       } catch(err) {
         throw new Error(`[SDJ] SdJson Data create/valid err:${err};`);
       }
-
       if (topDataJI.sdChildren) {
         this.createSubData(topDataJI.sdChildren, topBuildData);
       }
@@ -126,7 +129,11 @@ export class SdJson implements IJsonSdj{
   private createSubData(childrenJI: DataJI[], parentRef: SdjData) {
     each(childrenJI, (childRef) => {
       const entRef = this._description.getEntity(childRef.sdId);
-      entRef!.validStruct(childRef, parentRef.genJI(false), true);
+      if (entRef) {
+        entRef.validStruct(childRef, parentRef.genJI(false), true);
+      } else {
+        throw new Error(`[SDJ] data error '${childRef.sdKey}';`);
+      }
     });
     const quickLocRef: SdjData[] = [];
 

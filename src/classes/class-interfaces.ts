@@ -26,7 +26,6 @@ import type {
 import type {ISdjHost, SdjJITypes} from "../global/global-interfaces.js";
 import type {ESDJ_CLASS, ESDJ_LIMIT} from "../core/enums.js";
 
-
 export declare interface IItemSdj {
     readonly sdId: number;
     readonly sdKey: string;
@@ -34,7 +33,7 @@ export declare interface IItemSdj {
     readonly limiter: ESDJ_LIMIT;
     readonly validator: IValidator;
     // eslint-disable-next-line no-use-before-define
-    // readonly description: IDescriptionSdj;
+    readonly description: IDescriptionSdj | undefined;
     genJI: () => ItemJI;
 }
 export declare interface IEntitySdj {
@@ -45,6 +44,7 @@ export declare interface IEntitySdj {
     readonly extendIds: number[] | undefined;
     readonly childIds: number[] | undefined;
     readonly sdProps: SdKeyProps | undefined;
+    readonly dataInfo: boolean | undefined;
     readonly limiter: ESDJ_LIMIT;
     readonly childRefs: NumKeyStore<IEntitySdj>;
     readonly itemRefs: GenKeyStore<IItemSdj>;
@@ -66,17 +66,14 @@ export declare interface IDataSdj {
     readonly path: string;
     readonly entity: IEntitySdj | undefined;
     update: (replaceData: DataJI) => boolean;
-    getChild:(childRef: string | number | IDataSdj) => IDataSdj | undefined;
-    // addChild: (childRef: IDataSdj) => void;
+    getChild:(childRef: string | number) => IDataSdj | undefined;
     isValid: () => boolean;
-    // removeChild: (childRef: string | number | IDataSdj) => IDataSdj | undefined;
     getDataKey: (dataKey: string) => ExtAllowedValue;
     setDataKey: (dataKey: string, value: ExtAllowedValue) => void;
     genJI: (withChildren: boolean) => DataJI;
 }
 
 export declare interface IDescriptionSdj {
-    readonly dataInfo: boolean;
     readonly name: string;
     readonly sdInfo: Info;
     readonly host: ISdjHost;
@@ -90,7 +87,7 @@ export declare interface IDescriptionSdj {
     genJI: () => DescriptionJI;
     calcSdKeyProps: (entity: IEntitySdj) => SdKeyProps;
     verifyJIbyType: (ji: SdjJITypes, jiType: ESDJ_CLASS, strict?: boolean) => boolean;
-    // Sub items of description use this log access point
+    // Sub items of description use this log access point, as log is labeled by descript name
     log: FuncStrNumVoid
 }
 
