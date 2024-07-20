@@ -53,18 +53,18 @@ export declare type ESDJ_LOG = typeof ESDJ_LOG[keyof typeof ESDJ_LOG];
 
 export const ESDJ_LIMIT = <const>{
   NONE: "none",
-  REQ: "req",                 // Required Item or Entity
-  REQ_HIDE: "req_user_hide",  // Required Item or Entity(multiple of Entity cannot be hidden), hide option
-  SYS_REQ: "sdj_sys",         // Used only by sdKey, sdId // TODO: Check/confirm
-  KEY_IDX: "sdj_index",       // Entity subChildren have maintained index, and named key
-  ONE_NONE: "one_none",       // Entity, only one or none
-  REQ_ONE: "at_least_one",    // Entity, require at least one
+  REQ: "req", // Required Item or Entity
+  REQ_HIDE: "req_user_hide", // Required Item or Entity(multiple of Entity cannot be hidden), hide option
+  SYS_REQ: "sdj_sys", // Used only by sdKey, sdId // TODO: Check/confirm
+  KEY_IDX: "sdj_index", // Entity subChildren have maintained index, and named key
+  ONE_NONE: "one_none", // Entity, only one or none
+  REQ_ONE: "at_least_one", // Entity, require at least one
 };
 
 export const ESDJ_LIMIT_REQ: ESDJ_LIMIT[] = [
-    ESDJ_LIMIT.REQ,
-    ESDJ_LIMIT.SYS_REQ,
-    ESDJ_LIMIT.REQ_HIDE
+  ESDJ_LIMIT.REQ,
+  ESDJ_LIMIT.SYS_REQ,
+  ESDJ_LIMIT.REQ_HIDE
 ];
 
 export declare type ESDJ_LIMIT = typeof ESDJ_LIMIT[keyof typeof ESDJ_LIMIT];

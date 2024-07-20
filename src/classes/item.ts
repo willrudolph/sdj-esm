@@ -30,12 +30,12 @@ import {rtnSdjItemName} from "../core/sdj-types.js";
  */
 
 export class SdjItem implements IItemSdj {
-  sdId: number;
-  sdKey: string;
-  type: string;
-  limiter: ESDJ_LIMIT;
-  validator: IValidator = autoFailValidator;
+  private readonly _sdId: number;
+  private readonly _sdKey: string;
+  private readonly _limiter: ESDJ_LIMIT;
 
+  private _type: string;
+  private _validator: IValidator = autoFailValidator;
   private _description?: IDescriptionSdj;
 
   constructor(inItem: ItemJI, description: IDescriptionSdj | undefined) {
@@ -45,13 +45,31 @@ export class SdjItem implements IItemSdj {
     }
     SdjItem.VerifyJI(inItem);
 
-    this.sdId = inItem.sdId;
-    this.sdKey = inItem.sdKey;
-    this.type = inItem.type;
-    this.limiter = inItem.limiter || ESDJ_LIMIT.NONE;
+    this._sdId = inItem.sdId;
+    this._sdKey = inItem.sdKey;
+    this._type = inItem.type;
+    this._limiter = inItem.limiter || ESDJ_LIMIT.NONE;
     if (this._description) {
       this.initDescription();
     }
+  }
+
+  get sdId() {
+    return this._sdId;
+  }
+
+  get sdKey() {
+    return this._sdKey;
+  }
+
+  get type() {
+    return this._type;
+  }
+  get limiter(): ESDJ_LIMIT {
+    return this._limiter;
+  }
+  get validator(): IValidator {
+    return this._validator;
   }
 
   get description(): IDescriptionSdj {
@@ -67,7 +85,7 @@ export class SdjItem implements IItemSdj {
         if (inDesc.host?.checkClassInst && isFunction(inDesc.host.checkClassInst)) {
           inDesc.host.checkClassInst(inDesc, ESDJ_CLASS.DESCRIPTION, true);
           this._description = inDesc;
-          if (this.type) {
+          if (this._type) {
             this.initDescription();
           }
         } else {
@@ -83,22 +101,26 @@ export class SdjItem implements IItemSdj {
     const rtnItemJI: ItemJI = {
       sdId: this.sdId,
       sdKey: this.sdKey,
-      type: this.type
+      type: this._type
     };
 
-    if (this.limiter !== ESDJ_LIMIT.NONE) {
-      rtnItemJI.limiter = this.limiter;
+    if (this._limiter !== ESDJ_LIMIT.NONE) {
+      rtnItemJI.limiter = this._limiter;
     }
     
     return rtnItemJI;
   }
   private initDescription() {
-    const replaceName: string | undefined = rtnSdjItemName(this.type);
-    if (replaceName) {
-      this._description!.log(`Item '${this.sdKey}' has type '${this.type}' which has been replaced as too similar to default '${replaceName}';`);
-      this.type = replaceName;
+    const replaceName: string | undefined = rtnSdjItemName(this._type);
+    if (this._description) {
+      if (replaceName) {
+        this._description.log(`Item '${this.sdKey}' has type ` +
+            `'${this._type}' which has been replaced as too similar to default '${replaceName}';`);
+        this._type = replaceName;
+      }
+      this._validator = this._description.host.lexiconMgr.getValidator(this._type);
     }
-    this.validator = this._description!.getValidator(this.type);
+
   }
 
   static VerifyJI(inItem: ItemJI) {

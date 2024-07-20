@@ -18,7 +18,7 @@ export function cloneJI<JIType>(inJson: JIType): JIType {
 }
 
 export const hasSdChildren = (item: IntObject): boolean =>
-    (has(item, "sdChildren") && Array.isArray(item["sdChildren"]) && item["sdChildren"].length > 0);
+  (has(item, "sdChildren") && Array.isArray(item["sdChildren"]) && item["sdChildren"].length > 0);
 
 
 
@@ -128,6 +128,34 @@ export class UUID {
   }
 }
 
+
+export const getFromCoreArray = (idOrKey: number | string, coreArray: CoreSD[]): CoreSD | undefined => {
+  let entId = isString(idOrKey) ? getIdFromKey(<string>idOrKey, coreArray) : idOrKey;
+  return (entId) ? coreArray[entId] : undefined;
+};
+
+export const getKeyFromId = (sdId: number, coreArray: CoreSD[]): string | undefined => {
+  let rtnVal: string | undefined;
+  for (let i = 0; i < coreArray.length; i += 1) {
+    if (coreArray[i]!.sdId === sdId) {
+      rtnVal = coreArray[i]!.sdKey;
+      break;
+    }
+  }
+  return rtnVal;
+};
+
+
+export const getIdFromKey = (sdKey: string, coreArray: CoreSD[]): number | undefined => {
+  let rtnVal: number | undefined;
+  for (let i = 0; i < coreArray.length; i += 1) {
+    if (coreArray[i]!.sdKey === sdKey) {
+      rtnVal = coreArray[i]!.sdId;
+      break;
+    }
+  }
+  return rtnVal;
+};
 
 export const mutableObjUpdate = (mutableRef: IntObject, newObject: IntObject) => {
   for (const item in mutableRef) {

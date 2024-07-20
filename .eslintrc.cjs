@@ -83,7 +83,7 @@ module.exports = {
 		"no-unmodified-loop-condition": "error",
 		"no-useless-concat": "error",
 		"no-useless-return": "error",
-		"no-use-before-define": ["error", { "functions": true, "classes": true, "variables": true}],
+		"no-use-before-define": ["error", { "functions": false, "classes": false, "variables": true}],
 		"array-bracket-spacing": ["error", "never"],
 		"block-spacing": "error",
 		"comma-style": ["error", "last"],

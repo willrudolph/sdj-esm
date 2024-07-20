@@ -14,14 +14,12 @@ import type {
   FuncStrNumVoid,
   Info,
   ItemJI,
-  ItemSearch,
-  IValidator,
-  SdKeyProps
+  ItemSearch, SdKeyProps
 } from "../core/interfaces.js";
 import {checkResetInfo, verifyUniqKeys,} from "../util/verify.js";
 import {genEntityJI, genInfoJI, genItemJI} from "../util/immutables.js";
 import {BASE_ITEMS_JI, GRAPH_ZERO, SYS_RESERVED} from "../core/statics.js";
-import {cloneJI, UUID} from "../util/func.std.js";
+import {cloneJI, getFromCoreArray, UUID} from "../util/func.std.js";
 import {isArrayWithLen, isInfo, validLexiconArray} from "../core/validators.js";
 import {restrictToAllowedKeys} from "../core/restrict.js";
 import type {IDescriptionSdj, IEntitySdj, IItemSdj} from "./class-interfaces.js";
@@ -29,30 +27,13 @@ import {SdjEntity} from "./entity.js";
 import {SdjItem} from "./item.js";
 import type {ISdjHost, SdjJITypes} from "../global/global-interfaces.js";
 import {ESDJ_CLASS} from "../core/enums.js";
-import {
-  clone,
-  cloneDeep,
-  each,
-  find,
-  isArray,
-  isEqual,
-  isFunction,
-  isNumber,
-  isString,
-  isUndefined,
-  times,
-  uniq
-} from "lodash-es";
-import {validIntArray} from "../core/sdj-types.js";
-
-// eslint-disable-next-line no-use-before-define
-export declare type DescriptSearchResult = IDescriptionSdj[];
+import {clone, cloneDeep, each, find, isArray, isEqual, isFunction, times, uniq} from "lodash-es";
 
 export class SdjDescription implements IDescriptionSdj {
-  dataInfo: boolean;
   lang: string;
 
   log: FuncStrNumVoid;
+  private _dataInfo: boolean;
   private _lexicons: string[] = [];
   private _graph: IEntitySdj[] = [];
   private _sdInfo: Info;
@@ -86,7 +67,7 @@ export class SdjDescription implements IDescriptionSdj {
     inDescJI = this._host.fullDescription(inDescJI);
 
     this._sdInfo = inDescJI.sdInfo;
-    this.dataInfo = inDescJI.dataInfo || false;
+    this._dataInfo = inDescJI.dataInfo || false;
     this.lang = inDescJI.lang || "en";
     this.log = this._host.getLogFunc("Desc:" + this._sdInfo.name);
     this.log("created");
@@ -94,165 +75,89 @@ export class SdjDescription implements IDescriptionSdj {
     this._host.addDescription(this);
   }
 
-  get graph(): IEntitySdj[] {
-    return <IEntitySdj[]>this._graph;
+  get $graph(): SdjEntity[] {
+    return <SdjEntity[]>this._graph;
+  }
+  // Editor modifying graphs/items can have full access not gotten via the IDescriptionSdj
+  set $graph(inGraph: SdjEntity[]) {
+    this._graph = inGraph;
+    // rebuild
   }
 
+  get $items(): SdjItem[] {
+    return <SdjItem[]>this._items;
+    // rebuild
+  }
   get name(): string {
     return this._sdInfo.name;
   }
 
+  get dataInfo(): boolean {
+    return this._dataInfo;
+  }
+  set $dataInfo(changeVal: boolean) {
+    this._dataInfo = changeVal;
+  }
   get sdInfo(): Info {
     return this._sdInfo;
-  }
-
-  get items(): IItemSdj[] {
-    return this._items;
   }
 
   get host(): ISdjHost {
     return this._host;
   }
-  // Both of these searches are single prop search term/item cut-out searches
-  // Adding multiple terms will be ignored after the first is found in below order
-  // Unclear if multiple item search should be supported
-  // but that could be achieved by external methodologies
+
   searchEntities(searchEnt: EntitySearch): IEntitySdj[] {
-    const rtnAry: IEntitySdj[] = [],
-        pushIfAvail = (ent: IEntitySdj | undefined) => {
-          if (ent) {
-            rtnAry.push(ent);
-          }
-        };
-
-    if (searchEnt) {
-      if (searchEnt.sdId) {
-        pushIfAvail(<IEntitySdj>this.getRefByType(searchEnt.sdId, "entity"));
-      } else if (searchEnt.sdKey) {
-        pushIfAvail(<IEntitySdj>this.getRefByType(searchEnt.sdKey, "entity"));
-      } else if (searchEnt.limiter) {
-        each(this._graph, (sdjEnt: IEntitySdj) => {
-          if (sdjEnt.limiter === searchEnt.limiter) {
-            rtnAry.push(sdjEnt);
-          }
-        })
-      } else if (validIntArray(searchEnt.parentIds)) {
-        each(searchEnt.parentIds, (sdId: number)=> {
-          each(this._graph, (entRef: IEntitySdj) => {
-            if (entRef.parentIds.indexOf(sdId) !== -1) {
-              rtnAry.push(entRef);
-            }
-          });
-        });
-      } else if (validIntArray(searchEnt.extendIds)) {
-        each(searchEnt.extendIds, (sdId: number)=> {
-          each(this._graph, (entRef: IEntitySdj) => {
-            if (entRef.extendIds && entRef.extendIds.indexOf(sdId) !== -1) {
-              rtnAry.push(entRef);
-            }
-          });
-        });
-      } else if (validIntArray(searchEnt.sdItems)) {
-        each(searchEnt.sdItems, (sdId: number)=> {
-          each(this._graph, (entRef: IEntitySdj) => {
-            if (entRef.sdItems.indexOf(sdId) !== -1) {
-              rtnAry.push(entRef);
-            }
-          });
-        });
-      } else if (validIntArray(searchEnt.childIds)) {
-        each(searchEnt.childIds, (sdId: number)=> {
-          each(this._graph, (entRef: IEntitySdj) => {
-            if (entRef.sdId === 0) return;
-            if (entRef.childIds && entRef.childIds?.indexOf(sdId) !== -1) {
-              rtnAry.push(entRef);
-            }
-          });
-        });
-      } else if (searchEnt.sdProps) {
-        each(this._graph, (entRef: IEntitySdj)=> {
-          if (entRef.sdId === 0) return;
-          if (searchEnt.checkData) {
-            if (entRef.sdProps && isEqual(entRef.sdProps, searchEnt.sdProps)) {
-              rtnAry.push(entRef);
-            }
-          } else {
-            let allValid = true;
-            each(searchEnt.sdProps, (propValue, key) => {
-              if (entRef.sdProps && entRef.sdProps[key] !== propValue) {
-                allValid = false;
-                return false;
-              }
-              return true;
-            });
-            if (allValid) {
-              rtnAry.push(entRef);
-            }
-        }});
-      }
-    }
-    return rtnAry;
+    return this._host.searchMgr.searchEntities(this, searchEnt);
   }
+
   searchItems(searchItem: ItemSearch): IItemSdj[] {
-    const rtnAry: IItemSdj[] = [],
-        pushIfAvail = (item: IItemSdj | undefined) => {
-          if (item) {
-            rtnAry.push(item);
-          }
-        }
-    if (searchItem) {
-      if (searchItem.sdId) {
-        pushIfAvail(<IItemSdj>this.getRefByType(searchItem.sdId, "item"));
-      } else if (searchItem.sdKey) {
-        pushIfAvail(<IItemSdj>this.getRefByType(searchItem.sdKey, "item"));
-      } else if (searchItem.type) {
-        each(this._items, (sdjItem: IItemSdj) => {
-          if (sdjItem.type === searchItem.type) {
-            rtnAry.push(sdjItem);
-          }
-        });
-      } else if (searchItem.limiter) {
-        each(this._items, (sdjItem: IItemSdj) => {
-          if (sdjItem.limiter === searchItem.limiter) {
-            rtnAry.push(sdjItem);
-          }
-        })
+    return this._host.searchMgr.searchItems(this, searchItem);
+  }
+
+  getEntity (entKeyNum: number | string): IEntitySdj | undefined {
+    return (entKeyNum === 0) ? undefined : <IEntitySdj>getFromCoreArray(entKeyNum, this._graph);
+  }
+
+  getEntityRefs (entArray: number[] | string[]): IEntitySdj[] {
+    const rtnAry: IEntitySdj[] = [];
+    each(entArray, (theValue: number | string) => {
+      const entRef = <IEntitySdj>getFromCoreArray(theValue, this._graph);
+      if (entRef && entRef.sdId !== 0) {
+        rtnAry.push(entRef);
+      } else {
+        this.log(`Unable to find item sdId/sdKey '${theValue}'`, 3);
       }
-    }
+    });
     return rtnAry;
   }
-
-  getEntityProps(entity: IEntitySdj): SdKeyProps {
-    return this._host.lexiconMgr.simpleExtendProps(entity, this._graph);
+  calcSdKeyProps(entity: IEntitySdj): SdKeyProps {
+    return this._host.lexiconMgr.calcSdKeyProps(entity, this._graph);
   }
-  getItemRefs(intAry: number[]): IItemSdj[] {
+  getItem (itemKeyNum: number | string): IItemSdj | undefined {
+    return <IItemSdj>getFromCoreArray(itemKeyNum, this._items);
+  }
+  getItemRefs(itemArray: number[] | string[]): IItemSdj[] {
     const rtnAry: IItemSdj[] = [];
-    if (validIntArray(intAry)) {
-      each(intAry, (sdNum: number) => {
-        const itemRef: IItemSdj | undefined = find(this._items, {sdId: sdNum});
-        if (itemRef) {
-          rtnAry.push(itemRef);
-        } else {
-          this.log(`Unable to find item sdId ${sdNum}`, 3);
-        }
-      });
-    }
+    each(itemArray, (theValue: number | string) => {
+      const itemRef = <IItemSdj>getFromCoreArray(theValue, this._items);
+      if (itemRef) {
+        rtnAry.push(itemRef);
+      } else {
+        this.log(`Unable to find item sdId/sdKey '${theValue}'`, 3);
+      }
+    });
     return rtnAry;
-  }
-
-  getValidator(validatorId: string): IValidator {
-    return this._host.lexiconMgr.getValidator(validatorId);
   }
 
   genJI(): DescriptionJI {
     const rtnDescJI: DescriptionJI = {
-        sdInfo: genInfoJI(this._sdInfo),
-        graph: [],
-        items: [],
-        lang: this.lang
-      };
+      sdInfo: genInfoJI(this._sdInfo),
+      graph: [],
+      items: [],
+      lang: this.lang
+    };
     let lexEntRefs: EntityJI[] = [],
-        lexItemRefs: ItemJI[] = [];
+      lexItemRefs: ItemJI[] = [];
 
     if (this.dataInfo) {
       rtnDescJI.dataInfo = true;
@@ -268,15 +173,15 @@ export class SdjDescription implements IDescriptionSdj {
     }
 
     each(this._items, (sdjItem: IItemSdj) => {
-      const itemInLex =  find(lexItemRefs, {sdId: sdjItem.sdId}),
-          itemInBase = find(BASE_ITEMS_JI, {sdId: sdjItem.sdId});
+      const itemInLex = find(lexItemRefs, {sdId: sdjItem.sdId}),
+        itemInBase = find(BASE_ITEMS_JI, {sdId: sdjItem.sdId});
       if (!itemInLex && !itemInBase) {
         rtnDescJI.items.push(sdjItem.genJI());
       }
     });
 
     each(this._graph, (sdjEnt: IEntitySdj) => {
-      const entInLex =  find(lexEntRefs, {sdId: sdjEnt.sdId});
+      const entInLex = find(lexEntRefs, {sdId: sdjEnt.sdId});
       if (sdjEnt.sdId !== 0 && !entInLex) {
         rtnDescJI.graph.push(sdjEnt.genJI());
       }
@@ -287,31 +192,32 @@ export class SdjDescription implements IDescriptionSdj {
 
   // Use searches for misses; use this function only for Verified Graphs
   // Internals should not be calling for things that don't exist
-  // Returns graphZero??
   getEntityRefById(entId: number): IEntitySdj | undefined {
-    return find(this._graph, {sdId: entId});
+    return (entId > 0) ? this._graph[entId] : undefined;
   }
 
   getItemsByEntity(entKeyNum: string | number): IItemSdj[] {
-    let actualEnt: IEntitySdj | undefined = this.getRefByType<IEntitySdj>(entKeyNum, "entity");
-    if (!actualEnt) return [];
+    const actualEnt = <IEntitySdj>getFromCoreArray(entKeyNum, this._graph);
+    if (!actualEnt) {
+      return []; 
+    }
     let extendsList = (actualEnt.extendIds) ? clone(actualEnt.extendIds) : [],
-        fullItemList: number[] = cloneDeep(actualEnt.sdItems),
-        getEnts = (entRef: IEntitySdj) => {
-          let rtnSdItems = cloneDeep(entRef.sdItems);
-          if (entRef.extendIds && isArrayWithLen(entRef.extendIds)) {
-            each(entRef.extendIds, (num: number) => {
-              const subEntRef = this.getRefByType<IEntitySdj>(num, "entity");
-              if (subEntRef) {
-                rtnSdItems = rtnSdItems.concat(getEnts(subEntRef));
-              }
-            });
-          }
-          return rtnSdItems;
-        };
+      fullItemList: number[] = cloneDeep(actualEnt.sdItems),
+      getEnts = (entRef: IEntitySdj) => {
+        let rtnSdItems = cloneDeep(entRef.sdItems);
+        if (entRef.extendIds && isArrayWithLen(entRef.extendIds)) {
+          each(entRef.extendIds, (num: number) => {
+            const subEntRef = <IEntitySdj>getFromCoreArray(num, this._graph);
+            if (subEntRef) {
+              rtnSdItems = rtnSdItems.concat(getEnts(subEntRef));
+            }
+          });
+        }
+        return rtnSdItems;
+      };
 
     each(extendsList, (entNum: number) => {
-      const topExtendRef = this.getRefByType<IEntitySdj>(entNum, "entity");
+      const topExtendRef = <IEntitySdj>getFromCoreArray(entNum, this._graph);
       if (topExtendRef) {
         fullItemList = fullItemList.concat(getEnts(topExtendRef));
       }
@@ -325,11 +231,6 @@ export class SdjDescription implements IDescriptionSdj {
     return this._host.verifyJIbyType(ji, jiType, strict);
   }
 
-  private getRefByType<Type>(idOrKey: number | string, type: string): Type | undefined {
-    if (isUndefined(idOrKey) || (!isString(idOrKey) && !isNumber(idOrKey))) return undefined;
-    const searchGroup = (type === "entity") ? this._graph : this._items;
-    return (isNumber(idOrKey)) ? <Type>find(searchGroup, {sdId: idOrKey}) : <Type>find(searchGroup, {sdKey: idOrKey});
-  }
   private entityItemBuild(inDescJI: DescriptionJI) {
     this._items = this.buildBaseItems();
 
@@ -351,7 +252,18 @@ export class SdjDescription implements IDescriptionSdj {
     this._graph.unshift(new SdjEntity(genEntityJI(GRAPH_ZERO), this));
     this._lexicons = (inDescJI.lexicons) ? inDescJI.lexicons : [];
 
-    each(this._graph, (entity: IEntitySdj) => {
+    each(this._items, (itemJI: IItemSdj, idx: number) => {
+      // Has been pre-sorted, final confirmation to confirm sdId === _item index alignment
+      if (idx !== itemJI.sdId) {
+        throw new Error("[SDJ] Description validity error, missing entity or error;");
+      }
+    });
+
+    each(this._graph, (entity: IEntitySdj, idx: number) => {
+      // This has been presorted before this, but confirms sdId === _graph index alignment
+      if (idx !== entity.sdId) {
+        throw new Error("[SDJ] Description validity error, missing entity or error;");
+      }
       const classRef: SdjEntity = <SdjEntity>entity;
       classRef.$refreshRefs();
     });

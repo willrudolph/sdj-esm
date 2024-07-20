@@ -7,22 +7,23 @@
  */
 
 import type {
-    DataJI,
-    DescriptionJI,
-    DescriptionSearch,
-    EntityJI,
-    FuncLexGraphVerify,
-    FuncStrNumVoid,
-    ILexicon,
-    ItemJI,
-    IValidator,
-    SdJsonJI,
-    SdKeyProps
+  DataJI,
+  DescriptionJI,
+  DescriptionSearch,
+  EntityJI,
+  EntitySearch,
+  FuncLexGraphVerify,
+  FuncStrNumVoid,
+  ILexicon,
+  ItemJI,
+  ItemSearch,
+  IValidator,
+  SdJsonJI,
+  SdKeyProps
 } from "../core/interfaces.js";
 import type {IDataSdj, IDescriptionSdj, IEntitySdj, IItemSdj, IJsonSdj} from "../classes/class-interfaces.js";
 import {type ESDJ_CLASS, type ESDJ_LOG} from "../core/enums.js";
 import {type ILogManager, Logger} from "../util/log.js";
-import type {DescriptSearchResult} from "../classes/description.js";
 
 export interface GraphVerifyMap {
     [key: string]: FuncLexGraphVerify;
@@ -42,6 +43,18 @@ export interface Settings {
 export interface ISdjSettings {
     logs: ILogManager;
 }
+
+export interface ISdjSearch {
+    dataByPath: (sdJson: IJsonSdj, dataPath: string) => IDataSdj | undefined;
+    dataByItem: (sdJson: IJsonSdj, searchItem: ItemSearch, dataPath?: string) => IDataSdj[];
+    dataByEntity: (sdJson: IJsonSdj, searchEntity: EntitySearch, dataPath?: string) => IDataSdj[];
+    validStruct: (entity: IEntitySdj, dataSdj: DataJI, parentRef: DataJI | undefined, strict?: boolean) => boolean
+    validData: (entity: IEntitySdj, dataSdj: DataJI, strict?: boolean) => boolean
+    searchDescriptions: (search: DescriptionSearch) => IDescriptionSdj[];
+    searchItems: (sdjDescript: IDescriptionSdj, searchItem: ItemSearch) => IItemSdj[];
+    searchEntities: (sdjDescript: IDescriptionSdj, searchEnt: EntitySearch) => IEntitySdj[];
+}
+
 export declare interface ISdjLexicons {
     readonly names: string[];
     getValidator: (validatorId: string) => IValidator;
@@ -52,7 +65,7 @@ export declare interface ISdjLexicons {
     validateRequires: (descJI: DescriptionJI) => boolean;
     verifyData: (inJson: SdJsonJI, strict: boolean) => boolean;
     validateGraph: (inDescJI: DescriptionJI) => boolean;
-    simpleExtendProps: (entity: IEntitySdj, graph: IEntitySdj[]) => SdKeyProps;
+    calcSdKeyProps: (entity: IEntitySdj, graph: IEntitySdj[]) => SdKeyProps;
 }
 
 export type SdjJITypes = SdJsonJI | DescriptionJI | ItemJI | EntityJI | DataJI;
@@ -65,9 +78,10 @@ export declare interface ISdjHost {
     descriptions: IDescriptionSdj[];
     settings: ISdjSettings;
     lexiconMgr: ISdjLexicons;
+    searchMgr: ISdjSearch;
     getLogFunc: (name: string) => FuncStrNumVoid;
     gLog: FuncStrNumVoid;
-    searchDescriptions: (search: DescriptionSearch) => DescriptSearchResult;
+    searchDescriptions: (search: DescriptionSearch) => IDescriptionSdj[];
     descriptByName: (name: string) => IDescriptionSdj | undefined
     addDescription: (addDesc: IDescriptionSdj) => void;
     fullDescription: (inDescJI: DescriptionJI) => DescriptionJI;

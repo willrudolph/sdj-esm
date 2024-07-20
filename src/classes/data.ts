@@ -30,8 +30,11 @@ import {cloneJI} from "../util/func.std.js";
 export class SdjData implements CoreSD, IDataSdj {
   $sdIndex = 0;
 
-  private _sdChildren: IDataSdj[] | undefined;
-  private _parentRef: IDataSdj | undefined;
+  // eslint-disable-next-line no-use-before-define
+  private _parentRef: SdjData | undefined;
+  // eslint-disable-next-line no-use-before-define
+  private _sdChildren: SdjData[] | undefined;
+
   private _data: DataJI; // internal mutable central reference
   private _entity: IEntitySdj;
   private _sdId: number; // corresponds to assigned entityRef sdId
@@ -39,7 +42,7 @@ export class SdjData implements CoreSD, IDataSdj {
   private _depth: number = 0; //
   private _sdInfo?: Info;
 
-  constructor(inData: DataJI, entityRef: IEntitySdj, parentRef: IDataSdj | undefined) {
+  constructor(inData: DataJI, entityRef: IEntitySdj, parentRef: SdjData | undefined) {
     this._entity = this.confirmEntity(entityRef);
     this._entity.description.host.checkClassInst(inData, ESDJ_CLASS.DATA, false);
     const workData = cloneJI(inData);
@@ -53,7 +56,7 @@ export class SdjData implements CoreSD, IDataSdj {
     this._entity.validData(this._data, true);
     this._sdId = this._data.sdId;
     this._sdKey = this._data.sdKey;
-    this.parentRef = parentRef;
+    this.$parentRef = parentRef;
   }
 
   get sdKey() {
@@ -66,33 +69,43 @@ export class SdjData implements CoreSD, IDataSdj {
   get data() {
     return this._data;
   }
-  get depth() {
-    return this._depth;
-  }
+
   get entity(): IEntitySdj {
     return this._entity;
   }
 
   get path(): string {
     let rtnStr = this._sdKey,
-      parentRef: IDataSdj | DataJI | undefined | DataJIValues = this.parentRef;
+      parentRef: SdjData | undefined = <SdjData>this._parentRef;
     if (parentRef) {
       while(parentRef) {
         rtnStr = parentRef.sdKey + "/" + rtnStr;
-        parentRef = parentRef.parentRef;
+        parentRef = parentRef.$parentRef;
       }
     }
     return rtnStr;
   }
-
-  get parentRef(): IDataSdj | undefined {
-    return this._parentRef;
+  get depth() {
+    return this._depth;
   }
-  set parentRef(inParent: IDataSdj | undefined) {
+  set $depth(value: number) {
+    this._depth = value;
+  }
+
+  get $depth() {
+    return this._depth;
+  }
+  get parentRef(): IDataSdj | undefined {
+    return (this._parentRef) ? <IDataSdj>this._parentRef : undefined;
+  }
+  get $parentRef(): SdjData | undefined {
+    return (this._parentRef) ? <SdjData>this._parentRef : undefined;
+  }
+  set $parentRef(inParent: SdjData | undefined) {
     if (this._entity) {
       if (inParent) {
         // allows reassignment for now?
-        this._entity.description.host.checkClassInst(inParent, ESDJ_CLASS.DATA, true);
+        this._entity.description.host.checkClassInst(<IDataSdj>inParent, ESDJ_CLASS.DATA, true);
         this._parentRef = inParent;
         this._depth = inParent.depth + 1;
       } else {
@@ -107,13 +120,28 @@ export class SdjData implements CoreSD, IDataSdj {
     return this._sdChildren;
   }
 
+  get $sdChildren(): SdjData[] | undefined {
+    return this._sdChildren;
+  }
+
   get hasChildren(): boolean {
     return Boolean(this._sdChildren && this._sdChildren?.length > 0);
   }
 
+  // Update validates data on input and if in-valid the whole update
+  // fails and reports false for update
+  update(dataJI: DataJI): boolean {
+    let rtnVal = false;
+    // TODO update function
+    each(dataJI, (value, key) => {
+      // eslint-disable-next-line no-console
+      console.log(`${key}:${value}`);
+    });
+    return rtnVal;
+  }
   setDataKey(dataKey: string, value: ExtAllowedValue) {
     let itemRef: IItemSdj | undefined = this._entity.itemRefs[dataKey],
-        inValue: DataKeyValue;
+      inValue: DataKeyValue;
     if (itemRef) {
       inValue = itemRef.validator.input(value);
       if (isUndefined(inValue)) {
@@ -121,12 +149,10 @@ export class SdjData implements CoreSD, IDataSdj {
           throw new Error(`[SDJ] item '${itemRef.sdKey}' is required cannot be set to undefined;`);
         }
         delete this._data[dataKey];
+      } else if (itemRef.validator.valid(inValue)){
+        this._data[dataKey] = inValue;
       } else {
-        if (itemRef.validator.valid(inValue)){
-          this._data[dataKey] = inValue;
-        } else {
-          throw new Error(`[SDJ] item '${itemRef.sdKey}' does not validate on input;`);
-        }
+        throw new Error(`[SDJ] item '${itemRef.sdKey}' does not validate on input;`);
       }
     }
   }
@@ -140,7 +166,7 @@ export class SdjData implements CoreSD, IDataSdj {
     }
   }
 
-  addChild(sdData: IDataSdj) {
+  $addChild(sdData: SdjData) {
     let curIdx = -1;
     if (this._entity.childIds?.indexOf(sdData.sdId) !== -1) {
       if (find(this._sdChildren, {sdKey: sdData.sdKey})) {
@@ -152,19 +178,22 @@ export class SdjData implements CoreSD, IDataSdj {
       } else {
         curIdx = this._sdChildren.length + 1;
       }
-      sdData.parentRef = this;
+      sdData.$parentRef = this;
+      this._depth += 1;
       (<SdjData>sdData).$sdIndex = curIdx;
       this._sdChildren.push(sdData);
     }
   }
 
-  removeChild(childRef: string | number | IDataSdj): IDataSdj | undefined {
+  $removeChild(childRef: string | number | IDataSdj): IDataSdj | undefined {
     return (!this._sdChildren) ? undefined : this.getChild(childRef);
   }
 
 
   getChild(optChildRef: string | number | IDataSdj): IDataSdj | undefined {
-    if (!this._sdChildren) return undefined;
+    if (!this._sdChildren) {
+      return undefined; 
+    }
     let rtnIData: IDataSdj | undefined;
 
     if (isNumber(optChildRef) && optChildRef !== -1) {
@@ -172,7 +201,7 @@ export class SdjData implements CoreSD, IDataSdj {
     } else if (isString(optChildRef)) {
       rtnIData = find(this._sdChildren, {sdKey: optChildRef});
     } else if (isObject(optChildRef)) {
-      rtnIData = find(this._sdChildren, {sdKey: (<IDataSdj>optChildRef).sdKey})
+      rtnIData = find(this._sdChildren, {sdKey: (<IDataSdj>optChildRef).sdKey});
     }
 
     return rtnIData;
@@ -180,10 +209,10 @@ export class SdjData implements CoreSD, IDataSdj {
 
   isValid(): boolean {
     let rtnVal = (this._entity) ? this._entity.validData(this._data) : false,
-        curJIStruct: DataJI,
-        overparentJI: DataJI | undefined;
-    const checkChildJI = (childJI: DataJI, parentJI: DataJI | undefined)=> {
-      const entRef = this._entity.description.getEntityRefById(childJI.sdId);
+      curJIStruct: DataJI,
+      overparentJI: DataJI | undefined;
+    const checkChildJI = (childJI: DataJI, parentJI: DataJI | undefined) => {
+      const entRef = this._entity.description.getEntity(childJI.sdId);
       rtnVal = (entRef) ? entRef.validData(childJI) : false;
       if (entRef && rtnVal) {
         rtnVal = entRef.validStruct(childJI, parentJI);
@@ -194,11 +223,11 @@ export class SdjData implements CoreSD, IDataSdj {
           });
         }
       }
-    }
+    };
     if (rtnVal) {
       curJIStruct = this.genJI(true);
-      overparentJI = (this.parentRef) ? this.parentRef.data : undefined;
-      rtnVal = this._entity.validStruct(curJIStruct, overparentJI)
+      overparentJI = (this._parentRef) ? this._parentRef.data : undefined;
+      rtnVal = this._entity.validStruct(curJIStruct, overparentJI);
       if (rtnVal && curJIStruct.sdChildren && curJIStruct.sdChildren.length > 0) {
         each(curJIStruct.sdChildren, (dataChildJI: DataJI): boolean => {
           checkChildJI(dataChildJI, curJIStruct);
@@ -235,7 +264,7 @@ export class SdjData implements CoreSD, IDataSdj {
       }
     }
     if (throwErr) {
-      throw new Error("[SDJ] Entity missing, incorrect, or malformed;")
+      throw new Error("[SDJ] Entity missing, incorrect, or malformed;");
     }
 
     return inEnt;

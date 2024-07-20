@@ -7,20 +7,20 @@
  */
 
 import type {
-    DataJI,
-    DescriptionJI,
-    EntityJI,
-    EntitySearch,
-    ExtAllowedValue,
-    FuncStrNumVoid,
-    GenKeyStore,
-    Info,
-    ItemJI,
-    ItemSearch,
-    IValidator,
-    NumKeyStore,
-    SdJsonJI,
-    SdKeyProps
+  DataJI,
+  DescriptionJI,
+  EntityJI,
+  EntitySearch,
+  ExtAllowedValue,
+  FuncStrNumVoid,
+  GenKeyStore,
+  Info,
+  ItemJI,
+  ItemSearch,
+  IValidator,
+  NumKeyStore,
+  SdJsonJI,
+  SdKeyProps
 } from "../core/interfaces.js";
 
 import type {ISdjHost, SdjJITypes} from "../global/global-interfaces.js";
@@ -28,23 +28,23 @@ import type {ESDJ_CLASS, ESDJ_LIMIT} from "../core/enums.js";
 
 
 export declare interface IItemSdj {
-    sdId: number;
-    sdKey: string;
-    type: string;
-    limiter: ESDJ_LIMIT;
+    readonly sdId: number;
+    readonly sdKey: string;
+    readonly type: string;
+    readonly limiter: ESDJ_LIMIT;
+    readonly validator: IValidator;
     // eslint-disable-next-line no-use-before-define
-    description: IDescriptionSdj;
+    // readonly description: IDescriptionSdj;
     genJI: () => ItemJI;
-    validator: IValidator;
 }
 export declare interface IEntitySdj {
-    sdId: number;
-    sdKey: string;
-    parentIds: number[];
-    sdItems: number[];
-    extendIds?: number[];
-    childIds?: number[];
-    readonly sdProps?: SdKeyProps;
+    readonly sdId: number;
+    readonly sdKey: string;
+    readonly parentIds: number[];
+    readonly sdItems: number[];
+    readonly extendIds: number[] | undefined;
+    readonly childIds: number[] | undefined;
+    readonly sdProps: SdKeyProps | undefined;
     readonly limiter: ESDJ_LIMIT;
     readonly childRefs: NumKeyStore<IEntitySdj>;
     readonly itemRefs: GenKeyStore<IItemSdj>;
@@ -56,17 +56,18 @@ export declare interface IEntitySdj {
 }
 
 export declare interface IDataSdj {
-    sdKey: string;
-    sdId: number;
-    parentRef: IDataSdj | undefined;
-    sdChildren: IDataSdj[] | undefined;
-    readonly hasChildren: boolean;
+    readonly sdKey: string;
+    readonly sdId: number;
     readonly data: DataJI;
+    readonly parentRef: IDataSdj | undefined;
+    readonly sdChildren: IDataSdj[] | undefined;
+    readonly hasChildren: boolean;
     readonly depth: number;
     readonly path: string;
     readonly entity: IEntitySdj | undefined;
+    update: (replaceData: DataJI) => boolean;
     getChild:(childRef: string | number | IDataSdj) => IDataSdj | undefined;
-    addChild: (childRef: IDataSdj) => void;
+    // addChild: (childRef: IDataSdj) => void;
     isValid: () => boolean;
     // removeChild: (childRef: string | number | IDataSdj) => IDataSdj | undefined;
     getDataKey: (dataKey: string) => ExtAllowedValue;
@@ -75,19 +76,19 @@ export declare interface IDataSdj {
 }
 
 export declare interface IDescriptionSdj {
-    dataInfo: boolean;
+    readonly dataInfo: boolean;
     readonly name: string;
     readonly sdInfo: Info;
-    readonly graph: IEntitySdj[];
     readonly host: ISdjHost;
     searchEntities: (searchEnt: EntitySearch) => IEntitySdj[];
     searchItems: (searchItem: ItemSearch) => IItemSdj[];
-    getEntityProps: (entity: IEntitySdj) => SdKeyProps | undefined;
+    getEntity: (entKeyNum: number | string) => IEntitySdj | undefined
+    getEntityRefs: (entArray: number[] | string[]) => IEntitySdj[]
     getItemsByEntity: (entKeyNum: string | number) => IItemSdj[];
-    getEntityRefById: (entId: number) => IEntitySdj | undefined;
-    getItemRefs: (intAry: number[]) => IItemSdj[];
-    getValidator: (validatorId: string) => IValidator;
+    getItem: (itemKeyNum: number | string) => IItemSdj | undefined
+    getItemRefs: (itemArray: number[] | string[]) => IItemSdj[];
     genJI: () => DescriptionJI;
+    calcSdKeyProps: (entity: IEntitySdj) => SdKeyProps;
     verifyJIbyType: (ji: SdjJITypes, jiType: ESDJ_CLASS, strict?: boolean) => boolean;
     // Sub items of description use this log access point
     log: FuncStrNumVoid

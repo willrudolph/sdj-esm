@@ -8,14 +8,14 @@
 
 import {UUID} from "./func.std.js";
 import type {
-    CoreSD,
-    DataJI,
-    DataJIValues,
-    DescriptionJI,
-    EntityJI,
-    Info,
-    ItemJI,
-    SdKeyProps
+  CoreSD,
+  DataJI,
+  DataJIValues,
+  DescriptionJI,
+  EntityJI,
+  Info,
+  ItemJI,
+  SdKeyProps
 } from "../core/interfaces.js";
 import {DATAJI_WORDS, DEF_DESC} from "../core/statics.js";
 import {isArrayWithLen, isInfo} from "../core/validators.js";

@@ -19,13 +19,14 @@ import {ESDJ_LIMIT} from "./enums.js";
 // I[ClassName]Sdj - Indicates a TypeScript Interface for JavaScript Class object that contains code/refs
 // [JI]Name - JSON Immutable typescript primitives Types
 // Name[JI] - Indicates a Json/Immutable Interface that contains no code, usually a constructor input
-
+// $items, $graph- $Values are Class only non-TS interface for internal classes or editing
 
 // JI / JSON Immutable Primitives
 
-export type ExtAllowedValue = JIValue | undefined | null;
+
 // eslint-disable-next-line no-use-before-define
 export type JIValue = JIPrimitive | JIObject | JIArray;
+export type ExtAllowedValue = JIValue | undefined | null;
 export interface JIObject {
   [key: string]: JIValue | undefined;
 }
@@ -53,7 +54,7 @@ export interface GenKeyStore<Type> {
 // Standard Function signatures available outside of library; this list may grow
 export declare type FuncStrNumVoid = (input: string, num?: number) => void;
 
-export declare type FuncValueInput = (inputVal: ExtAllowedValue) => JIValue;
+export declare type FuncValueInput = (inputVal: ExtAllowedValue) => JIValue | undefined;
 export declare type FuncJsonValueValidator = (value: JIValue) => boolean;
 export declare type FuncValueOutput = (value: JIValue | undefined) => ExtAllowedValue;
 export interface Info extends JIObject {
@@ -88,6 +89,7 @@ export interface CoreSDSearch extends JIObject {
 
 // eslint-disable-next-line no-use-before-define
 export type DataKeyValue = JIValue | undefined;
+// eslint-disable-next-line no-use-before-define
 export type DataJIValues = Info | DataJI[] | DataKeyValue;
 export interface DataJI extends CoreSD, JIObject {
   [dataKey: string]: DataJIValues;
@@ -119,16 +121,6 @@ export interface EntityJI extends EntityCore, CoreSD, JIObject {}
 
 export interface EntitySearch extends CoreSDSearch, EntityCore {}
 export declare type FuncLexGraphVerify = (entities: EntityJI[]) => boolean;
-export declare type FuncLexDataVerify = (sdJsonJI: SdJsonJI) => boolean;
-export interface ILexicon {
-  name: string;
-  required?: string[];
-  entities?: EntityJI[];
-  items?: ItemJI[];
-  validators?: GenKeyStore<ValidatorJI>;
-  graphVerify?: FuncLexGraphVerify;
-  dataVerify?: FuncLexDataVerify;
-}
 
 export interface ValidatorJI {
   type: string;
@@ -168,3 +160,14 @@ export interface SdJsonJI extends JIObject {
   data?: DataJI[];
 }
 
+export declare type FuncLexDataVerify = (sdJsonJI: SdJsonJI) => boolean;
+
+export interface ILexicon {
+  name: string;
+  required?: string[];
+  entities?: EntityJI[];
+  items?: ItemJI[];
+  validators?: GenKeyStore<ValidatorJI>;
+  graphVerify?: FuncLexGraphVerify;
+  dataVerify?: FuncLexDataVerify;
+}

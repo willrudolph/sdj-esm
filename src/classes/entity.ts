@@ -7,7 +7,7 @@
  */
 
 import type {CoreSD, DataJI, EntityJI, GenKeyStore, JIValue, NumKeyStore, SdKeyProps} from "../core/interfaces.js";
-import {GRAPH_ID, SD_IDX, SYS_RESERVED} from "../core/statics.js";
+import {GRAPH_ID, SYS_RESERVED} from "../core/statics.js";
 import {genSdKeyProps} from "../util/immutables.js";
 
 import {isArrayWithLen} from "../core/validators.js";
@@ -16,17 +16,17 @@ import {restrictCoreSD, restrictLimiter, restrictToAllowedKeys} from "../core/re
 import {ESDJ_CLASS, ESDJ_LIMIT} from "../core/enums.js";
 import type {IDescriptionSdj, IEntitySdj, IItemSdj} from "./class-interfaces.js";
 import {
-    each,
-    isBoolean,
-    isEmpty,
-    isEqual,
-    isFunction,
-    isNull,
-    isNumber,
-    isObject,
-    isString,
-    isUndefined,
-    uniq
+  each,
+  isBoolean,
+  isEmpty,
+  isEqual,
+  isFunction,
+  isNull,
+  isNumber,
+  isObject,
+  isString,
+  isUndefined,
+  uniq
 } from "lodash-es";
 import {validIntArray, validSDKey} from "../core/sdj-types.js";
 
@@ -56,22 +56,22 @@ import {validIntArray, validSDKey} from "../core/sdj-types.js";
   - sdProps are chained assigned based on entity/order - genJI sdProps will show final values
   - limiter value matches last extended item if not provided
 
-
-  Introduction of "$" functions for deliberate class-only implementations which don't appear on IEntitySdj
-  and should only be used by classes/files that implement "new SdjEntity" in anyway.
+  Note: in Sdj "$" functions for deliberate class-only implementations which don't appear on IEntitySdj
+  and should only be used by classes/files that implement "new SdjEntity" in any way.
 
  */
 export class SdjEntity implements CoreSD, IEntitySdj {
-  sdId: number;
-  sdKey: string;
+  private _sdId: number;
+  private _sdKey: string;
 
-  parentIds: number[];
-  sdItems: number[];
+  private _parentIds: number[];
+  private _sdItems: number[];
+  private _extendIds: number[] | undefined;
+  private _childIds: number[] | undefined;
 
-  extendIds?: number[];
-  childIds?: number[];
-  readonly sdProps?: SdKeyProps;
-  limiter: ESDJ_LIMIT;
+  private _limiter: ESDJ_LIMIT;
+
+  private _sdProps: SdKeyProps | undefined;
 
   private _description: IDescriptionSdj | undefined;
   private _childRefs?: NumKeyStore<IEntitySdj>;
@@ -84,32 +84,53 @@ export class SdjEntity implements CoreSD, IEntitySdj {
     }
     SdjEntity.VerifyJI(inEnt);
     this.graphZeroLockout(inEnt);
-    this.sdId = inEnt.sdId;
-    this.sdKey = inEnt.sdKey;
+    this._sdId = inEnt.sdId;
+    this._sdKey = inEnt.sdKey;
     if (isArrayWithLen(inEnt.extendIds)) {
-      this.extendIds = uniq([...<number[]>inEnt.extendIds]);
+      this._extendIds = uniq([...<number[]>inEnt.extendIds]);
     }
     if (isArrayWithLen(inEnt.parentIds)) {
-      this.parentIds = uniq([...<number[]>inEnt.parentIds]);
+      this._parentIds = uniq([...<number[]>inEnt.parentIds]);
     } else {
-      this.parentIds = [0];
+      this._parentIds = [0];
     }
     if (isArrayWithLen(inEnt.childIds)) {
-      this.childIds = uniq([...<number[]>inEnt.childIds]);
+      this._childIds = uniq([...<number[]>inEnt.childIds]);
     }
     if (isArrayWithLen(inEnt.sdItems)) {
       const inEntItems =[...<number[]>inEnt.sdItems];
-      this.sdItems = uniq([0, 1].concat(inEntItems));
+      this._sdItems = uniq([0, 1].concat(inEntItems));
     } else {
-      this.sdItems = [0, 1];
+      this._sdItems = [0, 1];
     }
 
     if (inEnt.sdProps) {
-      this.sdProps = genSdKeyProps(inEnt.sdProps);
+      this._sdProps = genSdKeyProps(inEnt.sdProps);
     }
-    this.limiter = inEnt.limiter || ESDJ_LIMIT.NONE;
+    this._limiter = inEnt.limiter || ESDJ_LIMIT.NONE;
   }
 
+  get sdKey() {
+    return this._sdKey;
+  }
+  get sdId() {
+    return this._sdId;
+  }
+  get parentIds(): number[] {
+    return this._parentIds;
+  }
+
+  get sdItems(): number[] {
+    return this._sdItems;
+  }
+
+  get extendIds(): number[] | undefined {
+    return this._extendIds;
+  }
+
+  get childIds(): number[] | undefined {
+    return this._childIds;
+  }
   get childRefs(): NumKeyStore<IEntitySdj> {
     return (this._childRefs) ? this._childRefs : {};
   }
@@ -125,6 +146,14 @@ export class SdjEntity implements CoreSD, IEntitySdj {
     return this._description;
   }
 
+  get sdProps(): SdKeyProps | undefined {
+    return this._sdProps;
+  }
+
+  get limiter(): ESDJ_LIMIT {
+    return this._limiter;
+  }
+
   set description(inDesc: IDescriptionSdj | undefined) {
     if (!this._description) {
       this._description = this.confirmDescript(inDesc);
@@ -138,66 +167,30 @@ export class SdjEntity implements CoreSD, IEntitySdj {
     }
   }
   validStruct(dataSdj: DataJI, parentRef: DataJI | undefined, strict = false): boolean {
-    let rtnVal = true,
-        errorResults: string[] = this.structValidate(dataSdj, parentRef),
-        splits: string[];
-
-    each(errorResults, (errSptStr) => {
-      splits = errSptStr.split(",");
-      this.description.log(
-          `Entity '${this.sdKey}' with data '${splits[0]}' error '${splits[1]}' with data/ent '${splits[2]}'`
-          , 3);
-      rtnVal = false;
-    });
-
-    if (strict && errorResults?.length > 0) {
-      const singleErr = errorResults.shift();
-      if (singleErr) {
-        splits = singleErr.split(",");
-        throw new Error(
-            `[SDJ] Entity '${this.sdKey}' with data '${splits[0]}' error '${splits[1]}' with data/ent '${splits[2]}'`);
-      }
+    if (!this._description) {
+      return false; 
     }
-
-    return rtnVal;
+    return this._description.host.searchMgr.validStruct(this, dataSdj, parentRef, strict);
   }
 
   validData(dataSdj: DataJI, strict = false): boolean {
-    let rtnVal = true,
-        errorResults: string[] = this.dataValidate(dataSdj),
-        splits: string[];
-
-    each(errorResults, (errSptStr) => {
-      splits = errSptStr.split(",");
-      this.description.log(
-          `SdjEntity '${this.sdKey}' struct '${splits[0]}' is '${splits[1]}' should be type '${splits[2]}'`
-          , 3);
-      rtnVal = false;
-    });
-
-    if (strict && errorResults?.length > 0) {
-      const singleErr = errorResults.shift();
-      if (singleErr) {
-        splits = singleErr.split(",");
-        throw new Error(
-            `SdjData key '${this.sdKey}' validate item '${splits[0]}' is '${splits[1]}' should be type '${splits[2]}'`);
-      }
+    if (!this._description) {
+      return false; 
     }
-
-    return rtnVal;
+    return this._description.host.searchMgr.validData(this, dataSdj, strict);
   }
 
   genJI(): EntityJI {
     const rtnEntJI: EntityJI = {
-      sdId: this.sdId,
-      sdKey: this.sdKey,
+      sdId: this._sdId,
+      sdKey: this._sdKey,
     };
 
     // parents will always be at least [0] and should only be eliminated when === [0]
-    if (this.parentIds.length > 1 || this.parentIds[0] !== 0) {
-      rtnEntJI.parentIds = [...this.parentIds];
+    if (this._parentIds.length > 1 || this._parentIds[0] !== 0) {
+      rtnEntJI.parentIds = [...this._parentIds];
     }
-    each(this.sdItems, (itemId: number) => {
+    each(this._sdItems, (itemId: number) => {
       if (itemId !== 0 && itemId !== 1) {
         if (!rtnEntJI.sdItems) {
           rtnEntJI.sdItems = [];
@@ -206,23 +199,27 @@ export class SdjEntity implements CoreSD, IEntitySdj {
       }
     });
 
-    if (isArrayWithLen(this.extendIds)) {
-      rtnEntJI.extendIds = [...<number[]>this.extendIds];
+    if (isArrayWithLen(this._extendIds)) {
+      rtnEntJI.extendIds = [...<number[]>this._extendIds];
     }
-    if (isArrayWithLen(this.childIds)) {
-      rtnEntJI.childIds = [...<number[]>this.childIds];
+    if (isArrayWithLen(this._childIds)) {
+      rtnEntJI.childIds = [...<number[]>this._childIds];
     }
 
     if (this.sdProps) {
-      const rtnProps: SdKeyProps | undefined = this.description.getEntityProps(this);
-
-      if (!isEmpty(rtnProps)) {
-        rtnEntJI.sdProps = <SdKeyProps>rtnProps;
+      let rtnProps: SdKeyProps | undefined;
+      if (this._description) {
+        rtnProps = this._description.calcSdKeyProps(this);
+        if (!isEmpty(rtnProps)) {
+          rtnEntJI.sdProps = <SdKeyProps>rtnProps;
+        }
+      } else {
+        rtnEntJI.sdProps = genSdKeyProps(this.sdProps);
       }
     }
 
-    if (this.limiter !== ESDJ_LIMIT.NONE) {
-      rtnEntJI.limiter = this.limiter;
+    if (this._limiter !== ESDJ_LIMIT.NONE) {
+      rtnEntJI.limiter = this._limiter;
     }
 
     return rtnEntJI;
@@ -232,17 +229,17 @@ export class SdjEntity implements CoreSD, IEntitySdj {
     if (this._description) {
       this._itemRefs = {};
       this._childRefs = {};
-      each(this.childIds, (num: number) => {
-        const childRef = this._description?.getEntityRefById(num);
+      each(this._childIds, (num: number) => {
+        const childRef = this._description?.getEntity(num);
         if (childRef) {
-          this._childRefs![num] = childRef;
+          this.childRefs[num] = childRef;
         } else {
           throw new Error("[SDJ] if this happens something else was missed presence of entity refs should be confirmed;");
         }
       });
 
-      each(this._description.getItemsByEntity(this.sdId), (sdItem: IItemSdj) => {
-        this._itemRefs![sdItem.sdKey] = sdItem;
+      each(this._description.getItemsByEntity(this._sdId), (sdItem: IItemSdj) => {
+        this.itemRefs[sdItem.sdKey] = sdItem;
       });
     }
   }
@@ -258,95 +255,6 @@ export class SdjEntity implements CoreSD, IEntitySdj {
       }
     }
     return (rtnVal) ? inDesc : undefined;
-  }
-
-  private structValidate(dataJI: DataJI, parentData: DataJI | undefined): string[] {
-    if (!this._description) return [this.sdKey + ",description,not available"];
-    let rtnErrs: string[] = [],
-        childPresent: NumKeyStore<number> = {},
-        parentEnt: IEntitySdj | undefined = (parentData) ? this.description.getEntityRefById(parentData.sdId)
-            : undefined,
-        checkIndexing: boolean = (parentEnt?.limiter === ESDJ_LIMIT.KEY_IDX)
-
-    each(this._childRefs, (childRef) => {
-      childPresent[childRef.sdId] = 0;
-    });
-
-    if (!parentData && this.parentIds.indexOf(0) === -1) {
-      rtnErrs.push(this.sdKey + ",requires parent,parent undefined");
-    } else if (parentEnt && this.parentIds.indexOf(parentEnt.sdId) === -1) {
-      rtnErrs.push(this.sdKey + ",entity does not allow parent," + parentEnt.sdKey);
-    } else if (parentEnt && (!parentEnt.childIds || parentEnt.childIds.indexOf(this.sdId) === -1)) {
-      rtnErrs.push(parentEnt.sdKey + ",parent does not allow child," + this.sdKey);
-    }
-
-    each(dataJI.sdChildren, (childItem: DataJI, idx: number) => {
-      const entRef = this._childRefs![childItem.sdId];
-      if (this.childIds?.indexOf(childItem.sdId) === -1) {
-        rtnErrs.push(this.sdKey +",doesn't allow child," + childItem.sdId);
-      }
-      if (entRef) {
-        if (entRef.limiter !== ESDJ_LIMIT.NONE) {
-          childPresent[childItem.sdId] += 1;
-        }
-      } else {
-        rtnErrs.push(this.sdKey + ",unknown child entity," + childItem.sdKey);
-      }
-      if (checkIndexing && childItem.sdKey !== (SD_IDX + idx)) {
-        rtnErrs.push(dataJI.sdKey + ",KEY_IDX out of order or wrong," + childItem.sdKey + "!=" + SD_IDX + idx);
-      }
-    });
-
-    each(childPresent, (totals, sdId) => {
-      const childEnt = this._childRefs![sdId];
-      switch(childEnt!.limiter) {
-        case ESDJ_LIMIT.REQ:
-          if (totals === 0) {
-            rtnErrs.push(this.sdKey + ",missing req'd," + childEnt!.sdKey);
-          }
-          break
-        case ESDJ_LIMIT.REQ_HIDE:
-          if (totals !== 1) {
-            rtnErrs.push(this.sdKey + `,single req hidden 1 != '${totals}',` + childEnt!.sdKey);
-          }
-          break
-        case ESDJ_LIMIT.ONE_NONE:
-          if (totals > 1) {
-            rtnErrs.push(this.sdKey + ",can only have one or none," + childEnt!.sdKey);
-          }
-          break
-        case ESDJ_LIMIT.REQ_ONE:
-          if (totals > 1 || totals === 0) {
-            rtnErrs.push(this.sdKey + ",requires one single," + childEnt!.sdKey);
-          }
-          break
-        default:
-          // default would be NONE/SD_IDX
-      }
-    });
-
-    return rtnErrs;
-  }
-  private dataValidate(dataJI: DataJI): string[] {
-    let rtnErrStrs: string[] = [];
-    each(this._itemRefs, (itemRef: IItemSdj) => {
-      const key = itemRef.sdKey,
-          possibleValue = dataJI[key],
-          isPresent: boolean = (!isNull(possibleValue) && !isUndefined(possibleValue)),
-          actualValue: JIValue = isPresent ? <JIValue>possibleValue : false,
-          isRequired = (itemRef.limiter === ESDJ_LIMIT.SYS_REQ
-              || itemRef.limiter === ESDJ_LIMIT.REQ || itemRef.limiter === ESDJ_LIMIT.REQ_HIDE),
-          isValid = (isPresent) ? itemRef.validator.valid(actualValue) : false;
-
-      if (isRequired && !isPresent) {
-        rtnErrStrs.push(key + ",required," + itemRef.type);
-      } else if (isRequired && isPresent && !isValid) {
-        rtnErrStrs.push(key + ",invalid," + itemRef.type);
-      } else if (!isRequired && isPresent && !isValid) {
-        rtnErrStrs.push(key + ",invalid," + itemRef.type);
-      }
-    });
-    return rtnErrStrs;
   }
 
   private graphZeroLockout(inEnt: EntityJI) {
@@ -412,7 +320,7 @@ export class SdjEntity implements CoreSD, IEntitySdj {
         throw new TypeError("[SDJ] sdIndexed Entities can only exist on root;");
       }
       if (!inEnt.childIds) {
-        throw new TypeError("[SDJ] sdIndexed Entities are required to have children;")
+        throw new TypeError("[SDJ] sdIndexed Entities are required to have children;");
       }
     }
     restrictToAllowedKeys("EntityJI: "+ inEnt.sdKey,

@@ -47,6 +47,6 @@ export const DEF_DESC = "def_desc",
       type: "sdkey"
     }
   ],
-    MIN_NAME_CHAR = 3,
-    MIN_INFO_DATE = 1693709655818,
-    MAX_OBJ_ARY_LEN = 200;
+  MIN_NAME_CHAR = 3,
+  MIN_INFO_DATE = 1693709655818,
+  MAX_OBJ_ARY_LEN = 200;

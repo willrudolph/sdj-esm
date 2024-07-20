@@ -22,6 +22,7 @@ const descBasedSdj = new SdJson(badDescA);
 const testAClass = new SdJson(<SdJsonJI>testA);
 const rtnJI = descBasedSdj.genJI();
 const simpleSdj = new SdJson(<SdJsonJI>simpleJI);
+
 const search01 = testAClass.dataByItem({sdId: 2})
 
 const search02 = testAClass.dataByItem({sdKey: "title"})
@@ -38,6 +39,6 @@ const search07 = testAClass.dataByItem({type: "strl"})
 
 const search08 = testAClass.dataByItem({type: "title"})
 
-const search09 = testAClass.dataByItem({type: "strl"});
+const search09 = simpleSdj.description.getItem(0);
 
 console.log();

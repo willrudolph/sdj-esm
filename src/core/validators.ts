@@ -7,14 +7,14 @@
  */
 
 import type {
-    ExtAllowedValue,
-    FuncJsonValueValidator,
-    FuncValueInput,
-    FuncValueOutput,
-    Info,
-    IValidator,
-    JIValue,
-    ValidatorJI
+  ExtAllowedValue,
+  FuncJsonValueValidator,
+  FuncValueInput,
+  FuncValueOutput,
+  Info,
+  IValidator,
+  JIValue,
+  ValidatorJI
 } from "./interfaces.js";
 import {UUID, validTypeLexName} from "../util/func.std.js";
 import type {__ANY, IntAny} from "./internal.js";
@@ -52,16 +52,16 @@ needed by a developer.
 */
 export const defaultInputFunc: FuncValueInput = (inputVal: ExtAllowedValue): JIValue => {
   if (isNull(inputVal)) {
-    throw new TypeError("[SDJ] null value is not allowed as JIValue;")
+    throw new TypeError("[SDJ] null value is not allowed as JIValue;");
   }
   return <JIValue>inputVal;
-}
+};
 
 export class SdjValidator implements IValidator {
   type: string;
   input: FuncValueInput = defaultInputFunc;
   valid: FuncJsonValueValidator;
-  output?: FuncValueOutput
+  output?: FuncValueOutput;
   constructor(inIValid: ValidatorJI) {
     SdjValidator.VerifyJI(<IValidator>inIValid);
     this.type = inIValid.type;
@@ -103,7 +103,7 @@ export class SdjValidator implements IValidator {
   }
 }
 export const autoFailValidator = new SdjValidator(
-    {type: "unmapped", input: defaultInputFunc, valid: () => false});
+  {type: "unmapped", input: defaultInputFunc, valid: () => false});
 
 export function isJsonValue(value: IntAny): boolean {
   let rtnBool = false;

@@ -62,14 +62,15 @@ export function genJson(inJson: SdJsonJI | DescriptionJI): IJsonSdj | undefined 
 // If using this function don't let it throw errors
 export function genLexicon(inJson: SdJsonJI | DescriptionJI): ILexicon | undefined {
   let rtnVal = undefined,
-      baseDescript: DescriptionJI,
-      lexName: string,
-      iLexicon: ILexicon = {name: ""};
+    baseDescript: DescriptionJI,
+    lexName: string,
+    iLexicon: ILexicon = {name: ""};
   if (inJson.$id && inJson.description && inJson.sdInfo) {
     try {
       SdJson.VerifyJI(<SdJsonJI>inJson);
       baseDescript = <DescriptionJI>inJson.description;
     } catch(e) {
+      // eslint-disable-next-line no-console
       console.log("[SDJ] genLexicon error:" + String(e).toString());
       return rtnVal;
     }
@@ -78,6 +79,7 @@ export function genLexicon(inJson: SdJsonJI | DescriptionJI): ILexicon | undefin
       SdjDescription.VerifyJI(<DescriptionJI>inJson);
       baseDescript = <DescriptionJI>inJson;
     } catch(e) {
+      // eslint-disable-next-line no-console
       console.log("[SDJ] genLexicon error:" + String(e).toString());
       return rtnVal;
     }
@@ -87,7 +89,7 @@ export function genLexicon(inJson: SdJsonJI | DescriptionJI): ILexicon | undefin
   lexName = (name.indexOf("_lexicon") > -1) ? name.toLowerCase() : name.toLowerCase() + "_lexicon";
 
   iLexicon.name = lexName;
-  iLexicon.items =  cloneJI(baseDescript.items);
+  iLexicon.items = cloneJI(baseDescript.items);
   iLexicon.entities = cloneJI(baseDescript.graph);
 
   return iLexicon;

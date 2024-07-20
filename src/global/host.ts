@@ -7,16 +7,25 @@
  */
 
 import type {DataJI, DescriptionJI, DescriptionSearch, EntityJI, FuncStrNumVoid, ItemJI} from "../core/interfaces.js";
-import {type DescriptSearchResult, SdjDescription} from "../classes/description.js";
+import {SdjDescription} from "../classes/description.js";
 import {ESDJ_CLASS, ESDJ_LOG} from "../core/enums.js";
 import type {IDescriptionSdj} from "../classes/class-interfaces.js";
-import type {AllSdjTypes, ISdjHost, ISdjLexicons, ISdjSettings, SdjJITypes, Settings} from "./global-interfaces.js";
+import type {
+  AllSdjTypes,
+  ISdjHost,
+  ISdjLexicons,
+  ISdjSearch,
+  ISdjSettings,
+  SdjJITypes,
+  Settings
+} from "./global-interfaces.js";
 import {SdjSettings} from "./settings.js";
 import {SdjLexicons} from "./lexicons.js";
 import {SdjEntity} from "../classes/entity.js";
 import {SdjItem} from "../classes/item.js";
 import {SdjData} from "../classes/data.js";
-import {find, isEqual, isString} from "lodash-es";
+import {find, isEqual} from "lodash-es";
+import {SdjSearch} from "./search.js";
 
 class IntSingletonLock {
   constructor() {
@@ -32,6 +41,7 @@ export class SdjHost implements ISdjHost {
   private _settings: SdjSettings;
   private _lexicons: SdjLexicons;
   private _descriptions: IDescriptionSdj[] = [];
+  private _search: SdjSearch;
   constructor(lockCon: IntSingletonLock, initialSet?: Settings | undefined | null) {
     if (!(lockCon instanceof IntSingletonLock)) {
       throw new Error("[SDJ] Illegal attempt create SdjHost");
@@ -39,6 +49,7 @@ export class SdjHost implements ISdjHost {
     this._settings = new SdjSettings(this, initialSet?.options);
     this.gLog = this.settings.logs.getLogFunc("ISdjHost");
     this._lexicons = new SdjLexicons(this, initialSet?.lexicons);
+    this._search = new SdjSearch(this);
     if (initialSet?.options?.logMode && initialSet.options.logMode !== ESDJ_LOG.PROD) {
       this.gLog("Set logMode:" + initialSet.options.logMode);
     }
@@ -54,6 +65,10 @@ export class SdjHost implements ISdjHost {
 
   get lexiconMgr(): ISdjLexicons {
     return <ISdjLexicons>this._lexicons;
+  }
+
+  get searchMgr(): ISdjSearch {
+    return <ISdjSearch>this._search;
   }
 
   descriptByName(name: string): IDescriptionSdj | undefined {
@@ -105,22 +120,14 @@ export class SdjHost implements ISdjHost {
     return this.settings.logs.getLogFunc(name);
   }
 
-  searchDescriptions(search: DescriptionSearch): DescriptSearchResult {
-    let rtnArray: IDescriptionSdj[] = [],
-      singleDesc: IDescriptionSdj | undefined;
-    if (search.name && isString(search.name)) {
-      singleDesc = find(this._descriptions, {name: search.name});
-      if (singleDesc) {
-        rtnArray.push(singleDesc);
-      }
-    }
-    return rtnArray;
+  searchDescriptions(search: DescriptionSearch): IDescriptionSdj[] {
+    return this.searchMgr.searchDescriptions(search);
   }
   // Given the validation rules some JIs can look like each other;
   // This function is to lock out/check for strange loading of Sdj Class objects that
   // are code masquerading themselves or other strangeness.
   checkClassInst(ji: AllSdjTypes, jiType: ESDJ_CLASS, isClass: boolean = false) {
-    let isInst: boolean
+    let isInst: boolean;
     
     switch(jiType) {
     case ESDJ_CLASS.DESCRIPTION:
@@ -183,7 +190,7 @@ export class SdjHost implements ISdjHost {
   createDescription(descJI: DescriptionJI): IDescriptionSdj {
     return new SdjDescription(descJI, SdjHost.getHost());
   }
-  // This is for testing purposes commented out on releases // builds
+  // This is for testing purposes commented out on initial release // builds
   static setTestingInstance(testInstance: SdjHost): void {
     this._instance = testInstance;
   }

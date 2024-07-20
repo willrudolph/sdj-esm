@@ -9,7 +9,7 @@ export * from "./core/enums.js";
 export * from "./util/regex.js";
 export * from "./core/interfaces.js";
 export * from "./core/statics.js";
-export * from "./util/func.std.js"
+export * from "./util/func.std.js";
 
 export * from "./util/verify.js";
 export * from "./util/immutables.js";

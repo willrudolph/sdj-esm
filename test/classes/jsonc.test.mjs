@@ -191,8 +191,8 @@ describe("Json Class Base Testing", () => {
     const test = new SdJson(blankWLexicon);
     expect(test).toBeTruthy();
 
-    expect(test.description.items.length).toBe(4);
-    expect(test.description.graph.length).toBe(4);
+    expect(test.description.$items.length).toBe(4);
+    expect(test.description.$graph.length).toBe(4);
     let newJI = test.genJI();
     expect(newJI.description.items.length).toBe(0);
     expect(newJI.description.graph.length).toBe(0);

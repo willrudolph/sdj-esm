@@ -22,15 +22,15 @@ import {blankInfoJI, genInfoJI, isBlankInfo, newInfoJI} from "../util/immutables
 import {checkResetInfo, verifyUniqKeys} from "../util/verify.js";
 import {restrictToAllowedKeys} from "../core/restrict.js";
 import {isInfo} from "../core/validators.js";
-import type {IDataSdj, IDescriptionSdj, IEntitySdj, IItemSdj, IJsonSdj} from "./class-interfaces.js";
+import type {IDataSdj, IDescriptionSdj, IJsonSdj} from "./class-interfaces.js";
 import {SdjHost} from "../global/host.js";
 import {SdjData} from "./data.js";
 import {ESDJ_CLASS} from "../core/enums.js";
-import {cloneDeep, each, find, has, isArray, isEmpty, isEqual, isObject, isString, isUndefined} from "lodash-es";
+import {cloneDeep, each, has, isArray, isEmpty, isEqual, isObject} from "lodash-es";
 
 export class SdJson implements IJsonSdj{
   _sdInfo: Info;
-  _data: IDataSdj[] = [];
+  _data: SdjData[] = [];
   _description: IDescriptionSdj;
 
   private _host: SdjHost = SdjHost.getHost();
@@ -56,7 +56,7 @@ export class SdJson implements IJsonSdj{
   }
 
   get data(): IDataSdj[] {
-    return this._data;
+    return <IDataSdj[]>this._data;
   }
 
   get description(): IDescriptionSdj {
@@ -67,104 +67,15 @@ export class SdJson implements IJsonSdj{
     return this._sdInfo;
   }
 
-  // Excepts either / or .
-  // clears or ignores first /.
-
   dataByPath(dataPath: string): IDataSdj | undefined {
-    if (!dataPath || !isString(dataPath) || dataPath === "." || dataPath === "/") {
-      return undefined;
-    }
-    let routePath = (dataPath.indexOf(".") !== -1) ? dataPath.replace(/\./g, "/"): dataPath,
-      routeSplit: string[] = routePath.split("/"),
-      parentPath: string;
-
-    while(routeSplit[0] === "" || routeSplit[0] === "/") {
-      routeSplit.shift();
-    }
-    if (routeSplit.length === 0) {
-      this.log(`Error finding sdKey: ${dataPath}`, 3);
-      return undefined;
-    }
-
-    let rtnData: IDataSdj | undefined = find(this._data, {sdKey: String(routeSplit[0])});
-    if (!rtnData) {
-      this.log(`Error finding sdKey:${routeSplit[0]}`, 3);
-      return undefined;
-    } else if (rtnData && routeSplit.length === 1) {
-      return rtnData;
-    }
-
-    parentPath = String(routeSplit[0]);
-    routeSplit.shift();
-    while (routeSplit.length > 0) {
-      if (rtnData) {
-        rtnData = find(rtnData.sdChildren, {sdKey: String(routeSplit[0])});
-      }
-      if (rtnData) {
-        parentPath += ("." + routeSplit[0]);
-        routeSplit.shift();
-      } else {
-        this.log(`On ${parentPath}; Error finding ${routeSplit[0]}`, 3);
-        return undefined;
-      }
-    }
-
-    return rtnData;
+    return this._host.searchMgr.dataByPath(this, dataPath);
   }
   dataByEntity(searchEnt: EntitySearch, dataPath?: string): IDataSdj[] {
-    const dataPathItem: IDataSdj | undefined = (dataPath) ? this.dataByPath(dataPath) : undefined,
-      data: IDataSdj[] = (dataPath && dataPathItem) ? [dataPathItem] : this._data,
-      foundEnts: IEntitySdj[] = this._description.searchEntities(searchEnt),
-      rtnAry: IDataSdj[] = [],
-      subChildSearch = (children: IDataSdj[]) => {
-        each(children, (dataObj: IDataSdj) => {
-          const matchedEnt = find(foundEnts, {sdId: dataObj.sdId});
-          if (dataObj.entity && matchedEnt) {
-            if (!searchEnt.checkData) {
-              rtnAry.push(dataObj);
-            } else if (searchEnt.checkData && this.checkEntityData(searchEnt, dataObj, matchedEnt)){
-              rtnAry.push(dataObj);
-            }
-          }
-          if (dataObj.sdChildren && dataObj.sdChildren?.length > 0) {
-            subChildSearch(dataObj.sdChildren);
-          }
-        });
-      };
-
-    if (data.length > 0) {
-      subChildSearch(data);
-      this.log("dataByEntity;" + foundEnts.length);
-    }
-    return rtnAry;
+    return this._host.searchMgr.dataByEntity(this, searchEnt, dataPath);
   }
 
   dataByItem(searchItem: ItemSearch, dataPath?: string): IDataSdj[] {
-    const dataPathItem: IDataSdj | undefined = (dataPath) ? this.dataByPath(dataPath) : undefined,
-      data: IDataSdj[] = (dataPath && dataPathItem) ? [dataPathItem] : this._data,
-      foundItems: IItemSdj[] = this._description.searchItems(searchItem),
-      rtnAry: IDataSdj[] = [],
-      subChildSearch = (children: IDataSdj[]) => {
-        each(children, (dataObj: IDataSdj) => {
-          each(foundItems, (item: IItemSdj): boolean => {
-            if (dataObj.entity && dataObj.entity.itemRefs[item.sdKey]) {
-              rtnAry.push(dataObj);
-              return false;
-            } else {
-              return true;
-            }
-          });
-          if (dataObj.sdChildren && dataObj.sdChildren?.length > 0) {
-            subChildSearch(dataObj.sdChildren);
-          }
-        });
-      };
-
-    if (data.length > 0) {
-      subChildSearch(data);
-      this.log("dataByEntity;" + foundItems.length);
-    }
-    return rtnAry;
+    return this._host.searchMgr.dataByItem(this, searchItem, dataPath);
   }
 
   genJI(): SdJsonJI {
@@ -183,15 +94,15 @@ export class SdJson implements IJsonSdj{
   }
 
   private build(inJson: SdJsonJI) {
-    this.log("In Json: " + inJson.sdInfo.name)
+    this.log("In Json: " + inJson.sdInfo.name);
     let quickLocRef: SdjData[] = [];
     each(inJson.data, (topDataJI: DataJI) => {
-      const entRef = this._description.getEntityRefById(topDataJI.sdId);
+      const entRef = this._description.getEntity(topDataJI.sdId);
       entRef!.validStruct(topDataJI, undefined, true);
     });
     each(inJson.data, (topDataJI: DataJI) => {
-      const entRef = this._description.getEntityRefById(topDataJI.sdId);
-      let topBuildData: SdjData | IDataSdj;
+      const entRef = this._description.getEntity(topDataJI.sdId);
+      let topBuildData: SdjData;
       if (!entRef) {
         throw new Error(`[SDJ] Description '${this._description.name}' has no entity with sdId:'${topDataJI.sdId}';`);
       }
@@ -205,22 +116,22 @@ export class SdJson implements IJsonSdj{
         this.createSubData(topDataJI.sdChildren, topBuildData);
       }
       quickLocRef.push(<SdjData>topBuildData);
-      this._data.push(<IDataSdj>topBuildData);
+      this._data.push(topBuildData);
     });
     each(quickLocRef, (sdjData, idx) => {
       sdjData.$sdIndex = idx;
     });
   }
 
-  private createSubData(childrenJI: DataJI[], parentRef: IDataSdj) {
+  private createSubData(childrenJI: DataJI[], parentRef: SdjData) {
     each(childrenJI, (childRef) => {
-      const entRef = this._description.getEntityRefById(childRef.sdId);
+      const entRef = this._description.getEntity(childRef.sdId);
       entRef!.validStruct(childRef, parentRef.genJI(false), true);
     });
     const quickLocRef: SdjData[] = [];
 
     each(childrenJI, (childJI: DataJI) => {
-      const entRef = this._description.getEntityRefById(childJI.sdId);
+      const entRef = this._description.getEntity(childJI.sdId);
       let newSdjData: SdjData;
       if (!entRef) {
         throw new Error(`[SDJ] Description '${this._description.name}' has no entity with sdId:'${childJI.sdId}';`);
@@ -234,37 +145,14 @@ export class SdJson implements IJsonSdj{
         this.createSubData(childJI.sdChildren, newSdjData);
       }
       quickLocRef.push(newSdjData);
-      parentRef.addChild(newSdjData);
+      parentRef.$addChild(newSdjData);
     });
 
     each(quickLocRef, (sdjData, idx) => {
       sdjData.$sdIndex = idx;
-    })
+    });
   }
 
-  private checkEntityData(searchEnt: EntitySearch, inData: IDataSdj, checkEnt: IEntitySdj): boolean {
-    let rtnVal = false;
-    // Assume single value array for now
-    if (searchEnt.childIds) {
-      if (find(inData.sdChildren, {sdId: checkEnt.sdId})) {
-        rtnVal = true;
-      }
-    } else if (searchEnt.parentIds) {
-      if (inData.parentRef && inData.parentRef.sdId === checkEnt.sdId) {
-        rtnVal = true;
-      }
-    } else if (searchEnt.sdItems) {
-      const checksdId = searchEnt.sdItems[0],
-          foundItem = (checksdId) ? find(checkEnt.itemRefs, {sdId: checksdId}) : undefined;
-      if (foundItem) {
-        rtnVal = Boolean(!isUndefined(inData.getDataKey(foundItem.sdKey)));
-      }
-    } else {
-      rtnVal = true;
-    }
-
-    return rtnVal
-  }
 
   private modifyInJson(inJI: SdJsonJI | DescriptionJI): SdJsonJI {
     let rtnJson: SdJsonJI,

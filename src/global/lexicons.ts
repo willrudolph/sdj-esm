@@ -7,16 +7,16 @@
  */
 
 import type {
-    CoreSD,
-    DescriptionJI,
-    EntityJI,
-    GenKeyStore,
-    ILexicon,
-    ItemJI,
-    IValidator,
-    SdJsonJI,
-    SdKeyProps,
-    ValidatorJI
+  CoreSD,
+  DescriptionJI,
+  EntityJI,
+  GenKeyStore,
+  ILexicon,
+  ItemJI,
+  IValidator,
+  SdJsonJI,
+  SdKeyProps,
+  ValidatorJI
 } from "../core/interfaces.js";
 import {validTypeLexName} from "../util/func.std.js";
 import {autoFailValidator, SdjValidator,} from "../core/validators.js";
@@ -24,21 +24,21 @@ import {getRegEx} from "../util/regex.js";
 import {verifySequenceKeys, verifyUniqKeys} from "../util/verify.js";
 import {BASE_ITEMS_JI} from "../core/statics.js";
 import {
-    assign,
-    clone,
-    cloneDeep,
-    each,
-    find,
-    findIndex,
-    has,
-    isArray,
-    isEmpty,
-    isFunction,
-    isObject,
-    isString,
-    isUndefined,
-    map,
-    uniq
+  assign,
+  clone,
+  cloneDeep,
+  each,
+  find,
+  findIndex,
+  has,
+  isArray,
+  isEmpty,
+  isFunction,
+  isObject,
+  isString,
+  isUndefined,
+  map,
+  uniq
 } from "lodash-es";
 import {genSdKeyProps} from "../util/immutables.js";
 import {restrictToAllowedKeys} from "../core/restrict.js";
@@ -113,10 +113,10 @@ export class SdjLexicons implements ISdjLexicons {
     return this._names;
   }
 
-  getValidator(validatorId: string): IValidator {
-    let rtnValidator = this._validators[validatorId];
+  getValidator(validatorType: string): IValidator {
+    let rtnValidator = this._validators[validatorType];
     if (isUndefined(rtnValidator)) {
-      this._host.gLog(`Lexicons: Unknown validator type '${validatorId}' return autoFailValidator`, 3);
+      this._host.gLog(`Lexicons: Unknown validator type '${validatorType}' return autoFailValidator`, 3);
       rtnValidator = autoFailValidator;
     }
     return rtnValidator;
@@ -168,7 +168,9 @@ export class SdjLexicons implements ISdjLexicons {
 
     return rtnGraph;
   }
-
+  
+  
+  
   newBaseItems(): ItemJI[] {
     return cloneDeep(this._baseItemIJs);
   }
@@ -251,7 +253,7 @@ export class SdjLexicons implements ISdjLexicons {
           try {
             rtnVal = iLexicon.dataVerify(inJson);
           } catch (err) {
-            this._host.gLog(`SdJsonJI '${inJson.sdInfo.name}' failed lexicon '${lexName}' validation: ${err};`)
+            this._host.gLog(`SdJsonJI '${inJson.sdInfo.name}' failed lexicon '${lexName}' validation: ${err};`);
             rtnVal = false;
             if (strict) {
               throw new Error(`[SDJ] SdJsonJI '${inJson.sdInfo.name}' failed lexicon '${lexName}' validation: ${err};`);
@@ -264,7 +266,7 @@ export class SdjLexicons implements ISdjLexicons {
   }
 
   // Returns simplified extended props based on extendIds
-  simpleExtendProps(entity:IEntitySdj, graph: IEntitySdj[]): SdKeyProps {
+  calcSdKeyProps(entity:IEntitySdj, graph: IEntitySdj[]): SdKeyProps {
     let rtnProps: SdKeyProps = {},
       curProps = entity.sdProps,
       beforeProps: SdKeyProps,
@@ -329,18 +331,18 @@ export class SdjLexicons implements ISdjLexicons {
         const refEnt = find(graph, {sdId: entId});
         if (refEnt) {
           if (rootExtId === entId) {
-            throw new Error(`[SDJ] extendId ${refEnt.sdKey} creates a circular reference`)
+            throw new Error(`[SDJ] extendId ${refEnt.sdKey} creates a circular reference`);
           }
           if (extendChains[entId]) {
             rtnAry.push(...extendChains[entId]!);
           } else if (refEnt.extendIds) {
-            rtnAry.push(...getExtended(rootExtId, refEnt.extendIds))
+            rtnAry.push(...getExtended(rootExtId, refEnt.extendIds));
           }
         } // presence has already been confirmed
-      })
+      });
 
       return rtnAry;
-    }
+    };
 
     each(graph, (entJI: EntityJI) => {
       if (entJI.extendIds) {
@@ -348,12 +350,12 @@ export class SdjLexicons implements ISdjLexicons {
 
         const refExtChain = extendChains[entJI.sdId]!;
         refExtChain.push(...entJI.extendIds);
-        refExtChain.push(...getExtended(entJI.sdId, entJI.extendIds))
+        refExtChain.push(...getExtended(entJI.sdId, entJI.extendIds));
 
         const curLen = refExtChain.length,
-            uniqLen = uniq(refExtChain).length;
+          uniqLen = uniq(refExtChain).length;
         if (curLen !== uniqLen) {
-          throw new Error(`[SDJ] ${entJI.sdKey} extends contains a circular reference`)
+          throw new Error(`[SDJ] ${entJI.sdKey} extends contains a circular reference`);
         }
       }
     });
@@ -365,7 +367,7 @@ export class SdjLexicons implements ISdjLexicons {
     if (lexIdx !== -1) {
       rtnILexicon = <ILexicon>this._lexicons[lexIdx];
     } else {
-      throw new Error(`[SDJ] Internal call failed to find lexicon '${lexName}';`)
+      throw new Error(`[SDJ] Internal call failed to find lexicon '${lexName}';`);
     }
     return rtnILexicon;
   }
@@ -381,7 +383,7 @@ export class SdjLexicons implements ISdjLexicons {
         if (isArray(validator) || !isObject(validator) || !isString(key) || !isString(validator?.type)) {
           throw new Error(`[SDJ] Lexicon validator is malformed ${key} / ${validator?.type};`);
         } else if (validator.type !== key) {
-          throw new Error(`[SDJ] Lexicon validator typeKey[${validator.type}] !== type[${key}];`)
+          throw new Error(`[SDJ] Lexicon validator typeKey[${validator.type}] !== type[${key}];`);
         }
         const replaceName = rtnSdjItemName(validator.type);
         if (replaceName) {
