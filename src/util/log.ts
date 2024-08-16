@@ -6,7 +6,7 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import {ESDJ_LOG} from "../core/enums.js";
+import {ESDJ_LOG} from "../core/statics.js";
 import type {FuncStrNumVoid} from "../core/interfaces.js";
 import {find, isArray} from "lodash-es";
 

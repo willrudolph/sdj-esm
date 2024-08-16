@@ -11,11 +11,12 @@ import {genInfoJI, genKeyDataJI, newInfoJI} from "../util/immutables.js";
 
 import {verifyUniqKeys} from "../util/verify.js";
 import {restrictCoreSD, restrictDataJIKeys} from "../core/restrict.js";
-import {ESDJ_CLASS, ESDJ_LIMIT, ESDJ_LIMIT_REQ} from "../core/enums.js";
+import {ESDJ_CLASS, ESDJ_LIMIT, ESDJ_LIMIT_REQ} from "../core/statics.js";
 import {isInfo} from "../core/validators.js";
 import type {IDataSdj, IEntitySdj, IItemSdj} from "./class-interfaces.js";
 import {each, find, isArray, isFunction, isNull, isNumber, isObject, isString, isUndefined} from "lodash-es";
 import {cloneJI, getFromCoreArray} from "../util/func.std.js";
+import {validSDKey} from "../core/sdj-types";
 
 /*
   SdjData / DataJI
@@ -251,7 +252,7 @@ export class SdjData implements CoreSD, IDataSdj {
     return rtnVal;
   }
 
-  genJI(withChildren: boolean = true): DataJI {
+  genJI(withChildren: boolean = false): DataJI {
     const rtnDataJI: DataJI = genKeyDataJI(this._data);
     rtnDataJI.sdId = this.sdId;
     rtnDataJI.sdKey = this.sdKey;
@@ -283,11 +284,20 @@ export class SdjData implements CoreSD, IDataSdj {
     return inEnt;
   }
   static VerifyJI(inData: DataJI) {
-    restrictCoreSD(inData);
+    if (!isObject(inData)) {
+      throw new Error("[SDJ] DataJI is required to be an object;");
+    } else {
+      restrictCoreSD(inData);
+    }
+
     if (inData.sdInfo && !isInfo(inData.sdInfo, true)) {
       throw new Error(`[SDJ] Data: sdKey '${inData.sdKey}' has malformed sdInfo;`);
-    } else if (!isObject(inData)) {
-      throw new Error("[SDJ] DataJI is required to be an object;");
+    } else if (inData.sdInfo && isInfo(inData.sdInfo, true)) {
+      if (!validSDKey(inData.sdInfo.name)) {
+        throw new Error(`[SDJ] Data: sdInfo.name '${inData.sdInfo.name}' required to be sdKey format;`);
+      } else if (inData.sdInfo.name !== inData.sdKey) {
+        throw new Error("[SDJ] Data: sdKey !== sdInfo.name;");
+      }
     }
 
     if (inData.sdChildren) {

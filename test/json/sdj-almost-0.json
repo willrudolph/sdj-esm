@@ -1,5 +1,5 @@
 {
-  "$id": "../node_modules/sdj/json/sdj-schema",
+  "$id": "../node_modules/sdj-esm/schema/sdj-schema.json",
   "description": {
 
   },

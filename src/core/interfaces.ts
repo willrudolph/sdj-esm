@@ -6,7 +6,7 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import {ESDJ_LIMIT} from "./enums.js";
+import {ESDJ_LIMIT} from "./statics.js";
 
 // * Typescript Notes for SDJ *
 // SDJ primarily focuses on JSON/JavaScript compatibility - not full range/all-possible TypeScript support
@@ -92,6 +92,8 @@ export type DataKeyValue = JIValue | undefined;
 // eslint-disable-next-line no-use-before-define
 export type DataJIValues = Info | DataJI[] | DataKeyValue;
 export interface DataJI extends CoreSD, JIObject {
+  // sdId === entity.sdId
+  // sdKey === unique string key per sdChildren/root
   [dataKey: string]: DataJIValues;
   sdInfo?: Info;
   sdChildren?: DataJI[];
@@ -103,6 +105,8 @@ export interface ItemSearch extends CoreSDSearch {
 }
 
 export interface ItemJI extends CoreSD, JIObject {
+  // sdId === unique item id per description
+  // sdKey === unique DataJI data Key, and per description
   type: string;
   limiter?: ESDJ_LIMIT;
 }
@@ -118,7 +122,10 @@ export interface EntityCore {
   sdProps?: SdKeyProps;
 }
 
-export interface EntityJI extends EntityCore, CoreSD, JIObject {}
+export interface EntityJI extends EntityCore, CoreSD, JIObject {
+  // sdId === unique entity id per description
+  // sdKey === unique entity name per description
+}
 
 export interface EntitySearch extends CoreSDSearch, EntityCore {}
 export declare type FuncLexGraphVerify = (entities: EntityJI[]) => boolean;

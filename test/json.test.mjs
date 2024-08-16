@@ -42,11 +42,11 @@ describe("SdjJson Init and Setup", () => {
   test("blocks attempts to use bad json files", () => {
     let goodDesc = blankDescriptionJI("descName"),
       goodsdInfo = newInfoJI("jsonName"),
-      goodJson = blankJsonJI("jsonName", "descName");
+      goodJson = blankJsonJI("filename.json", "descName");
 
     expect(goodDesc.sdInfo.name).toBe(goodJson.description.sdInfo.name);
     expect(goodsdInfo.name).toBe("jsonName");
-    expect(goodJson.sdInfo.name).toBe("jsonName");
+    expect(goodJson.sdInfo.name).toBe("filename.json");
 
     expect(() => {
       let sdjClass = new SdJson({});
@@ -55,39 +55,39 @@ describe("SdjJson Init and Setup", () => {
       let sdjClass = new SdJson({$id:"anythingelse", description: goodDesc, sdInfo: goodsdInfo, data: []});
     }).toThrow();
     expect(() => {
-      let sdjClass = new SdJson({$id:"http://willrudolph.com/schemas/sdj-schema.json", description: {}, sdInfo: goodsdInfo, data: []});
+      let sdjClass = new SdJson({$id:"http://willrudolph.com/schema/sdj-schema.json", description: {}, sdInfo: goodsdInfo, data: []});
     }).toThrow();
     expect(() => {
-      let sdjClass = new SdJson({$id:"http://willrudolph.com/schemas/sdj-schema.json", sdInfo: goodsdInfo, data: []});
+      let sdjClass = new SdJson({$id:"http://willrudolph.com/schema/sdj-schema.json", sdInfo: goodsdInfo, data: []});
     }).toThrow();
     expect(() => {
-      let sdjClass = new SdJson({$id:"http://willrudolph.com/schemas/sdj-schema.json", description: goodDesc, sdInfo: {}, data: []});
+      let sdjClass = new SdJson({$id:"http://willrudolph.com/schema/sdj-schema.json", description: goodDesc, sdInfo: {}, data: []});
     }).toThrow();
     expect(() => {
-      let sdjClass = new SdJson({$id:"http://willrudolph.com/schemas/sdj-schema.json", description: goodDesc, data: []});
+      let sdjClass = new SdJson({$id:"http://willrudolph.com/schema/sdj-schema.json", description: goodDesc, data: []});
     }).toThrow();
 
   });
   test("Good files bad/blank data, filled in", () => {
     let goodDesc = blankDescriptionJI("descName"),
-        goodsdInfo = newInfoJI("jsonName");
-    let sdjClassA = new SdJson({$id:"http://willrudolph.com/schemas/sdj-schema.json", description: goodDesc, sdInfo: goodsdInfo, data: {}});
+        goodsdInfo = newInfoJI("jsonfile.json");
+    let sdjClassA = new SdJson({$id:"http://willrudolph.com/schema/sdj-schema.json", description: goodDesc, sdInfo: goodsdInfo, data: {}});
     expect(sdjClassA).toBeTruthy();
     expect(sdjClassA.data).toEqual([]);
     goodDesc.sdInfo.name += "_B";
-    let sdjClassB = new SdJson({$id:"http://willrudolph.com/schemas/sdj-schema.json", description: goodDesc, sdInfo: goodsdInfo, data: false});
+    let sdjClassB = new SdJson({$id:"http://willrudolph.com/schema/sdj-schema.json", description: goodDesc, sdInfo: goodsdInfo, data: false});
     expect(sdjClassB).toBeTruthy();
     expect(sdjClassB.data).toEqual([]);
     goodDesc.sdInfo.name += "_C";
-    let sdjClassC = new SdJson({$id:"http://willrudolph.com/schemas/sdj-schema.json", description: goodDesc, sdInfo: goodsdInfo, data: null});
+    let sdjClassC = new SdJson({$id:"http://willrudolph.com/schema/sdj-schema.json", description: goodDesc, sdInfo: goodsdInfo, data: null});
     expect(sdjClassC).toBeTruthy();
     expect(sdjClassC.data).toEqual([]);
     goodDesc.sdInfo.name += "_D";
-    let sdjClassD = new SdJson({$id:"http://willrudolph.com/schemas/sdj-schema.json", description: goodDesc, sdInfo: goodsdInfo, data: -21});
+    let sdjClassD = new SdJson({$id:"http://willrudolph.com/schema/sdj-schema.json", description: goodDesc, sdInfo: goodsdInfo, data: -21});
     expect(sdjClassD).toBeTruthy();
     expect(sdjClassD.data).toEqual([]);
     goodDesc.sdInfo.name += "_E";
-    let sdjClassE = new SdJson({$id:"http://willrudolph.com/schemas/sdj-schema.json", description: goodDesc, sdInfo: goodsdInfo});
+    let sdjClassE = new SdJson({$id:"http://willrudolph.com/schema/sdj-schema.json", description: goodDesc, sdInfo: goodsdInfo});
     expect(sdjClassE).toBeTruthy();
     expect(sdjClassE.data).toEqual([]);
 

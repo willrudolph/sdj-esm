@@ -14,12 +14,12 @@ import type {IJsonSdj} from "../classes/class-interfaces.js";
 import {SdJson} from "../classes/json.js";
 import {SdjHost} from "../global/host.js";
 import {has, isString} from "lodash-es";
-import {validSDKey} from "../core/sdj-types.js";
 import {cloneJI} from "./func.std.js";
+import {getRegEx} from "./regex";
 
 export function blankJsonJI(jsonName: string, descOpt: DescriptionJI | SdjDescription | string | undefined = undefined): SdJsonJI {
   const descName = (descOpt && isString(descOpt)) ?
-        <string>descOpt : DEF_DESC, fileName = (validSDKey(jsonName)) ? jsonName : DEF_JSON;
+        <string>descOpt : DEF_DESC, fileName = (getRegEx("fileName").test(jsonName)) ? jsonName : DEF_JSON;
   let descJI: DescriptionJI;
 
   if (descOpt instanceof SdjDescription) {

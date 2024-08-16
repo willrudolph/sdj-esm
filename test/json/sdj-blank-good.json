@@ -1,5 +1,5 @@
 {
-  "$id": "http://willrudolph.com/schemas/sdj-schema.json",
+  "$id": "http://willrudolph.com/schema/sdj-schema.json",
   "description": {
     "sdInfo": {
       "created": 0,
@@ -13,7 +13,7 @@
   "sdInfo": {
     "created": 1701390090598,
     "modified": 1701390090598,
-    "name": "jsonName",
+    "name": "sdj-blank-good.json",
     "uniqId": "000000-00000-0000-0000000"
   },
   "data": []

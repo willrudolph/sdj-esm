@@ -11,7 +11,7 @@ import {validTypeLexName} from "../util/func.std.js";
 import {autoFailValidator} from "../core/validators.js";
 import {isFunction, isNull, isString, isUndefined} from "lodash-es";
 import {restrictCoreSD, restrictLimiter, restrictToAllowedKeys} from "../core/restrict.js";
-import {ESDJ_CLASS, ESDJ_LIMIT} from "../core/enums.js";
+import {ESDJ_CLASS, ESDJ_LIMIT} from "../core/statics.js";
 import type {IDescriptionSdj, IItemSdj} from "./class-interfaces.js";
 import {rtnSdjItemName} from "../core/sdj-types.js";
 

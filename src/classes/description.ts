@@ -19,7 +19,7 @@ import type {
 } from "../core/interfaces.js";
 import {checkResetInfo, verifyUniqKeys,} from "../util/verify.js";
 import {genEntityJI, genInfoJI, genItemJI} from "../util/immutables.js";
-import {BASE_ITEMS_JI, GRAPH_ZERO, SYS_RESERVED} from "../core/statics.js";
+import {BASE_ITEMS_JI, ESDJ_CLASS, GRAPH_ZERO, SYS_RESERVED} from "../core/statics.js";
 import {cloneJI, getFromCoreArray, UUID} from "../util/func.std.js";
 import {isArrayWithLen, isInfo, validLexiconArray} from "../core/validators.js";
 import {restrictToAllowedKeys} from "../core/restrict.js";
@@ -27,8 +27,8 @@ import type {IDescriptionSdj, IEntitySdj, IItemSdj} from "./class-interfaces.js"
 import {SdjEntity} from "./entity.js";
 import {SdjItem} from "./item.js";
 import type {ISdjHost, SdjJITypes} from "../global/global-interfaces.js";
-import {ESDJ_CLASS} from "../core/enums.js";
 import {clone, cloneDeep, each, find, isArray, isEqual, isFunction, times, uniq} from "lodash-es";
+import {validSDKey} from "../core/sdj-types";
 
 export class SdjDescription implements IDescriptionSdj {
   lang: string;
@@ -295,6 +295,8 @@ export class SdjDescription implements IDescriptionSdj {
   static VerifyJI(inDesc: DescriptionJI) {
     if (!isInfo(inDesc.sdInfo)) {
       throw new Error("[SDJ] Description - improperly formatted sdInfo;");
+    } else if (isInfo(inDesc.sdInfo) && !validSDKey(inDesc.sdInfo.name)) {
+      throw new Error(`[SDJ] Description name '${inDesc.sdInfo.name}' must be sdKey format;`);
     }
     if (inDesc.lexicons && !validLexiconArray(inDesc.lexicons)) {
       throw new Error("[SDJ] Description.lexicons improperly formed;");

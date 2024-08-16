@@ -1,5 +1,5 @@
 {
-  "$id": "http://willrudolph.com/schemas/sdj-schema.json",
+  "$id": "http://willrudolph.com/schema/sdj-schema.json",
   "description": {
     "lang": "en",
     "sdInfo": {

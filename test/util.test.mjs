@@ -1,4 +1,4 @@
-import {newInfoJI, UUID} from "../dist/index.js";
+import {getRegEx, newInfoJI, UUID} from "../dist/index.js";
 import {describe, expect, test} from "@jest/globals";
 import {isString} from "lodash-es";
 
@@ -59,4 +59,22 @@ describe("Util Tests", () => {
     expect(isString("")).toBe(true);
 
   });
+
+  test("regEx Filename", () => {
+    expect(getRegEx("fileName").test(".hidden")).toBeFalsy();
+    expect(getRegEx("fileName").test(".*")).toBeFalsy();
+    expect(getRegEx("fileName").test("///")).toBeFalsy();
+    expect(getRegEx("fileName").test("[{}c.hid")).toBeFalsy();
+    expect(getRegEx("fileName").test("*/*")).toBeFalsy();
+    expect(getRegEx("fileName").test("543.*")).toBeFalsy();
+    expect(getRegEx("fileName").test("fgds./")).toBeFalsy();
+    expect(getRegEx("fileName").test("something.?")).toBeFalsy();
+
+    expect(getRegEx("fileName").test("some.name.ts")).toBeTruthy();
+    expect(getRegEx("fileName").test("something.a")).toBeTruthy();
+    expect(getRegEx("fileName").test("somet-some.txt")).toBeTruthy();
+    expect(getRegEx("fileName").test("something.json")).toBeTruthy();
+    expect(getRegEx("fileName").test("somet.fdo")).toBeTruthy();
+    expect(getRegEx("fileName").test("someth.asd")).toBeTruthy();
+  })
 });

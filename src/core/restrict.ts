@@ -7,8 +7,7 @@
  */
 
 import {type CoreSD, type DataJI, type DataJIValues, SdjLimiterGroup} from "./interfaces.js";
-import {DATAJI_WORDS, RESTRICT_WORDS} from "./statics.js";
-import type {ESDJ_LIMIT} from "./enums.js";
+import {DATAJI_WORDS, RESTRICT_WORDS, type ESDJ_LIMIT} from "./statics.js";
 import {each, has, isNull, isNumber, isString, isUndefined} from "lodash-es";
 import {getValidNumberFunc, validSDKey} from "./sdj-types.js";
 

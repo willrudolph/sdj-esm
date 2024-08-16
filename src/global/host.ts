@@ -8,16 +8,16 @@
 
 import type {DataJI, DescriptionJI, DescriptionSearch, EntityJI, FuncStrNumVoid, ItemJI} from "../core/interfaces.js";
 import {SdjDescription} from "../classes/description.js";
-import {ESDJ_CLASS, ESDJ_LOG} from "../core/enums.js";
+import {ESDJ_CLASS, ESDJ_LOG} from "../core/statics.js";
 import type {IDescriptionSdj} from "../classes/class-interfaces.js";
 import type {
-  AllSdjTypes,
-  ISdjHost,
-  ISdjLexicons,
-  ISdjSearch,
-  ISdjSettings,
-  SdjJITypes,
-  Settings
+    AllSdjTypes,
+    ISdjHost,
+    ISdjLexicons,
+    ISdjSearch,
+    ISdjSettings,
+    SdjJITypes,
+    Settings
 } from "./global-interfaces.js";
 import {SdjSettings} from "./settings.js";
 import {SdjLexicons} from "./lexicons.js";

@@ -7,24 +7,24 @@
  */
 
 import type {
-  DataJI,
-  DescriptionJI,
-  EntityJI,
-  EntitySearch,
-  ExtAllowedValue,
-  FuncStrNumVoid,
-  GenKeyStore,
-  Info,
-  ItemJI,
-  ItemSearch,
-  IValidator,
-  NumKeyStore,
-  SdJsonJI,
-  SdKeyProps
+    DataJI,
+    DescriptionJI,
+    EntityJI,
+    EntitySearch,
+    ExtAllowedValue,
+    FuncStrNumVoid,
+    GenKeyStore,
+    Info,
+    ItemJI,
+    ItemSearch,
+    IValidator,
+    NumKeyStore,
+    SdJsonJI,
+    SdKeyProps
 } from "../core/interfaces.js";
 
 import type {ISdjHost, SdjJITypes} from "../global/global-interfaces.js";
-import type {ESDJ_CLASS, ESDJ_LIMIT} from "../core/enums.js";
+import type {ESDJ_CLASS, ESDJ_LIMIT} from "../core/statics.js";
 
 export declare interface IItemSdj {
     readonly sdId: number;
@@ -70,7 +70,7 @@ export declare interface IDataSdj {
     isValid: () => boolean;
     getDataKey: (dataKey: string) => ExtAllowedValue;
     setDataKey: (dataKey: string, value: ExtAllowedValue) => void;
-    genJI: (withChildren: boolean) => DataJI;
+    genJI: (withChildren?: boolean) => DataJI;
 }
 
 export declare interface IDescriptionSdj {

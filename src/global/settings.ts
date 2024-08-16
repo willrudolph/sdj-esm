@@ -7,7 +7,7 @@
  */
 
 import {type ILogManager, LogManager} from "../util/log.js";
-import {ESDJ_LOG} from "../core/enums.js";
+import {ESDJ_LOG} from "../core/statics.js";
 import type {GlobalOptions, ISdjHost, ISdjSettings} from "./global-interfaces.js";
 import {isFunction} from "lodash-es";
 

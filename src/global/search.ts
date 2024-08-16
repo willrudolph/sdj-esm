@@ -19,8 +19,7 @@ import type {
 import type {IDataSdj, IDescriptionSdj, IEntitySdj, IItemSdj, IJsonSdj} from "../classes/class-interfaces.js";
 import {each, find, isEqual, isNull, isString, isUndefined} from "lodash-es";
 import {validIntArray} from "../core/sdj-types.js";
-import {ESDJ_LIMIT} from "../core/enums.js";
-import {SD_IDX} from "../core/statics.js";
+import {ESDJ_LIMIT, SD_IDX} from "../core/statics.js";
 import {SdjDescription} from "../classes/description.js";
 import {getFromCoreArray} from "../util/func.std.js";
 

@@ -22,7 +22,7 @@ import {validTypeLexName} from "../util/func.std.js";
 import {autoFailValidator, SdjValidator,} from "../core/validators.js";
 import {getRegEx} from "../util/regex.js";
 import {verifySequenceKeys, verifyUniqKeys} from "../util/verify.js";
-import {BASE_ITEMS_JI} from "../core/statics.js";
+import {BASE_ITEMS_JI, ESDJ_CLASS} from "../core/statics.js";
 import {
   assign,
   clone,
@@ -44,7 +44,6 @@ import {genSdKeyProps} from "../util/immutables.js";
 import {restrictToAllowedKeys} from "../core/restrict.js";
 import type {ISdjHost, ISdjLexicons} from "./global-interfaces.js";
 import type {IEntitySdj} from "../classes/class-interfaces.js";
-import {ESDJ_CLASS} from "../core/enums.js";
 import {type DefaultInitItem, rtnSdjItemName, SdjDefaultTypes} from "../core/sdj-types.js";
 
 /*

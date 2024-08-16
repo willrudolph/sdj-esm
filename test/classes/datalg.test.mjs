@@ -27,9 +27,9 @@ describe("SdjData Test Suite - Small File Testing", () => {
         expect(betaObj.sdChildren[1].$sdIndex).toBe(1);
         expect(betaObj.sdChildren[2].$sdIndex).toBe(2);
         expect(testJson.description.genJI()).toMatchObject(testA.description);
-        expect(dataObj.genJI()).toMatchObject(testA.data[0]);
-        expect(betaObj.genJI()).toMatchObject(testA.data[0].sdChildren[0]);
-        expect(testJson.genJI()).toMatchObject(testA);
+        expect(dataObj.genJI(true)).toMatchObject(testA.data[0]);
+        expect(betaObj.genJI(true)).toMatchObject(testA.data[0].sdChildren[0]);
+        expect(testJson.genJI(true)).toMatchObject(testA);
         const cleanNew = testJson.genJI();
         SdjHost.setTestingInstance(undefined);
         const outJI = new SdJson(cleanNew);

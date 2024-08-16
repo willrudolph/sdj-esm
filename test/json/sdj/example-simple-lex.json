@@ -1,5 +1,5 @@
 {
-  "$id": "http://willrudolph.com/schemas/sdj-schema.json",
+  "$id": "http://willrudolph.com/schema/sdj-schema.json",
   "description": {
     "sdInfo": {
       "created": 1701390090598,
@@ -15,7 +15,7 @@
   "sdInfo": {
     "created": 1701390090598,
     "modified": 1701390090598,
-    "name": "simpleLexicon",
+    "name": "example-simple-lex.json",
     "uniqId": "3rh28R-Qlbx4-i6Xy-gq103MA"
   },
   "data": [{

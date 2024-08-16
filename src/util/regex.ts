@@ -33,6 +33,11 @@ export const getRegEx = (regExName: string): RegExp => {
     rtnRegEx = /^[a-z]{1}[a-z0-9_-]{2,22}[/a-z0-9]{1}$/gm;
     break;
 
+  case "fileName":
+  // Standard File name check for sdjJson files
+  // eslint-disable-next-line no-control-regex
+    rtnRegEx = /^([^\x00-\x1F!"$'\\(\\)*,\\/:;<>\\?\\[\\\]\\{\\|\\}\x7F]+)\.([a-zA-Z0-9]*)$/gm;
+    break;
   // uuid for data objects
   case "uuidData":
     rtnRegEx = /^[a-zA-Z0-9]{5}[-]{1}[a-zA-Z0-9]{4}$/gm;

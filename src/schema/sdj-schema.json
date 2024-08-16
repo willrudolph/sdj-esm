@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2019-09/schema",
-  "$id": "http://willrudolph.com/schemas/sdj-schema.json",
+  "$id": "http://willrudolph.com/schema/sdj-schema.json",
   "type": "object",
   "title": "SDJ Schema",
   "required": [

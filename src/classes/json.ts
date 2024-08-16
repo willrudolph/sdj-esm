@@ -15,9 +15,8 @@ import type {
   ItemSearch,
   SdJsonJI
 } from "../core/interfaces.js";
-import {UUID} from "../util/func.std.js";
 
-import {SDJ_SCHEMA} from "../core/statics.js";
+import {ESDJ_CLASS, SDJ_SCHEMA} from "../core/statics.js";
 import {blankInfoJI, genInfoJI, isBlankInfo, newInfoJI} from "../util/immutables.js";
 import {checkResetInfo, verifyUniqKeys} from "../util/verify.js";
 import {restrictToAllowedKeys} from "../core/restrict.js";
@@ -25,8 +24,8 @@ import {isInfo} from "../core/validators.js";
 import type {IDataSdj, IDescriptionSdj, IJsonSdj} from "./class-interfaces.js";
 import {SdjHost} from "../global/host.js";
 import {SdjData} from "./data.js";
-import {ESDJ_CLASS} from "../core/enums.js";
 import {cloneDeep, each, has, isArray, isEmpty, isEqual, isObject} from "lodash-es";
+import {getRegEx} from "../util/regex";
 
 export class SdJson implements IJsonSdj{
   _sdInfo: Info;
@@ -184,7 +183,7 @@ export class SdJson implements IJsonSdj{
           this._host.checkClassInst(descJI, ESDJ_CLASS.DESCRIPTION, false);
           rtnJson = {
             $id: <string>SDJ_SCHEMA[0],
-            sdInfo: blankInfoJI(descJI.sdInfo.name + UUID.GetCompress()),
+            sdInfo: blankInfoJI(descJI.sdInfo.name + ".json"),
             description: descJI,
             data: []
           };
@@ -211,6 +210,8 @@ export class SdJson implements IJsonSdj{
 
     if (!isInfo(inJson.sdInfo)) {
       throw new Error("[SDJ] Json: missing sdInfo;");
+    } else if (isInfo(inJson.sdInfo) && (!getRegEx("fileName").test(inJson.sdInfo.name))) {
+      throw new Error(`[SDJ] Json sdInfo.name '${inJson.sdInfo.name}' is not regEx fileName;`);
     }
 
     if (!inJson.description || !inJson.description.sdInfo || !isInfo(inJson.description.sdInfo)) {

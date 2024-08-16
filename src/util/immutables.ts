@@ -17,9 +17,8 @@ import type {
   ItemJI,
   SdKeyProps
 } from "../core/interfaces.js";
-import {DATAJI_WORDS, DEF_DESC} from "../core/statics.js";
+import {DATAJI_WORDS, DEF_DESC, ESDJ_LIMIT} from "../core/statics.js";
 import {isArrayWithLen, isInfo} from "../core/validators.js";
-import {ESDJ_LIMIT} from "../core/enums.js";
 import {cloneDeep, each, isBoolean, isNumber, isString, isUndefined, uniq} from "lodash-es";
 import {validSDKey} from "../core/sdj-types.js";
 

@@ -7,13 +7,11 @@
  */
 
 import type {CoreSD, DataJI, EntityJI, GenKeyStore, JIValue, NumKeyStore, SdKeyProps} from "../core/interfaces.js";
-import {GRAPH_ID, SYS_RESERVED} from "../core/statics.js";
+import {ESDJ_CLASS, ESDJ_LIMIT, GRAPH_ID, SYS_RESERVED} from "../core/statics.js";
 import {genSdKeyProps} from "../util/immutables.js";
 
 import {isArrayWithLen} from "../core/validators.js";
 import {restrictCoreSD, restrictLimiter, restrictToAllowedKeys} from "../core/restrict.js";
-
-import {ESDJ_CLASS, ESDJ_LIMIT} from "../core/enums.js";
 import type {IDescriptionSdj, IEntitySdj, IItemSdj} from "./class-interfaces.js";
 import {
   each,

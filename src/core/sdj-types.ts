@@ -5,12 +5,11 @@
   License, v. 2.0. If a copy of the MPL was not distributed with this
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-import {DEF_MAX_STR_LEN, MAX_OBJ_ARY_LEN, STR_LEN_LNG, STR_LEN_SHRT} from "./statics.js";
+import {DEF_MAX_STR_LEN, ESDJ_TYPE, MAX_OBJ_ARY_LEN, STR_LEN_LNG, STR_LEN_SHRT} from "./statics.js";
 import type {FuncJsonValueValidator, JIValue} from "./interfaces.js";
 import {each, isArray, isBoolean, isNumber, isObject, isString, isUndefined} from "lodash-es";
 import type {IntAny} from "./internal.js";
 import {getRegEx} from "../util/regex.js";
-import {ESDJ_TYPE} from "./enums.js";
 
 export const validSDKey = (checkVal: JIValue) => {
   const regEx = getRegEx("sdKey");
