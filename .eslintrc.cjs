@@ -5,6 +5,7 @@ module.exports = {
 		"node": true
 	},
 	"ignorePatterns": [
+		"*.test.mjs",
 		".eslintrc.cjs",
 		"jest.config.js",
 		"/dist/*",

@@ -7,19 +7,19 @@
  */
 
 import type {
-    DataJI,
-    DescriptionJI,
-    DescriptionSearch,
-    EntityJI,
-    EntitySearch,
-    FuncLexGraphVerify,
-    FuncStrNumVoid,
-    ILexicon,
-    ItemJI,
-    ItemSearch,
-    IValidator,
-    SdJsonJI,
-    SdKeyProps
+  DataJI,
+  DescriptionJI,
+  DescriptionSearch,
+  EntityJI,
+  EntitySearch,
+  FuncLexGraphVerify,
+  FuncStrNumVoid,
+  ILexicon,
+  ItemJI,
+  ItemSearch,
+  IValidator,
+  SdJsonJI,
+  SdKeyProps
 } from "../core/interfaces.js";
 import type {IDataSdj, IDescriptionSdj, IEntitySdj, IItemSdj, IJsonSdj} from "../classes/class-interfaces.js";
 import {type ESDJ_CLASS, type ESDJ_LOG} from "../core/statics.js";

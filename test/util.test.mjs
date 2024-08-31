@@ -1,4 +1,4 @@
-import {getRegEx, newInfoJI, UUID} from "../dist/index.js";
+import {getRegEx, newInfoJI, UUID, validIntArray} from "../dist/index.js";
 import {describe, expect, test} from "@jest/globals";
 import {isString} from "lodash-es";
 
@@ -72,9 +72,33 @@ describe("Util Tests", () => {
 
     expect(getRegEx("fileName").test("some.name.ts")).toBeTruthy();
     expect(getRegEx("fileName").test("something.a")).toBeTruthy();
-    expect(getRegEx("fileName").test("somet-some.txt")).toBeTruthy();
+    expect(getRegEx("fileName").test("Aomeasdfa3124t-some.txt")).toBeTruthy();
     expect(getRegEx("fileName").test("something.json")).toBeTruthy();
-    expect(getRegEx("fileName").test("somet.fdo")).toBeTruthy();
-    expect(getRegEx("fileName").test("someth.asd")).toBeTruthy();
+    expect(getRegEx("fileName").test("Comet.fdo")).toBeTruthy();
+    expect(getRegEx("fileName").test("1234123sodsfameth.asd")).toBeTruthy();
   })
+
+  test("validIntArray", () => {
+    expect(validIntArray([0])).toBeTruthy();
+    expect(validIntArray([0,3,1])).toBeTruthy();
+    expect(validIntArray([1,2,3,1])).toBeTruthy();
+    expect(validIntArray([1,2,3,2,1])).toBeTruthy();
+
+    expect(validIntArray([])).toBeFalsy();
+    expect(validIntArray([-2])).toBeFalsy();
+    expect(validIntArray([2.312])).toBeFalsy();
+    expect(validIntArray(["Dfds"])).toBeFalsy();
+    expect(validIntArray([.334])).toBeFalsy();
+    expect(validIntArray([undefined])).toBeFalsy();
+
+    expect(validIntArray([true])).toBeFalsy();
+    expect(validIntArray([null])).toBeFalsy();
+    expect(validIntArray([false])).toBeFalsy();
+
+    expect(validIntArray("")).toBeFalsy();
+    expect(validIntArray(false)).toBeFalsy();
+    expect(validIntArray(0)).toBeFalsy();
+    expect(validIntArray({})).toBeFalsy();
+    expect(validIntArray(undefined)).toBeFalsy();
+  });
 });

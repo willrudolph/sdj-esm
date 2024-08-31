@@ -38,7 +38,7 @@ export class SdjItem implements IItemSdj {
   private _validator: IValidator = autoFailValidator;
   private _description?: IDescriptionSdj;
 
-  constructor(inItem: ItemJI, description: IDescriptionSdj | undefined) {
+  constructor(inItem: ItemJI, description?: IDescriptionSdj | undefined) {
     this.description = description;
     if (this._description) {
       this._description.host.checkClassInst(inItem, ESDJ_CLASS.ITEM, false);

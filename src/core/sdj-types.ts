@@ -15,8 +15,10 @@ export const validSDKey = (checkVal: JIValue) => {
   const regEx = getRegEx("sdKey");
   return isString(checkVal) ? regEx.test(<string>checkVal) : false;
 };
+
 export const validUtcDate: FuncJsonValueValidator = (checkVal: JIValue):boolean =>
   Boolean(isNumber(checkVal));
+
 export const validBoolean: FuncJsonValueValidator = (checkVal: JIValue): boolean => {
   let rtnValid = false;
   if (isString(checkVal)) {
@@ -242,3 +244,5 @@ export const rtnSdjItemName = (nameStr: string): string | undefined => {
 
   return rtnName;
 };
+
+export const validStrArray = getValidObjFunc("array", "string");

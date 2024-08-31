@@ -44,7 +44,12 @@ import {genSdKeyProps} from "../util/immutables.js";
 import {restrictToAllowedKeys} from "../core/restrict.js";
 import type {ISdjHost, ISdjLexicons} from "./global-interfaces.js";
 import type {IEntitySdj} from "../classes/class-interfaces.js";
-import {type DefaultInitItem, rtnSdjItemName, SdjDefaultTypes} from "../core/sdj-types.js";
+import {
+  type DefaultInitItem,
+  rtnSdjItemName,
+  SdjDefaultTypes,
+  validStrArray
+} from "../core/sdj-types.js";
 
 /*
   SdjLexicons are the dictionary/library extension system of SDJ.
@@ -82,6 +87,7 @@ import {type DefaultInitItem, rtnSdjItemName, SdjDefaultTypes} from "../core/sdj
   rules, JS errors will be consistently thrown for things like -
   - Missing / unreferenced Entities
   - Missing / unreferenced Items
+  - Missing required-s
   - Violations of SDJ standard ruleset
 
  */
@@ -102,8 +108,24 @@ export class SdjLexicons implements ISdjLexicons {
       });
     });
 
-
     if (addLexicons && addLexicons.length > 0) {
+      // check required
+      let mentionedReqs: string[] = [];
+      each(addLexicons, (lexicon: ILexicon) => {
+        SdjLexicons.VerifyJI(lexicon);
+        if (lexicon.required) {
+          mentionedReqs = mentionedReqs.concat(lexicon.required);
+        }
+      });
+      if (mentionedReqs.length > 0) {
+        mentionedReqs = uniq([...mentionedReqs]);
+        each(mentionedReqs, (mentionedName) => {
+          const lexRef: ILexicon | undefined = find(addLexicons, {name: mentionedName});
+          if (!lexRef) {
+            throw new Error(`[SDJ] a Lexicon.required mentions '${mentionedName}' which is not provided;`);
+          }
+        });
+      }
       each(addLexicons, (lexicon: ILexicon) => this.buildLexicon(lexicon));
     }
   }
@@ -208,7 +230,7 @@ export class SdjLexicons implements ISdjLexicons {
       const lexIdx = this._names.indexOf(descLexName);
       if (lexIdx === -1) {
         throw new Error(`[SDJ] SdJson Description references '${descLexName}' which needs to be added
-          on initialization`);
+          on initialization;`);
       }
       const activeLexicon = this._lexicons[lexIdx];
       if (activeLexicon?.required) {
@@ -372,7 +394,6 @@ export class SdjLexicons implements ISdjLexicons {
     return rtnILexicon;
   }
   private buildLexicon(lexicon: ILexicon) {
-    SdjLexicons.VerifyJI(lexicon);
     const lexRegEx = getRegEx("typeLexName");
     if (this._names.indexOf(lexicon.name) !== -1) {
       throw new Error(`[SDJ] Lexicon name '${lexicon.name}' already added`);
@@ -520,6 +541,10 @@ export class SdjLexicons implements ISdjLexicons {
 
     if (!lexicon.validators && !lexicon.items && !lexicon.entities && !lexicon.graphVerify && !lexicon.dataVerify) {
       throw new Error(`[SDJ] Lexicon '${lexicon.name}' has no information;`);
+    }
+
+    if (lexicon.required && !validStrArray(lexicon.required)) {
+      throw new Error("[SDJ] Lexicon has malformed required value;");
     }
 
     if (lexicon.items && !isArray(lexicon.items)) {

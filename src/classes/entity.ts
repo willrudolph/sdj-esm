@@ -45,6 +45,7 @@ import type {numArrayOrUnDef} from "../core/internal.js";
                 .REQ_ONE  At least one Entity is required by parent
                 .KEY_IDX  Child Entities of singular type
   sdProps     Optional properties for entities and used by lexicons or manually
+  dataInfo    Boolean switch for if Entity stores creation/modification information (sdInfo object)
 
   *All pos-int number[] are uniq'd and sorted before operations
 
@@ -78,7 +79,7 @@ export class SdjEntity implements CoreSD, IEntitySdj {
   private _childRefs?: NumKeyStore<IEntitySdj>;
   private _itemRefs?: GenKeyStore<IItemSdj>;
 
-  constructor(inEnt: EntityJI, description: IDescriptionSdj | undefined) {
+  constructor(inEnt: EntityJI, description?: IDescriptionSdj | undefined) {
     this._description = this.confirmDescript(description);
     if (this._description) {
       this._description.host.checkClassInst(inEnt, ESDJ_CLASS.ENTITY, false);

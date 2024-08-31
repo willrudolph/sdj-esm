@@ -43,7 +43,7 @@ export class SdjData implements CoreSD, IDataSdj {
   private _data: DataJI; // internal mutable central reference
   private _entity: IEntitySdj;
 
-  constructor(inData: DataJI, entityRef: IEntitySdj, parentRef: SdjData | undefined) {
+  constructor(inData: DataJI, entityRef: IEntitySdj, parentRef?: SdjData | undefined) {
     this._entity = this.confirmEntity(entityRef);
     this._entity.description.host.checkClassInst(inData, ESDJ_CLASS.DATA, false);
     const workData = cloneJI(inData);

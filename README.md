@@ -23,6 +23,7 @@ The library transforms sdj data between immutable and mutable forms of sdj json/
 Add the library via npm as a dependency. SDJ-ESM requires 'lodash-es' as a peer dependency.
 ```bash
 npm install lodash-es
+npm install @types/lodash-es --dev
 npm install sdj-esm
 ```
 
@@ -50,7 +51,8 @@ Note; the SDJ Library is fault intolerant and will throw errors on invalid files
 Try...Catch. Or use standalone ```genJson(json)``` function for an error safe version.
 
 ### Release Notes:
-
+0.2.1 - SdjEditor Alignments 1<br>
+0.2.0 - Schema Relocation, move enums -> statics, fileName regEx for sdJson.sdInfo.name<br>
 0.1.0 - Overhaul of Validators, Data/Structure validation, add sdjIndex functionality<br>
 0.0.7 - Initial NPM/Git testing release
 

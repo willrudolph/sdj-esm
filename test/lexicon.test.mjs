@@ -99,8 +99,7 @@ describe("Lexicon Initial Tests", ()=> {
 
 		lexicon = {
 			name: "angsdj",
-			items: [],
-			required: ["valuea","valueb"]
+			items: []
 		};
 		host = SdjHost.getISdjHost({lexicons: [lexicon]});
 		expect(host).toBeTruthy();
@@ -113,7 +112,6 @@ describe("Lexicon Initial Tests", ()=> {
 			items: [],
 			entities: [],
 			graphVerify: () => false,
-			required: ["valuea","valueb"]
 		};
 		host = SdjHost.getISdjHost({lexicons: [lexiconB]});
 		expect(host).toBeTruthy();
@@ -268,7 +266,6 @@ describe("Lexicon Initial Tests", ()=> {
 			entities: [],
 			graphVerify: () => true,
 			dataVerify: () => true,
-			required: ["valuea","valueb"]
 		};
 
 		clone = cloneDeep(lexiconB);

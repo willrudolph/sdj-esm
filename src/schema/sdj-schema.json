@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$schema": "http://json-schema.org/draft-07/schema",
   "$id": "http://willrudolph.com/schema/sdj-schema.json",
   "type": "object",
   "title": "SDJ Schema",
@@ -17,7 +17,7 @@
     "sdInfo": {
       "type": "object",
       "$ref": "#/$defs/info",
-      "title": "Name, uniqId, created/modified for Json File."
+      "title": "File name, uniqId, created/modified for Json File."
     },
     "description": {
       "type": "object",
@@ -59,11 +59,6 @@
           "items": {
             "$ref": "#/$defs/entity"
           }
-        },
-        "dataInfo": {
-          "type": ["boolean", "null"],
-          "default": null,
-          "title": "SDJ switch for uniqKey/creation/modification. If true systems will save and expect info per data object."
         },
         "lexicons": {
           "type": ["array", "null"],
@@ -110,7 +105,8 @@
           "type": "integer"
         }
       },
-      "required": ["name", "uniqId", "created", "modified"]
+      "required": ["name", "uniqId", "created", "modified"],
+      "additionalProperties": false
     },
     "data": {
       "type": "object",
@@ -146,11 +142,11 @@
     },
     "entity": {
       "type": "object",
-      "title": "Entity description of data in graph/relationships",
+      "title": "Entity description of data as content/relationships",
       "properties": {
         "sdId": {
           "type": "integer",
-          "title": "sdId in plan of entity"
+          "title": "sdId of entity in description graph"
         },
         "sdKey": {
           "type": "string",
@@ -206,6 +202,11 @@
           "default": null,
           "title": "Extended assigned key/value props of entity",
           "additionalProperties": true
+        },
+        "dataInfo": {
+          "type": ["boolean", "null"],
+          "default": null,
+          "title": "SDJ switch for uniqKey/creation/modification. If true systems will save and expect info per data object."
         }
       },
       "additionalProperties": false,
@@ -216,7 +217,7 @@
       "type": "object",
       "properties": {
         "sdId": {
-          "title": "sdId for item in plan",
+          "title": "sdId for item, used by entity",
           "type": "integer"
         },
         "sdKey": {

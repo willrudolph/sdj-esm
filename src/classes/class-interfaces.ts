@@ -7,20 +7,20 @@
  */
 
 import type {
-    DataJI,
-    DescriptionJI,
-    EntityJI,
-    EntitySearch,
-    ExtAllowedValue,
-    FuncStrNumVoid,
-    GenKeyStore,
-    Info,
-    ItemJI,
-    ItemSearch,
-    IValidator,
-    NumKeyStore,
-    SdJsonJI,
-    SdKeyProps
+  DataJI,
+  DescriptionJI,
+  EntityJI,
+  EntitySearch,
+  ExtAllowedValue,
+  FuncStrNumVoid,
+  GenKeyStore,
+  Info,
+  ItemJI,
+  ItemSearch,
+  IValidator,
+  NumKeyStore,
+  SdJsonJI,
+  SdKeyProps
 } from "../core/interfaces.js";
 
 import type {ISdjHost, SdjJITypes} from "../global/global-interfaces.js";
