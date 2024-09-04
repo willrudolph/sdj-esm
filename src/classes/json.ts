@@ -17,7 +17,7 @@ import type {
 } from "../core/interfaces.js";
 
 import {ESDJ_CLASS, SDJ_SCHEMA} from "../core/statics.js";
-import {blankInfoJI, genInfoJI, isBlankInfo, newInfoJI} from "../util/immutables.js";
+import {blankDescriptionJI, blankInfoJI, genInfoJI, isBlankInfo, newInfoJI} from "../util/immutables.js";
 import {checkResetInfo, verifyUniqKeys} from "../util/verify.js";
 import {restrictToAllowedKeys} from "../core/restrict.js";
 import {isInfo} from "../core/validators.js";
@@ -32,6 +32,7 @@ export class SdJson implements IJsonSdj{
   _data: SdjData[] = [];
   _description: IDescriptionSdj;
 
+  private _isLocked = true;
   private _host: SdjHost = SdjHost.getHost();
   private readonly log: FuncStrNumVoid;
 
@@ -66,6 +67,56 @@ export class SdJson implements IJsonSdj{
     return this._sdInfo;
   }
 
+  get isLocked(): boolean {
+    return this._isLocked;
+  }
+
+  get isValid(): boolean {
+    let rtnBool = true;
+    if (!this._isLocked) {
+      try {
+        rtnBool = this.validate();
+        if (rtnBool) {
+          rtnBool = this._host.lexiconMgr.validateGraph(this._description.genJI());
+          if (rtnBool) {
+            rtnBool = this._host.lexiconMgr.verifyData(this.internalJI(), false);
+          }
+        }
+      } catch (e: unknown) {
+        this.log("Validate error:" + String(e).toString());
+        rtnBool = false;
+      }
+    }
+    return rtnBool;
+  }
+
+  lock(setLock: boolean): IDescriptionSdj | undefined {
+    const boolLock = (inValue: boolean) => (inValue ? "locked" : "unlocked");
+    let descJI: DescriptionJI,
+      orgDescUD: IDescriptionSdj | undefined,
+      newDescJI: DescriptionJI;
+    if ((!setLock && !this._isLocked) || (setLock && this._isLocked)) {
+      this.log(`Unable to set as sdJson(${boolLock(this.isLocked)}) & request to move to '${boolLock(!setLock)}' is incorrect`, 3);
+      return undefined;
+    } else if (this._isLocked && !setLock) {
+      descJI = this._description.genJI();
+      this._isLocked = false;
+      orgDescUD = this._description;
+      this._description = this._host.makeDescript(descJI, true);
+      return orgDescUD;
+    } else if (this.isValid) {
+      newDescJI = this._description.genJI();
+      newDescJI.sdInfo.modified = Date.now();
+      this._sdInfo.modified = Date.now();
+      this._description = this._host.makeDescript(newDescJI);
+      this._isLocked = true;
+      return this._description;
+    } else {
+      throw new Error("[SDJ] Unable to unlock while data/description are invalid;");
+    }
+  }
+
+
   dataByPath(dataPath: string): IDataSdj | undefined {
     return this._host.searchMgr.dataByPath(this, dataPath);
   }
@@ -78,17 +129,14 @@ export class SdJson implements IJsonSdj{
   }
 
   genJI(): SdJsonJI {
-    const rtnJsonJI: SdJsonJI = {
-      $id: <string>SDJ_SCHEMA[0],
-      description: this._description.genJI(),
-      sdInfo: genInfoJI(this._sdInfo),
-      data: []
-    };
-    each(this._data, (sdjData: IDataSdj) => {
-      // @ts-expect-error .. just defined it above
-      rtnJsonJI.data.push(sdjData.genJI(true));
-    });
+    const unlockedName = "genJI_silent_error_while_unlocked",
+      rtnJsonJI:SdJsonJI = this.internalJI();
 
+    if (!this._isLocked) {
+      rtnJsonJI.description = blankDescriptionJI(unlockedName);
+      rtnJsonJI.sdInfo = blankInfoJI(unlockedName);
+      rtnJsonJI.data = [];
+    }
     return rtnJsonJI;
   }
 
@@ -197,6 +245,43 @@ export class SdJson implements IJsonSdj{
     }
 
     return rtnJson;
+  }
+
+  private validate(): boolean {
+    let rtnVal = true;
+    const recDataValid = (dataObj: IDataSdj) => {
+      if (!dataObj.isValid()) {
+        rtnVal = false;
+        return false;
+      } else if (dataObj.hasChildren) {
+        each(dataObj.sdChildren, (subData) => {
+          recDataValid(subData);
+        });
+      }
+      return true;
+    };
+
+    each(this._data, (dataObj: IDataSdj) => {
+      recDataValid(dataObj);
+    });
+
+    return rtnVal;
+  }
+
+  private internalJI(): SdJsonJI {
+    const rtnJsonJI: SdJsonJI = {
+      $id: <string>SDJ_SCHEMA[0],
+      description: this._description.genJI(),
+      sdInfo: genInfoJI(this._sdInfo),
+      data: []
+    };
+
+    each(this._data, (sdjData: IDataSdj) => {
+      // @ts-expect-error .. just defined it above
+      rtnJsonJI.data.push(sdjData.genJI(true));
+    });
+
+    return rtnJsonJI;
   }
 
   static VerifyJI(inJson: SdJsonJI) {

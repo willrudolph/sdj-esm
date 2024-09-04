@@ -14,6 +14,7 @@ import {restrictCoreSD, restrictLimiter, restrictToAllowedKeys} from "../core/re
 import {ESDJ_CLASS, ESDJ_LIMIT} from "../core/statics.js";
 import type {IDescriptionSdj, IItemSdj} from "./class-interfaces.js";
 import {rtnSdjItemName} from "../core/sdj-types.js";
+import {AssertionError} from "node:assert";
 
 /*
   SdjItem
@@ -65,9 +66,11 @@ export class SdjItem implements IItemSdj {
   get type() {
     return this._type;
   }
+
   get limiter(): ESDJ_LIMIT {
     return this._limiter;
   }
+
   get validator(): IValidator {
     return this._validator;
   }

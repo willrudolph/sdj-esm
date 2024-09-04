@@ -1,5 +1,5 @@
-import {SdjDescription, SdjHost} from "../../dist/index.js";
-import {cloneDeep} from "lodash-es";
+import {SdjDescription, SdjHost, SdJson} from "../../dist/index.js";
+import {cloneDeep, isEqual} from "lodash-es";
 import {afterEach, beforeEach, describe, expect, test} from "@jest/globals";
 
 const emptyDesc = {
@@ -59,13 +59,9 @@ describe("Description Base Testing", () => {
     const classDesA = new SdjDescription(emptyDesc, hostSdj);
     expect(classDesA).toBeTruthy();
     hostSdj = SdjHost.getISdjHost();
-    expect(hostSdj.descriptions.length).toBe(1);
 
     const classDesB = new SdjDescription(blankDesc, hostSdj)
     expect(classDesB).toBeTruthy();
-    expect(hostSdj.descriptions.length).toBe(2);
-    expect(hostSdj.descriptions[0].sdInfo.name).toBe(blankDesc.sdInfo.name);
-    expect(hostSdj.descriptions[1].sdInfo.name).toBe(blankDesc.sdInfo.name + "_alt");
 
     let classC;
     expect(() => {
@@ -167,6 +163,19 @@ describe("Description Test set 2", () => {
   afterEach(() => {
     SdjHost.setTestingInstance(undefined);
   })
+
+
+  test("Host Dup Check", () => {
+    let host1, sdj, sdj2, sdj3, sdj4, sdj5,
+        host2;
+
+    expect(() => {
+      host2 = new SdjHost();
+    }).toThrowError();
+
+
+  })
+
 
   test("Test something ELSE", () => {
   });

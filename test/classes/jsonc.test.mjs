@@ -1,8 +1,9 @@
 import {SdjHost, SdJson} from "../../dist/index.js";
 import testA from "../json/sdj/test-file-a.json";
-import {afterEach, describe, expect, test} from "@jest/globals";
+import {afterEach, beforeEach, describe, expect, test} from "@jest/globals";
 import {cloneDeep} from "lodash-es";
 import {SimpleSdjLexicon} from "../lexicons/simple.lex.js"
+import {json} from "node:stream/consumers";
 
 const accurateDesc = {
   "sdInfo": {
@@ -28,7 +29,7 @@ const emptyDescItemOnly = {
   "sdInfo": {
     "created": 1701390090598,
     "modified": 1701390090598,
-    "name": "descName",
+    "name": "descName4234",
     "uniqId": "3rh28R-Qlbx4-i6Xy-gqB03MA"
   },
   "graph": [],
@@ -43,7 +44,7 @@ const emptyDescEntityOnly = {
   "sdInfo": {
     "created": 1701390090598,
     "modified": 1701390090598,
-    "name": "descName",
+    "name": "descName24332",
     "uniqId": "3rh28R-Qlbx4-i6Xy-gqB03MA"
   },
   "graph": [
@@ -59,7 +60,7 @@ const blankWLexicon = {
   "sdInfo": {
     "created": 0,
     "modified": 0,
-    "name": "descName",
+    "name": "descName144",
     "uniqId": "000000-00000-0000-0000000"
   },
   "lexicons":["simple"],
@@ -71,7 +72,7 @@ const badDescA = {
   "sdInfo": {
     "created": 0,
     "modified": 0,
-    "name": "descName",
+    "name": "descName123412",
   },
   "graph": [],
   "items": []
@@ -81,7 +82,7 @@ const badDescB = {
   "sdInfo": {
     "created": 0,
     "modified": 0,
-    "name": "descName",
+    "name": "descName12342",
     "uniqId": "000000-00000-0000-0000000"
   },
   "graph": [],
@@ -91,7 +92,7 @@ let badDescC = {
   "sdInfo": {
     "created": 0,
     "modified": 0,
-    "name": "descName",
+    "name": "descName1234213",
     "uniqId": "000000-00000-0000-0000000"
   },
   "items": [],
@@ -101,7 +102,7 @@ let badDescD = {
   "sdInfo": {
     "created": 0,
     "modified": 0,
-    "name": "descName",
+    "name": "descName1234",
     "uniqId": "000000-00000-0000-0000000"
   },
   "lexicons": ["dont", "know"],
@@ -146,12 +147,9 @@ describe("Json Class Base Testing", () => {
     const classDesA = new SdJson(testA);
     expect(classDesA).toBeTruthy();
     hostSdj = SdjHost.getISdjHost();
-    expect(hostSdj.descriptions.length).toBe(1);
 
     const classDesB = new SdJson(testA);
     expect(classDesB).toBeTruthy();
-    expect(hostSdj.descriptions.length).toBe(1);
-    expect(hostSdj.descriptions[0].sdInfo.name).toBe(testA.description.sdInfo.name);
 
   });
 
@@ -191,8 +189,8 @@ describe("Json Class Base Testing", () => {
     const test = new SdJson(blankWLexicon);
     expect(test).toBeTruthy();
 
-    expect(test.description.$items.length).toBe(4);
-    expect(test.description.$graph.length).toBe(4);
+    expect(test.description.items.length).toBe(4);
+    expect(test.description.graph.length).toBe(4);
     let newJI = test.genJI();
     expect(newJI.description.items.length).toBe(0);
     expect(newJI.description.graph.length).toBe(0);
@@ -215,6 +213,92 @@ describe("Json Class Base Testing", () => {
   });
 
 });
+
+describe("Default Description Lock-out", () => {
+  let hostSdj;
+
+  beforeEach(() =>{
+    hostSdj = SdjHost.getHost();
+  })
+
+  afterEach(() => {
+    SdjHost.setTestingInstance(undefined);
+  })
+
+  test("Std Description lock", () => {
+    const classDesA = new SdJson(testA);
+    expect(classDesA.genJI()).toMatchObject(testA);
+
+    expect(() => {
+      classDesA.description.graph[0] = undefined;
+    }).toThrowError();
+
+    expect(() => {
+      classDesA.description.items[0] = undefined;
+    }).toThrowError();
+
+    expect(() => {
+      classDesA.description.graph = undefined;
+    }).toThrowError();
+
+    expect(() => {
+      classDesA.description.items = undefined;
+    }).toThrowError();
+
+    expect(() => {
+      classDesA.description.graph[0].sdKey = "bobo";
+    }).toThrowError();
+
+    expect(() => {
+      classDesA.description.item[0].sdId = 15;
+    }).toThrowError();
+
+    expect(() => {
+      classDesA.description.name = undefined;
+    }).toThrowError();
+
+    expect(() => {
+      classDesA.description.sdInfo = undefined;
+    }).toThrowError();
+
+    expect(() => {
+      classDesA.description.sdInfo.name = undefined;
+    }).toThrowError();
+
+    expect(() => {
+      classDesA.description.sdInfo.uniqId = "undefined";
+    }).toThrowError();
+
+  });
+
+
+  test("Std Lock/Unlock tests", () => {
+    const jsonTest = new SdJson(testA);
+    expect(jsonTest.genJI()).toMatchObject(testA);
+
+
+    expect(() => {
+      jsonTest.description.items.pop();
+    }).toThrowError();
+
+    jsonTest.lock(false);
+    const itemsLen = jsonTest.description.items.length;
+
+    const oldItem = jsonTest.description.items.pop();
+    expect(jsonTest.description.items.length).toBe(itemsLen -1);
+
+    expect(jsonTest.isValid).toBeFalsy();
+    expect(() => {
+      jsonTest.lock(true);
+    }).toThrowError()
+
+    jsonTest.description.items.push(oldItem);
+    expect(jsonTest.isValid).toBeTruthy();
+    jsonTest.lock(true);
+
+  });
+});
+
 
 describe("Description Test set 1a", () => {
   let hostSdj;

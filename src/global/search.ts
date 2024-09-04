@@ -7,15 +7,7 @@
  */
 
 import type {ISdjHost, ISdjSearch} from "./global-interfaces.js";
-import type {
-  DataJI,
-  DescriptionSearch,
-  EntitySearch,
-  FuncStrNumVoid,
-  ItemSearch,
-  JIValue,
-  NumKeyStore
-} from "../core/interfaces.js";
+import type {DataJI, EntitySearch, FuncStrNumVoid, ItemSearch, JIValue, NumKeyStore} from "../core/interfaces.js";
 import type {IDataSdj, IDescriptionSdj, IEntitySdj, IItemSdj, IJsonSdj} from "../classes/class-interfaces.js";
 import {each, find, isEqual, isNull, isString, isUndefined} from "lodash-es";
 import {validIntArray} from "../core/sdj-types.js";
@@ -82,7 +74,7 @@ export class SdjSearch implements ISdjSearch {
     return rtnData;
   }
 
-  searchDescriptions(search: DescriptionSearch): IDescriptionSdj[] {
+  /*  searchDescriptions(search: DescriptionSearch): IDescriptionSdj[] {
     let rtnArray: IDescriptionSdj[] = [],
       singleDesc: IDescriptionSdj | undefined;
     // TODO: Make more robust
@@ -93,7 +85,7 @@ export class SdjSearch implements ISdjSearch {
       }
     }
     return rtnArray;
-  }
+  }*/
 
   // Both of these searches are single prop search term/item cut-out searches
   // Adding multiple terms will be ignored after the first is found in below order
@@ -111,18 +103,18 @@ export class SdjSearch implements ISdjSearch {
 
     if (searchEnt) {
       if (searchEnt.sdId) {
-        pushIfAvail(<IEntitySdj>getFromCoreArray(searchEnt.sdId, asDescSdj.$graph));
+        pushIfAvail(<IEntitySdj>getFromCoreArray(searchEnt.sdId, asDescSdj.graph));
       } else if (searchEnt.sdKey) {
-        pushIfAvail(<IEntitySdj>getFromCoreArray(searchEnt.sdKey, asDescSdj.$graph));
+        pushIfAvail(<IEntitySdj>getFromCoreArray(searchEnt.sdKey, asDescSdj.graph));
       } else if (searchEnt.limiter) {
-        each(asDescSdj.$graph, (sdjEnt: IEntitySdj) => {
+        each(asDescSdj.graph, (sdjEnt: IEntitySdj) => {
           if (sdjEnt.limiter === searchEnt.limiter) {
             rtnAry.push(sdjEnt);
           }
         });
       } else if (validIntArray(searchEnt.parentIds)) {
         each(searchEnt.parentIds, (sdId: number) => {
-          each(asDescSdj.$graph, (entRef: IEntitySdj) => {
+          each(asDescSdj.graph, (entRef: IEntitySdj) => {
             if (entRef.parentIds.indexOf(sdId) !== -1) {
               rtnAry.push(entRef);
             }
@@ -130,7 +122,7 @@ export class SdjSearch implements ISdjSearch {
         });
       } else if (validIntArray(searchEnt.extendIds)) {
         each(searchEnt.extendIds, (sdId: number) => {
-          each(asDescSdj.$graph, (entRef: IEntitySdj) => {
+          each(asDescSdj.graph, (entRef: IEntitySdj) => {
             if (entRef.extendIds && entRef.extendIds.indexOf(sdId) !== -1) {
               rtnAry.push(entRef);
             }
@@ -138,7 +130,7 @@ export class SdjSearch implements ISdjSearch {
         });
       } else if (validIntArray(searchEnt.sdItems)) {
         each(searchEnt.sdItems, (sdId: number) => {
-          each(asDescSdj.$graph, (entRef: IEntitySdj) => {
+          each(asDescSdj.graph, (entRef: IEntitySdj) => {
             if (entRef.sdItems.indexOf(sdId) !== -1) {
               rtnAry.push(entRef);
             }
@@ -146,7 +138,7 @@ export class SdjSearch implements ISdjSearch {
         });
       } else if (validIntArray(searchEnt.childIds)) {
         each(searchEnt.childIds, (sdId: number) => {
-          each(asDescSdj.$graph, (entRef: IEntitySdj) => {
+          each(asDescSdj.graph, (entRef: IEntitySdj) => {
             if (entRef.sdId === 0) {
               return; 
             }
@@ -156,7 +148,7 @@ export class SdjSearch implements ISdjSearch {
           });
         });
       } else if (searchEnt.sdProps) {
-        each(asDescSdj.$graph, (entRef: IEntitySdj) => {
+        each(asDescSdj.graph, (entRef: IEntitySdj) => {
           if (entRef.sdId === 0) {
             return; 
           }
@@ -193,17 +185,17 @@ export class SdjSearch implements ISdjSearch {
       };
     if (searchItem) {
       if (searchItem.sdId) {
-        pushIfAvail(<IItemSdj>getFromCoreArray(searchItem.sdId, asDescript.$items));
+        pushIfAvail(<IItemSdj>getFromCoreArray(searchItem.sdId, asDescript.items));
       } else if (searchItem.sdKey) {
-        pushIfAvail(<IItemSdj>getFromCoreArray(searchItem.sdKey, asDescript.$items));
+        pushIfAvail(<IItemSdj>getFromCoreArray(searchItem.sdKey, asDescript.items));
       } else if (searchItem.type) {
-        each(asDescript.$items, (sdjItem: IItemSdj) => {
+        each(asDescript.items, (sdjItem: IItemSdj) => {
           if (sdjItem.type === searchItem.type) {
             rtnAry.push(sdjItem);
           }
         });
       } else if (searchItem.limiter) {
-        each(asDescript.$items, (sdjItem: IItemSdj) => {
+        each(asDescript.items, (sdjItem: IItemSdj) => {
           if (sdjItem.limiter === searchItem.limiter) {
             rtnAry.push(sdjItem);
           }

@@ -44,7 +44,7 @@ export class SdjData implements CoreSD, IDataSdj {
   private _entity: IEntitySdj;
 
   constructor(inData: DataJI, entityRef: IEntitySdj, parentRef?: SdjData | undefined) {
-    this._entity = this.confirmEntity(entityRef);
+    this._entity = this.confirmEntity(entityRef, inData);
     this._entity.description.host.checkClassInst(inData, ESDJ_CLASS.DATA, false);
     const workData = cloneJI(inData);
     SdjData.VerifyJI(workData);
@@ -269,12 +269,15 @@ export class SdjData implements CoreSD, IDataSdj {
     }
     return rtnDataJI;
   }
-  private confirmEntity(inEnt: IEntitySdj): IEntitySdj {
+  private confirmEntity(inEnt: IEntitySdj, inData: DataJI): IEntitySdj {
     let throwErr = true;
     if (!isNull(inEnt) && !isUndefined(inEnt)) {
       if (inEnt.description?.host?.checkClassInst && isFunction(inEnt.description.host.checkClassInst)) {
         inEnt.description.host.checkClassInst(inEnt, ESDJ_CLASS.ENTITY, true);
         throwErr = false;
+      }
+      if (inData.sdId !== inEnt.sdId) {
+        throw new Error(`[SDJ] Mismatch - entity sdId '${inEnt.sdId}' != '${inData.sdId}' data sdId;`);
       }
     }
     if (throwErr) {

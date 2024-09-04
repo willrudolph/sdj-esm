@@ -83,7 +83,7 @@ describe("Entity Base Testing", () => {
     }).toThrowError();
 
     hostSdj = SdjHost.getISdjHost();
-    expect(hostSdj.descriptions.length).toBe(1);
+    expect(hostSdj.library).toBeTruthy();
 
     const sdjEntity = new SdjEntity(goodEntA, sampleDesc);
     expect(sdjEntity).toBeTruthy();

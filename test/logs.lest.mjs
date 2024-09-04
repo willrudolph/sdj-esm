@@ -15,19 +15,19 @@ describe("Sdj Logging - throws console.logs", () => {
 
   test("Confirm Mock", () => {
     hostSdj = SdjHost.getISdjHost({options:{logMode: ESDJ_LOG.DEV}});
-    expect(hostSdj.settings.logs.logMode).toBe(ESDJ_LOG.DEV);
+    expect(hostSdj.logs.logMode).toBe(ESDJ_LOG.DEV);
     SdjHost.setTestingInstance(undefined);
     hostSdj = SdjHost.getISdjHost();
-    expect(hostSdj.settings.logs.logMode).toBe(ESDJ_LOG.PROD);
-    expect(hostSdj.settings.logs.consoleLvl).toBe(0);
+    expect(hostSdj.logs.logMode).toBe(ESDJ_LOG.PROD);
+    expect(hostSdj.logs.consoleLvl).toBe(0);
     SdjHost.setTestingInstance(undefined);
     hostSdj = SdjHost.getISdjHost({options:{logMode: ESDJ_LOG.DEV}});
-    expect(hostSdj.settings.logs.logMode).toBe(ESDJ_LOG.DEV);
-    expect(hostSdj.settings.logs.consoleLvl).toBe(5);
+    expect(hostSdj.logs.logMode).toBe(ESDJ_LOG.DEV);
+    expect(hostSdj.logs.consoleLvl).toBe(5);
     SdjHost.setTestingInstance(undefined);
     hostSdj = SdjHost.getISdjHost({options:{logMode: ESDJ_LOG.LIB}});
-    expect(hostSdj.settings.logs.logMode).toBe(ESDJ_LOG.LIB);
-    expect(hostSdj.settings.logs.consoleLvl).toBe(3);
+    expect(hostSdj.logs.logMode).toBe(ESDJ_LOG.LIB);
+    expect(hostSdj.logs.consoleLvl).toBe(3);
     expect(() => {
       hostSdj = SdjHost.getISdjHost({options:{logMode: ESDJ_LOG.DEV}});
     }).toThrow();
@@ -43,7 +43,7 @@ describe("Sdj Logging - throws console.logs", () => {
     }).toThrow();
     SdjHost.setTestingInstance(undefined);
     host = SdjHost.getISdjHost();
-    expect(host.settings.logs.loggerStore === []).toBeFalsy();
+    expect(host.logs.loggerStore === []).toBeFalsy();
 
     SdjHost.setTestingInstance(undefined);
     host = SdjHost.getISdjHost({options: {loggerStore: localLoggerStore}});
@@ -81,9 +81,9 @@ describe("Sdj Logging - throws console.logs", () => {
     }
 
     host = SdjHost.getISdjHost({options: {logManager: newLogMan}});
-    expect(host.settings.logs.storeLvl).toBe(newLogMan.storeLvl);
-    expect(host.settings.logs.consoleLvl).toBe(newLogMan.consoleLvl);
-    expect(host.settings.logs.maxLogs).toBe(newLogMan.maxLogs);
+    expect(host.logs.storeLvl).toBe(newLogMan.storeLvl);
+    expect(host.logs.consoleLvl).toBe(newLogMan.consoleLvl);
+    expect(host.logs.maxLogs).toBe(newLogMan.maxLogs);
 
   });
 

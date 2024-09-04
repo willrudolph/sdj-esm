@@ -6,7 +6,7 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import {each, has, isArray, isObject, isString} from "lodash-es";
+import {each, has, isArray, isFunction, isObject, isString} from "lodash-es";
 import type {CoreSD, JIArray, JIValue} from "../core/interfaces.js";
 import type {IntAny, IntObject, RawFunction} from "../core/internal.js";
 import {getRegEx} from "./regex.js";
@@ -176,3 +176,16 @@ export const validTypeLexName = (checkVal: JIValue) => {
   const regEx = getRegEx("typeLexName");
   return isString(checkVal) ? regEx.test(<string>checkVal) : false;
 };
+
+
+export function deepFreeze<T>(obj: T) {
+  if (obj) {
+    if ((isObject(obj) || isArray(obj)) && !isFunction(obj)) {
+      if (!Object.isFrozen(obj)) {
+        Object.freeze(obj);
+        Object.values(obj).forEach((value) => deepFreeze(value));
+      }
+    }
+  }
+  return obj;
+}

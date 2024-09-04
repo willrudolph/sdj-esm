@@ -74,8 +74,13 @@ export declare interface IDataSdj {
 }
 
 export declare interface IDescriptionSdj {
-    readonly name: string;
-    readonly sdInfo: Info;
+    // vvv frozen/readonly when json locked
+    name: string;
+    graph: IEntitySdj[];
+    items: IItemSdj[];
+    sdInfo: Info;
+    lang: string;
+    // ^^^ frozen/readonly when json locked
     readonly host: ISdjHost;
     searchEntities: (searchEnt: EntitySearch) => IEntitySdj[];
     searchItems: (searchItem: ItemSearch) => IItemSdj[];
@@ -95,9 +100,11 @@ export declare interface IJsonSdj {
     readonly data: IDataSdj[];
     readonly description: IDescriptionSdj;
     readonly sdInfo: Info;
+    readonly isLocked: boolean;
     dataByPath: (dataPath: string) => IDataSdj | undefined;
     dataByEntity: (searchEnt: EntitySearch, dataPath?: string) => IDataSdj[];
     dataByItem: (searchItem: ItemSearch, dataPath?: string) => IDataSdj[];
+    lock: (setLock: boolean) => IDescriptionSdj | undefined;
     genJI: () => SdJsonJI;
 }
 

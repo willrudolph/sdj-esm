@@ -6,26 +6,46 @@
   file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-import type {DataJI, DescriptionJI, DescriptionSearch, EntityJI, FuncStrNumVoid, ItemJI} from "../core/interfaces.js";
+import type {DataJI, DescriptionJI, EntityJI, FuncStrNumVoid, ItemJI} from "../core/interfaces.js";
 import {SdjDescription} from "../classes/description.js";
-import {ESDJ_CLASS, ESDJ_LOG} from "../core/statics.js";
+import {DESC_ALT, ESDJ_CLASS, ESDJ_LOG} from "../core/statics.js";
 import type {IDescriptionSdj} from "../classes/class-interfaces.js";
 import type {
   AllSdjTypes,
+  GlobalOptions,
   ISdjHost,
   ISdjLexicons,
+  ISdjLibrary,
   ISdjSearch,
-  ISdjSettings,
   SdjJITypes,
   Settings
 } from "./global-interfaces.js";
-import {SdjSettings} from "./settings.js";
 import {SdjLexicons} from "./lexicons.js";
 import {SdjEntity} from "../classes/entity.js";
 import {SdjItem} from "../classes/item.js";
 import {SdjData} from "../classes/data.js";
-import {find, isEqual} from "lodash-es";
+import {each, isEqual, isFunction} from "lodash-es";
 import {SdjSearch} from "./search.js";
+import {type ILogManager, LogManager} from "../util/log";
+import {freezeDescription} from "../util/general";
+
+
+class EmptySdjLibrary implements ISdjLibrary {
+  init() {}
+
+  getDescList() {
+    return [];
+  }
+  getDescByName() {
+    return undefined;
+  }
+  storeDesc() {
+    return false;
+  }
+  removeDesc() {
+    return false;
+  }
+}
 
 class IntSingletonLock {
   constructor() {
@@ -35,33 +55,37 @@ class IntSingletonLock {
 
 export class SdjHost implements ISdjHost {
   // eslint-disable-next-line no-use-before-define
-  private static _instance?: SdjHost;
+  private static _instance?: SdjHost | undefined;
 
   gLog: FuncStrNumVoid;
 
-  private _settings: SdjSettings;
   private _lexicons: SdjLexicons;
-  private _descriptions: IDescriptionSdj[] = [];
+  private _library: ISdjLibrary;
   private _search: SdjSearch;
+  private _logs!: ILogManager;
+
   constructor(lockCon: IntSingletonLock, initialSet?: Settings | undefined | null) {
     if (!(lockCon instanceof IntSingletonLock)) {
       throw new Error("[SDJ] Illegal attempt create SdjHost");
     }
-    this._settings = new SdjSettings(this, initialSet?.options);
-    this.gLog = this.settings.logs.getLogFunc("ISdjHost");
+    this.initLogs(initialSet?.options);
+    this.gLog = this._logs.getLogFunc("ISdjHost");
+
     this._lexicons = new SdjLexicons(this, initialSet?.lexicons);
     this._search = new SdjSearch(this);
     if (initialSet?.options?.logMode && initialSet.options.logMode !== ESDJ_LOG.PROD) {
       this.gLog("Set logMode:" + initialSet.options.logMode);
     }
+    if (initialSet?.library) {
+      this.verifyLibrary(initialSet.library);
+      this._library = initialSet.library;
+      this._library.init(this._logs.getLogFunc("ISdjLibrary"), this);
+    } else {
+      this._library = new EmptySdjLibrary();
+    }
   }
-
-  get descriptions(): IDescriptionSdj[] {
-    return this._descriptions;
-  }
-
-  get settings(): ISdjSettings {
-    return this._settings;
+  get library() {
+    return this._library;
   }
 
   get lexiconMgr(): ISdjLexicons {
@@ -72,35 +96,40 @@ export class SdjHost implements ISdjHost {
     return <ISdjSearch>this._search;
   }
 
-  descriptByName(name: string): IDescriptionSdj | undefined {
-    const foundDesc = find(this._descriptions, {name});
-    if (!foundDesc) {
-      this.gLog(`SdjDescription ${name} not found.`, 1);
-      return undefined;
-    }
-    return foundDesc;
+  get logs(): ILogManager {
+    return this._logs;
   }
 
-  addDescription(addDesc: IDescriptionSdj) {
-    const existingDesc: IDescriptionSdj | undefined = find(this._descriptions, {name: addDesc.name});
-    if (existingDesc) {
-      throw new Error(`[SDJ] Identical named description '${addDesc.name}' exists;`);
-    } else {
-      this.checkClassInst(addDesc, ESDJ_CLASS.DESCRIPTION, true);
-    }
-    this._descriptions.push(addDesc);
-  }
-
-  makeDescript(inDesc: DescriptionJI): IDescriptionSdj {
-    let foundDesc = find(this._descriptions, {name: inDesc?.sdInfo?.name}),
+  makeDescript(descJI: DescriptionJI, unlocked = false): IDescriptionSdj {
+    let rtnDesc = this._library.getDescByName(descJI.sdInfo.name),
+      expDesc: IDescriptionSdj,
       newDesc: IDescriptionSdj;
-    if (foundDesc && isEqual(inDesc.sdInfo, foundDesc.sdInfo)) {
-      return foundDesc;
-    } else {
-      const thisHost = SdjHost.getHost();
-      newDesc = new SdjDescription(inDesc, thisHost);
-      return newDesc;
+
+    if (rtnDesc) {
+      if (!isEqual(descJI, rtnDesc.genJI())) {
+        descJI.sdInfo.name += DESC_ALT;
+      } else {
+        return rtnDesc;
+      }
     }
+    const thisHost = SdjHost.getHost();
+    newDesc = new SdjDescription(descJI, thisHost);
+    if (this._library.storeDesc(newDesc)) {
+      rtnDesc = this._library.getDescByName(descJI.sdInfo.name);
+      if (rtnDesc) {
+        expDesc = rtnDesc;
+      } else {
+        this.gLog("Error on unsuccessful add description to library;", 3);
+        expDesc = newDesc;
+      }
+    } else {
+      expDesc = newDesc;
+    }
+
+    if(!unlocked) {
+      freezeDescription(expDesc);
+    }
+    return expDesc;
   }
 
   fullDescription(inDescJI: DescriptionJI): DescriptionJI {
@@ -118,12 +147,9 @@ export class SdjHost implements ISdjHost {
   }
 
   getLogFunc(name: string): FuncStrNumVoid {
-    return this.settings.logs.getLogFunc(name);
+    return this._logs.getLogFunc(name);
   }
 
-  searchDescriptions(search: DescriptionSearch): IDescriptionSdj[] {
-    return this.searchMgr.searchDescriptions(search);
-  }
   // Given the validation rules some JIs can look like each other;
   // This function is to lock out/check for strange loading of Sdj Class objects that
   // are code masquerading themselves or other strangeness.
@@ -188,11 +214,48 @@ export class SdjHost implements ISdjHost {
     }
     return rtnVal;
   }
+
   createDescription(descJI: DescriptionJI): IDescriptionSdj {
-    return new SdjDescription(descJI, SdjHost.getHost());
+    let rtnDesc = this._library.getDescByName(descJI.sdInfo.name);
+    if (rtnDesc) {
+      if (!isEqual(descJI, rtnDesc.genJI())) {
+        descJI.sdInfo.name += DESC_ALT;
+      } else {
+        return rtnDesc;
+      }
+    }
+    rtnDesc = new SdjDescription(descJI, SdjHost.getHost());
+    this._library.storeDesc(rtnDesc);
+    return rtnDesc;
   }
+
+  private initLogs(options?: GlobalOptions) {
+    if (options?.loggerStore && options?.logManager) {
+      throw new Error("[SDJ] Create a custom ILogManager or alternate loggerStore, not both;");
+    } else if (options?.logManager) {
+      if (!isFunction(options.logManager.getLogFunc)) {
+        throw new Error("[SDJ] custom ILogManager missing getLogFunc");
+      } else {
+        this._logs = options.logManager;
+      }
+    } else {
+      const logMode:ESDJ_LOG = (options?.logMode) ? options.logMode : ESDJ_LOG.PROD;
+      this._logs = new LogManager(logMode, options?.loggerStore);
+    }
+  }
+
+  private verifyLibrary(inLib: ISdjLibrary) {
+    const vfList: Function[] = [inLib.init, inLib.getDescByName, inLib.getDescList,
+      inLib.storeDesc, inLib.removeDesc];
+    each(vfList, (testFunc) => {
+      if (!isFunction(testFunc)) {
+        throw new Error("[SDJ] Illegal ISdjLibrary assignment, does not include all functions;");
+      }
+    });
+  }
+
   // This is for testing purposes commented out on initial release // builds
-  static setTestingInstance(testInstance: SdjHost): void {
+  static setTestingInstance(testInstance: SdjHost | undefined): void {
     this._instance = testInstance;
   }
 

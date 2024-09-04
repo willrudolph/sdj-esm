@@ -28,5 +28,4 @@ export * from "./classes/class-interfaces.js";
 
 export * from "./global/host.js";
 export * from "./global/lexicons.js";
-export * from "./global/settings.js";
 export * from "./global/global-interfaces.js";

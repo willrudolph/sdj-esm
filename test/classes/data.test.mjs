@@ -1,6 +1,8 @@
 import {SdjData, SdjDescription, SdjEntity, SdjHost} from "../../dist/index.js";
 import blankDesc from "../json/desc.only.json";
 import {afterEach, beforeEach, describe, expect, test} from "@jest/globals";
+import exp from "node:constants";
+import {clone} from "lodash-es";
 
 
 const emptyEnt = {
@@ -274,11 +276,84 @@ describe("Data Test set 1", () => {
 });
 
 describe("Data Test set 2", () => {
-  let hostSdj;
+  let hostSdj, sampDesc, entYesDec, entNoDec
 
+  beforeEach(() => {
+    hostSdj = SdjHost.getHost();
+    sampDesc = new SdjDescription(blankDesc, hostSdj);
+    entYesDec = new SdjEntity(emptyEnt, sampDesc);
+    entNoDec = new SdjEntity(emptyEnt);
+  })
   afterEach(() => {
     SdjHost.setTestingInstance(undefined);
   })
+
+  test("Test something ELSE", () => {
+
+    let dataNoDesc = new SdjData(goodData, entYesDec);
+    expect(dataNoDesc).toBeTruthy();
+
+
+    expect(()=> {
+      let changed = clone(goodData);
+      changed.sdId = 2.4;
+      let dataNoDesc = new SdjData(changed, entYesDec);
+    }).toThrowError();
+
+    expect(()=> {
+      let changed = clone(goodData);
+      changed.sdId = -2;
+      let dataNoDesc = new SdjData(changed, entYesDec);
+    }).toThrowError();
+
+    expect(()=> {
+      let changed = clone(goodData);
+      changed.sdKey = -2;
+      let dataNoDesc = new SdjData(changed, entYesDec);
+    }).toThrowError();
+
+    expect(()=> {
+      let changed = clone(goodData);
+      changed.sdId = -2;
+      let dataNoDesc = new SdjData(changed, entYesDec);
+    }).toThrowError();
+
+    expect(()=> {
+      let changed = clone(goodData);
+      changed.sdKey = "";
+      let dataNoDesc = new SdjData(changed, entYesDec);
+    }).toThrowError();
+
+    expect(()=> {
+      let changed = clone(goodData);
+      changed.sdKey = "%^%$^";
+      let dataNoDesc = new SdjData(changed, entYesDec);
+    }).toThrowError();
+
+    expect(()=> {
+      let changed = clone(goodData);
+      changed.sdKey = "241";
+      let dataNoDesc = new SdjData(changed, entYesDec);
+    }).toThrowError();
+
+
+    expect(()=> {
+      let changed = clone(goodData);
+      changed.sdKey = "2415638";
+      let dataNoDesc = new SdjData(changed, entYesDec);
+    }).toThrowError();
+
+    expect(()=> {
+      let changed = clone(goodData);
+      changed.sdKey = "adas%$g**()/fasdg";
+      let dataNoDesc = new SdjData(changed, entYesDec);
+    }).toThrowError();
+
+  });
+
+  test("Test something ELSE", () => {
+    expect(false).toBe(false);
+  });
 
   test("Test something ELSE", () => {
     expect(false).toBe(false);

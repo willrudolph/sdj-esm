@@ -10,11 +10,11 @@ import {DEF_DESC, DEF_JSON, SDJ_SCHEMA} from "../core/statics.js";
 import {isInfo} from "../core/validators.js";
 import {blankDescriptionJI, blankInfoJI} from "./immutables.js";
 import {SdjDescription} from "../classes/description.js";
-import type {IJsonSdj} from "../classes/class-interfaces.js";
+import type {IDescriptionSdj, IEntitySdj, IItemSdj, IJsonSdj} from "../classes/class-interfaces.js";
 import {SdJson} from "../classes/json.js";
 import {SdjHost} from "../global/host.js";
-import {has, isString} from "lodash-es";
-import {cloneJI} from "./func.std.js";
+import {each, has, isString} from "lodash-es";
+import {cloneJI, deepFreeze} from "./func.std.js";
 import {getRegEx} from "./regex";
 
 export function blankJsonJI(jsonName: string, descOpt: DescriptionJI | SdjDescription | string | undefined = undefined): SdJsonJI {
@@ -94,4 +94,24 @@ export function genLexicon(inJson: SdJsonJI | DescriptionJI): ILexicon | undefin
 
   return iLexicon;
 
+}
+
+export function freezeDescription(inDesc: IDescriptionSdj) {
+  const entFreeze = (ent: IEntitySdj) => {
+    deepFreeze(ent.sdItems);
+    deepFreeze(ent.parentIds);
+    deepFreeze(ent.childIds);
+    deepFreeze(ent.extendIds);
+    deepFreeze(ent.sdProps);
+    Object.freeze(ent.limiter);
+    Object.freeze(ent.dataInfo);
+    Object.freeze(ent);
+  };
+
+  deepFreeze(inDesc.sdInfo);
+  each(inDesc.graph, (entity: IEntitySdj) => entFreeze(entity));
+  Object.freeze(inDesc.graph);
+  each(inDesc.items, (item: IItemSdj) => Object.freeze(item));
+  Object.freeze(inDesc.items);
+  Object.freeze(inDesc);
 }

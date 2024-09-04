@@ -45,7 +45,8 @@ module.exports = {
 		"sourceType": "module",
 		"tsconfigRootDir": __dirname,
 		"project": [
-			"tsconfig.json"
+			"tsconfig.json",
+			"tsconfig.jest.json"
 		]
 	},
 	"plugins": [

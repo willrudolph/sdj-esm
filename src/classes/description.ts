@@ -20,7 +20,7 @@ import type {
 import {checkResetInfo, verifyUniqKeys,} from "../util/verify.js";
 import {genEntityJI, genInfoJI, genItemJI} from "../util/immutables.js";
 import {BASE_ITEMS_JI, ESDJ_CLASS, GRAPH_ZERO, SYS_RESERVED} from "../core/statics.js";
-import {cloneJI, getFromCoreArray, UUID} from "../util/func.std.js";
+import {cloneJI, getFromCoreArray} from "../util/func.std.js";
 import {isArrayWithLen, isInfo, validLexiconArray} from "../core/validators.js";
 import {restrictToAllowedKeys} from "../core/restrict.js";
 import type {IDescriptionSdj, IEntitySdj, IItemSdj} from "./class-interfaces.js";
@@ -30,6 +30,11 @@ import type {ISdjHost, SdjJITypes} from "../global/global-interfaces.js";
 import {clone, cloneDeep, each, find, isArray, isEqual, isFunction, times, uniq} from "lodash-es";
 import {validSDKey} from "../core/sdj-types";
 
+// Descriptions created outside of new SdJson() or SdjHost.makeDescription
+// using 'new SdjDescription(...)' ; will NOT automatically be added to a library.
+// After initial creation they can be added as needed via library.storeDesc(...);
+
+
 export class SdjDescription implements IDescriptionSdj {
   lang: string;
 
@@ -37,7 +42,7 @@ export class SdjDescription implements IDescriptionSdj {
   private _lexicons: string[] = [];
   private _graph: IEntitySdj[] = [];
   private _sdInfo: Info;
-  private _items: SdjItem[] = [];
+  private _items: IItemSdj[] = [];
   private _host: ISdjHost;
 
   constructor(refDescJI: DescriptionJI, requiredHost: ISdjHost) {
@@ -49,20 +54,8 @@ export class SdjDescription implements IDescriptionSdj {
       throw new Error("[SDJ] Improper required Host - use SdjHost.createDescription for auto provided host;");
     }
     SdjDescription.VerifyJI(refDescJI);
-    const existDesc = this.host.descriptByName(refDescJI.sdInfo.name);
     let inDescJI: DescriptionJI;
-    if (existDesc && refDescJI.sdInfo.uniqId === existDesc.sdInfo.uniqId) {
-      throw new Error(`[SDJ] Description '${refDescJI.sdInfo.name}' w/uniqId exists already in host;`);
-    }
     inDescJI = cloneJI(refDescJI);
-
-    if (existDesc) {
-      inDescJI.sdInfo.name += "_alt";
-      inDescJI.sdInfo.uniqId = UUID.GetEmpty();
-      this._host.gLog(`Existing description conflict creating Description now renamed '${inDescJI.sdInfo.name}'`, 3);
-    } else if (!inDescJI.lexicons && inDescJI.graph.length === 0 && inDescJI.items.length === 0) {
-      this._host.gLog(`Description '${inDescJI.sdInfo.name}' contains no items, graph, or lexicon reference`, 3);
-    }
     inDescJI.sdInfo = checkResetInfo(inDescJI.sdInfo);
     inDescJI = this._host.fullDescription(inDescJI);
 
@@ -71,29 +64,37 @@ export class SdjDescription implements IDescriptionSdj {
     this.log = this._host.getLogFunc("Desc:" + this._sdInfo.name);
     this.log("created");
     this.entityItemBuild(inDescJI);
-    this._host.addDescription(this);
   }
 
-  get $graph(): SdjEntity[] {
+  // vvv Below are frozen when description/sdJson locked
+  get graph(): SdjEntity[] {
     return <SdjEntity[]>this._graph;
   }
-  // Editor modifying graphs/items can have full access not gotten via the IDescriptionSdj
-  set $graph(inGraph: SdjEntity[]) {
+
+  set graph(inGraph: SdjEntity[]) {
     this._graph = inGraph;
-    // rebuild
   }
 
-  get $items(): SdjItem[] {
+  set items(inItems: IItemSdj[]) {
+    this._items = <SdjItem[]>inItems;
+  }
+
+  get items(): SdjItem[] {
     return <SdjItem[]>this._items;
-    // rebuild
+
   }
   get name(): string {
     return this._sdInfo.name;
   }
 
+  set name(name: string) {
+    this._sdInfo.name = name;
+  }
+
   get sdInfo(): Info {
     return this._sdInfo;
   }
+  // ^^ Above Frozen when locked
 
   get host(): ISdjHost {
     return this._host;
@@ -301,7 +302,6 @@ export class SdjDescription implements IDescriptionSdj {
     if (inDesc.lexicons && !validLexiconArray(inDesc.lexicons)) {
       throw new Error("[SDJ] Description.lexicons improperly formed;");
     }
-
     if ((!inDesc.items || !isArray(inDesc.items)) && !inDesc.lexicons) {
       throw new Error("[SDJ] Description - items missing or array error;");
     } else if (!inDesc.lexicons && !verifyUniqKeys(inDesc.items)) {
@@ -314,7 +314,6 @@ export class SdjDescription implements IDescriptionSdj {
     } else if (isArray(inDesc.graph) && !verifyUniqKeys(inDesc.graph)) {
       throw new Error("[SDJ] Description graph does not have unique sdKeys/sdIds;");
     }
-
     restrictToAllowedKeys("DescriptionJI:" + inDesc.sdInfo.name,
       ["sdInfo", "items", "graph", "lexicons", "lang"], inDesc);
   }

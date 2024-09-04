@@ -44,12 +44,7 @@ import {genSdKeyProps} from "../util/immutables.js";
 import {restrictToAllowedKeys} from "../core/restrict.js";
 import type {ISdjHost, ISdjLexicons} from "./global-interfaces.js";
 import type {IEntitySdj} from "../classes/class-interfaces.js";
-import {
-  type DefaultInitItem,
-  rtnSdjItemName,
-  SdjDefaultTypes,
-  validStrArray
-} from "../core/sdj-types.js";
+import {type DefaultInitItem, rtnSdjItemName, SdjDefaultTypes, validStrArray} from "../core/sdj-types.js";
 
 /*
   SdjLexicons are the dictionary/library extension system of SDJ.

@@ -31,6 +31,7 @@ const ECODES: string[] = [
 // Defaults to 0:0:0; will not store any logs and will not throw console statements.
 
 export interface ILogManager {
+  logMode?: ESDJ_LOG; // Current logging mode
   storeLvl: number; // 0-5 Debug level which will store in local logger
   consoleLvl: number; // 0-5 Debug level which will fire console.log()
   maxLogs: number; // fixed amount of details per logger
