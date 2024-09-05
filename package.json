@@ -1,6 +1,6 @@
 {
   "name": "sdj-esm",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Self Described JSON - ESM",
   "main": "./dist/index.js",
   "import": "./dist/index.js",

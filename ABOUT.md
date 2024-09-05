@@ -15,11 +15,13 @@ Needed an extremely flexible and customizable storage data protocol file that is
 
 - Implement routing, creation, instantiation routines for other libraries/frameworks
   - Separate and discrete code/libraries should be constructed to interact with SDJs
-- Provide internal routines for JSONs, import/loading, cryptography, security, compression, or sanitization
+- Provide internal routines for JSONs, import/loading, cryptography, storage, security, compression, or sanitization
     - Test and correspond with as much default JSON/JavaScript functionality as possible
     - Via Lexicon extensions some options can created/provided/shared for variety of custom content
     - sdj-editor* will provide an example of sanitization/html content
+    - ISdjLibrary API is provided for optional storage of Descriptions outside SDJ-ESM core
     - Whole/Partial file security/compression/cryptography should always be preferred over internal file optimizations/shortcuts
+- Internally store created/loaded SDJs or Descriptions inside SDJ-ESM.
 - Natively implement non-JSON/JavaScript objects inside JSON structures
     - Customizations can/could occur via lexicons, but should not be directly part of this library.
 - Provide/allow an external Lexicon loading system
@@ -31,9 +33,12 @@ Needed an extremely flexible and customizable storage data protocol file that is
 
 ### Creator Caveats and Internal Rules
 At its core; JSON is an open human-readable text format that creates structured data from simple rules.
-This is both a great gift and liability. SDJ Library, on its own, does not provide any [sanitization](https://en.wikipedia.org/wiki/HTML_sanitization) of the JSON
+This is both a great gift and liability. SDJ-ESM, on its own, does not provide any [sanitization](https://en.wikipedia.org/wiki/HTML_sanitization) of the JSON
 string content that a file contains. These checks must be performed outside the library; which can be done manually
-on retrieval/input or via the Lexicon Item Validators.
+on retrieval/input or via the Lexicon Item Validators. 
+
+It is critically important to remember that JSON string content cannot trusted - so make sure your application is
+using an additional sanitization library for any JSON data that is rendered directly to html.
 
 Each individual developer is responsible for what they store/share/create/transmit with this format.
 From an initial creator's standpoint - there's a wide range of possible uses for this open source library.

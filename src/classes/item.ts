@@ -14,7 +14,6 @@ import {restrictCoreSD, restrictLimiter, restrictToAllowedKeys} from "../core/re
 import {ESDJ_CLASS, ESDJ_LIMIT} from "../core/statics.js";
 import type {IDescriptionSdj, IItemSdj} from "./class-interfaces.js";
 import {rtnSdjItemName} from "../core/sdj-types.js";
-import {AssertionError} from "node:assert";
 
 /*
   SdjItem

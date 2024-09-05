@@ -3,7 +3,7 @@
 
 ## What it is:
 SDJ-ESM is an ESM library that reads and creates .json files which are a subset of standard json/text files. 
-Unlike standard JSON, sdj files internalize a self-description of the data which it contains.
+Unlike standard JSON, sdj files internalize a self-description of the data which it contains.<br><br>
 By separating the description from the data; this allows customizable, consistent, and validatable structure.  
 With a single JSON schema, SDJ files can be used to describe, store, retrieve, and transmit nearly any type of data.
 The library transforms sdj data between immutable and mutable forms of sdj json/javascript/typescript objects.
@@ -50,13 +50,8 @@ fetch("//(some location)/sdjfile.json")
 Note; the SDJ Library is fault intolerant and will throw errors on invalid files/format. If you do not know if the file is a valid SDJ file, then you will need to wrap the creation in a
 Try...Catch. Or use standalone ```genJson(json)``` function for an error safe version.
 
-### Release Notes:
-0.2.1 - SdjEditor Alignments 1<br>
-0.2.0 - Schema Relocation, move enums -> statics, fileName regEx for sdJson.sdInfo.name<br>
-0.1.0 - Overhaul of Validators, Data/Structure validation, add sdjIndex functionality<br>
-0.0.7 - Initial NPM/Git testing release
 
-[About](https://github.com/willrudolph/sdj-esm/blob/main/ABOUT.md) this library, about the [SDJ project](https://github.com/willrudolph/sdj) roadmap, and [Copyright](https://github.com/willrudolph/sdj-esm/blob/main/COPYRIGHT) info. 
+[About](https://github.com/willrudolph/sdj-esm/blob/main/ABOUT.md) this library, [Release Notes](https://github.com/willrudolph/sdj-esm/blob/main/RELEASE.md), about the [SDJ project](https://github.com/willrudolph/sdj) roadmap, and [Copyright](https://github.com/willrudolph/sdj-esm/blob/main/COPYRIGHT) info. 
 
 Licensed under [MPLv2](https://github.com/willrudolph/sdj-esm/blob/main/LICENSE).
 
