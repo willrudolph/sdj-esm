@@ -1,5 +1,5 @@
 import {SdjDescription, SdjHost, SdJson} from "../../dist/index.js";
-import {cloneDeep, isEqual} from "lodash-es";
+import {clone, cloneDeep, isEqual} from "lodash-es";
 import {afterEach, beforeEach, describe, expect, test} from "@jest/globals";
 
 const emptyDesc = {
@@ -107,6 +107,33 @@ describe("Description Test set 1", () => {
   beforeEach(() => {
     hostSdj = SdjHost.getISdjHost();
   })
+
+  test("Other bad descriptions", () => {
+    let classDesA = new SdjDescription(emptyDesc, hostSdj);
+    expect(classDesA).toBeTruthy();
+    hostSdj = SdjHost.getISdjHost();
+
+    classDesA = undefined;
+    let newEmpDesc = clone(emptyDesc);
+
+    newEmpDesc.lang = [342]
+    expect(()=> {
+      classDesA = new SdjDescription(newEmpDesc, hostSdj);
+    }).toThrowError();
+    newEmpDesc.lang = {};
+    expect(()=> {
+      classDesA = new SdjDescription(newEmpDesc, hostSdj);
+    }).toThrowError();
+    newEmpDesc.lang = "&*";
+    expect(()=> {
+      classDesA = new SdjDescription(newEmpDesc, hostSdj);
+    }).toThrowError();
+    newEmpDesc.lang = "EN";
+    classDesA = new SdjDescription(newEmpDesc, hostSdj);
+    expect(classDesA.lang).toBe("en");
+
+  });
+
 
   test("extendsId recursion exclusions", () => {
     let newBlank = cloneDeep(blankDesc);

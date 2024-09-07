@@ -101,4 +101,27 @@ describe("Util Tests", () => {
     expect(validIntArray({})).toBeFalsy();
     expect(validIntArray(undefined)).toBeFalsy();
   });
+  
+  test("regEx Lang", () => {
+
+    expect(getRegEx("lang").test(undefined)).toBeFalsy();
+    expect(getRegEx("lang").test([])).toBeFalsy();
+    expect(getRegEx("lang").test(32)).toBeFalsy();
+    expect(getRegEx("lang").test({})).toBeFalsy();
+    expect(getRegEx("lang").test("something.?")).toBeFalsy()
+    expect(getRegEx("lang").test("asdfa")).toBeFalsy();
+    expect(getRegEx("lang").test("$$")).toBeFalsy()
+    expect(getRegEx("lang").test("3_")).toBeFalsy();
+    expect(getRegEx("lang").test("3-")).toBeFalsy();
+    expect(getRegEx("lang").test("")).toBeFalsy()
+    
+    expect(getRegEx("lang").test("fr")).toBeTruthy();
+    expect(getRegEx("lang").test("es")).toBeTruthy();
+    expect(getRegEx("lang").test("RT")).toBeTruthy();
+    expect(getRegEx("lang").test("SOM")).toBeTruthy();
+    expect(getRegEx("lang").test("ed")).toBeTruthy();
+    expect(getRegEx("lang").test("dCs")).toBeTruthy();
+    
+    
+  })
 });

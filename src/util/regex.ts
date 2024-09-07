@@ -45,6 +45,13 @@ export const getRegEx = (regExName: string): RegExp => {
   case "uuid":
     rtnRegEx = /^[a-zA-Z0-9]{6}[-]{1}[a-zA-Z0-9]{5}[-]{1}[a-zA-Z0-9]{4}[-]{1}[a-zA-Z0-9]{7}$/gm;
     break;
+  // Language code standard ISO-639 2 or 3 char lowercase
+  // Empty or missing lang defaults to "en", not exported on default
+  // allows for upper/lower case, but is internally forced to lowercase on construction
+  //
+  case "lang":
+    rtnRegEx = /^[a-zA-Z]{2,3}$/gm;
+    break;
   default:
     // deliberately no default
   }

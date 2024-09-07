@@ -113,5 +113,6 @@ export function freezeDescription(inDesc: IDescriptionSdj) {
   Object.freeze(inDesc.graph);
   each(inDesc.items, (item: IItemSdj) => Object.freeze(item));
   Object.freeze(inDesc.items);
+  Object.freeze(inDesc.lang);
   Object.freeze(inDesc);
 }

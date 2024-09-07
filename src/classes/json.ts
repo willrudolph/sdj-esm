@@ -28,10 +28,10 @@ import {cloneDeep, each, has, isArray, isEmpty, isEqual, isObject} from "lodash-
 import {getRegEx} from "../util/regex";
 
 export class SdJson implements IJsonSdj{
-  _sdInfo: Info;
-  _data: SdjData[] = [];
-  _description: IDescriptionSdj;
-
+  private _data: SdjData[] = [];
+  private _description: IDescriptionSdj;
+  private _lang: string = "en";
+  private _sdInfo: Info;
   private _isLocked = true;
   private _host: SdjHost = SdjHost.getHost();
   private readonly log: FuncStrNumVoid;
@@ -51,6 +51,7 @@ export class SdJson implements IJsonSdj{
     this._description = this._host.makeDescript(inJson.description);
     this._sdInfo = genInfoJI(inJson.sdInfo);
     this._host.lexiconMgr.verifyData(inJson, true);
+    this._lang = (inJson.lang) ? String(inJson.lang).toLowerCase() : "en";
     this.build(inJson);
     this.log("JSON Build Complete");
   }
@@ -63,8 +64,38 @@ export class SdJson implements IJsonSdj{
     return this._description;
   }
 
+  set description(changeDesc: IDescriptionSdj) {
+    if (!this.isLocked) {
+      this._description = changeDesc;
+    } else {
+      // no - op
+    }
+  }
+
   get sdInfo(): Info {
     return this._sdInfo;
+  }
+
+  get $sdInfo(): Info {
+    return this._sdInfo;
+  }
+
+  set $sdInfo(inInfo: Info) {
+    this._sdInfo = inInfo;
+  }
+
+  get lang() {
+    return this._lang;
+  }
+
+  get $lang(): string {
+    return this._lang;
+  }
+
+  set $lang(inStr: string) {
+    if (getRegEx("lang").test(inStr)) {
+      this._lang = String(inStr).toLowerCase();
+    }
   }
 
   get isLocked(): boolean {
@@ -135,6 +166,9 @@ export class SdJson implements IJsonSdj{
     if (!this._isLocked) {
       rtnJsonJI.description = blankDescriptionJI(unlockedName);
       rtnJsonJI.sdInfo = blankInfoJI(unlockedName);
+      if (rtnJsonJI.lang) {
+        delete rtnJsonJI.lang;
+      }
       rtnJsonJI.data = [];
     }
     return rtnJsonJI;
@@ -281,6 +315,10 @@ export class SdJson implements IJsonSdj{
       rtnJsonJI.data.push(sdjData.genJI(true));
     });
 
+    if (this._lang !== "en") {
+      rtnJsonJI.lang = this._lang;
+    }
+
     return rtnJsonJI;
   }
 
@@ -308,7 +346,12 @@ export class SdJson implements IJsonSdj{
     } else if (isArray(inJson.data) && inJson.data.length > 0 && !verifyUniqKeys(inJson.data, true)) {
       throw new Error("[SDJ] Json: top level data has duplicate child sdKeys;");
     }
+
+    if (inJson.lang && !getRegEx("lang").test(inJson.lang)) {
+      throw new Error(`[SDJ] lang value can be 2-3 lower case chars; error with value:'${inJson.lang}';`);
+    }
+
     restrictToAllowedKeys("SdJsonJI:" + inJson.sdInfo.name,
-      ["$id", "description", "sdInfo", "data"], inJson);
+      ["$id", "description", "sdInfo", "data", "lang"], inJson);
   }
 }

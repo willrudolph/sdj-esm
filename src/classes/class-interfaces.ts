@@ -97,10 +97,12 @@ export declare interface IDescriptionSdj {
 }
 
 export declare interface IJsonSdj {
+    readonly lang: string;
     readonly data: IDataSdj[];
     readonly description: IDescriptionSdj;
     readonly sdInfo: Info;
     readonly isLocked: boolean;
+    readonly isValid: boolean;
     dataByPath: (dataPath: string) => IDataSdj | undefined;
     dataByEntity: (searchEnt: EntitySearch, dataPath?: string) => IDataSdj[];
     dataByItem: (searchItem: ItemSearch, dataPath?: string) => IDataSdj[];

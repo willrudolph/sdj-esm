@@ -29,6 +29,7 @@ import {SdjItem} from "./item.js";
 import type {ISdjHost, SdjJITypes} from "../global/global-interfaces.js";
 import {clone, cloneDeep, each, find, isArray, isEqual, isFunction, times, uniq} from "lodash-es";
 import {validSDKey} from "../core/sdj-types";
+import {getRegEx} from "../util/regex";
 
 // Descriptions created outside of new SdJson() or SdjHost.makeDescription
 // using 'new SdjDescription(...)' ; will NOT automatically be added to a library.
@@ -36,12 +37,11 @@ import {validSDKey} from "../core/sdj-types";
 
 
 export class SdjDescription implements IDescriptionSdj {
-  lang: string;
-
   log: FuncStrNumVoid;
   private _lexicons: string[] = [];
   private _graph: IEntitySdj[] = [];
   private _sdInfo: Info;
+  private _lang: string = "en";
   private _items: IItemSdj[] = [];
   private _host: ISdjHost;
 
@@ -60,7 +60,7 @@ export class SdjDescription implements IDescriptionSdj {
     inDescJI = this._host.fullDescription(inDescJI);
 
     this._sdInfo = inDescJI.sdInfo;
-    this.lang = inDescJI.lang || "en";
+    this.lang = (inDescJI.lang) ? String(inDescJI.lang).toLowerCase() : "en";
     this.log = this._host.getLogFunc("Desc:" + this._sdInfo.name);
     this.log("created");
     this.entityItemBuild(inDescJI);
@@ -94,6 +94,17 @@ export class SdjDescription implements IDescriptionSdj {
   get sdInfo(): Info {
     return this._sdInfo;
   }
+
+  get lang() {
+    return this._lang;
+  }
+
+  set lang(inStr: string) {
+    if (getRegEx("lang").test(inStr)) {
+      this._lang = String(inStr).toLowerCase();
+    }
+  }
+
   // ^^ Above Frozen when locked
 
   get host(): ISdjHost {
@@ -181,6 +192,10 @@ export class SdjDescription implements IDescriptionSdj {
         rtnDescJI.graph.push(sdjEnt.genJI());
       }
     });
+
+    if (this._lang !== "en") {
+      rtnDescJI.lang = this._lang;
+    }
 
     return rtnDescJI;
   }
@@ -314,6 +329,10 @@ export class SdjDescription implements IDescriptionSdj {
     } else if (isArray(inDesc.graph) && !verifyUniqKeys(inDesc.graph)) {
       throw new Error("[SDJ] Description graph does not have unique sdKeys/sdIds;");
     }
+    if (inDesc.lang && !getRegEx("lang").test(inDesc.lang)) {
+      throw new Error(`[SDJ] lang value can be 2-3 lower case chars; error with value:'${inDesc.lang}';`);
+    }
+
     restrictToAllowedKeys("DescriptionJI:" + inDesc.sdInfo.name,
       ["sdInfo", "items", "graph", "lexicons", "lang"], inDesc);
   }

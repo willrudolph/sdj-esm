@@ -164,6 +164,7 @@ export interface SdJsonJI extends JIObject {
   $id: string // json schema id
   description: DescriptionJI;
   sdInfo: Info;
+  lang?: string;
   data?: DataJI[];
 }
 

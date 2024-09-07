@@ -269,6 +269,10 @@ describe("Default Description Lock-out", () => {
       classDesA.description.sdInfo.uniqId = "undefined";
     }).toThrowError();
 
+    expect(() => {
+      classDesA.description.lang = "fr";
+    }).toThrowError();
+
   });
 
 
@@ -308,8 +312,37 @@ describe("Description Test set 1a", () => {
   })
 
   test("Test something", () => {
-    const classDesA = new SdJson(testA);
-    expect(classDesA.genJI()).toMatchObject(testA);
+    const initial = new SdJson(testA);
+    let ref, testClone;
+    expect(initial).toBeTruthy();
+    expect(initial.genJI()).toMatchObject(testA);
+
+    testClone = cloneDeep(testA);
+    testClone.description.lang = "";
+
+    ref = new SdJson(testClone);
+    expect(ref.description.lang).toBe("en");
+
+    testClone.lang = "asdfasdga";
+    expect(() =>{
+      ref = new SdJson(testClone);
+    }).toThrowError();
+
+    testClone.lang = "EN";
+    ref = new SdJson(testClone);
+
+    expect(() => {
+      ref.lang = "Baballea"
+    }).toThrowError();
+
+    ref.$lang = "asdfasdga";
+    expect(ref.lang).toBe("en");
+
+    ref.$lang = "fr";
+    expect(ref.lang).toBe("fr");
+
+    expect(ref.lang).toBe("fr");
+
   });
 });
 
