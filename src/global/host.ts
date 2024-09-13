@@ -26,8 +26,8 @@ import {SdjItem} from "../classes/item.js";
 import {SdjData} from "../classes/data.js";
 import {each, isEqual, isFunction} from "lodash-es";
 import {SdjSearch} from "./search.js";
-import {type ILogManager, LogManager} from "../util/log";
-import {freezeDescription} from "../util/general";
+import {type ILogManager, LogManager} from "../util/log.js";
+import {freezeDescription} from "../util/general.js";
 
 
 class EmptySdjLibrary implements ISdjLibrary {

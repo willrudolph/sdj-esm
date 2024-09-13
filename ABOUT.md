@@ -27,7 +27,7 @@ Needed an extremely flexible and customizable storage data protocol file that is
 - Provide/allow an external Lexicon loading system
     - Enforces strict and simple rules on Description validations; if the active library doesn't know it, it will not create/validate.
     - Developers deliberately have to import, know, confirm, and maintain the Lexicons they use.
-    - If desired this type of functionality could be created for initialization, but should not be directly part of this library.
+    - If desired, this type of functionality could be created for initialization, but should not be directly part of this library.
 
 *in-progress
 

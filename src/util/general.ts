@@ -15,11 +15,11 @@ import {SdJson} from "../classes/json.js";
 import {SdjHost} from "../global/host.js";
 import {each, has, isString} from "lodash-es";
 import {cloneJI, deepFreeze} from "./func.std.js";
-import {getRegEx} from "./regex";
+import {getRegEx} from "./regex.js";
 
 export function blankJsonJI(jsonName: string, descOpt: DescriptionJI | SdjDescription | string | undefined = undefined): SdJsonJI {
   const descName = (descOpt && isString(descOpt)) ?
-        <string>descOpt : DEF_DESC, fileName = (getRegEx("fileName").test(jsonName)) ? jsonName : DEF_JSON;
+        <string>descOpt : DEF_DESC, fileName = (getRegEx("sdjFileName").test(jsonName)) ? jsonName : DEF_JSON;
   let descJI: DescriptionJI;
 
   if (descOpt instanceof SdjDescription) {

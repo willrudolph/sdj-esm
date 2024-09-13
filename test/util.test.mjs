@@ -61,21 +61,23 @@ describe("Util Tests", () => {
   });
 
   test("regEx Filename", () => {
-    expect(getRegEx("fileName").test(".hidden")).toBeFalsy();
-    expect(getRegEx("fileName").test(".*")).toBeFalsy();
-    expect(getRegEx("fileName").test("///")).toBeFalsy();
-    expect(getRegEx("fileName").test("[{}c.hid")).toBeFalsy();
-    expect(getRegEx("fileName").test("*/*")).toBeFalsy();
-    expect(getRegEx("fileName").test("543.*")).toBeFalsy();
-    expect(getRegEx("fileName").test("fgds./")).toBeFalsy();
-    expect(getRegEx("fileName").test("something.?")).toBeFalsy();
+    expect(getRegEx("sdjFileName").test(".hidden")).toBeFalsy();
+    expect(getRegEx("sdjFileName").test(".*")).toBeFalsy();
+    expect(getRegEx("sdjFileName").test("///")).toBeFalsy();
+    expect(getRegEx("sdjFileName").test("[{}c.hid")).toBeFalsy();
+    expect(getRegEx("sdjFileName").test("*/*")).toBeFalsy();
+    expect(getRegEx("sdjFileName").test("543.*")).toBeFalsy();
+    expect(getRegEx("sdjFileName").test("fgds./")).toBeFalsy();
+    expect(getRegEx("sdjFileName").test("something.?")).toBeFalsy();
 
-    expect(getRegEx("fileName").test("some.name.ts")).toBeTruthy();
-    expect(getRegEx("fileName").test("something.a")).toBeTruthy();
-    expect(getRegEx("fileName").test("Aomeasdfa3124t-some.txt")).toBeTruthy();
-    expect(getRegEx("fileName").test("something.json")).toBeTruthy();
-    expect(getRegEx("fileName").test("Comet.fdo")).toBeTruthy();
-    expect(getRegEx("fileName").test("1234123sodsfameth.asd")).toBeTruthy();
+    expect(getRegEx("sdjFileName").test("something.json")).toBeTruthy();
+    expect(getRegEx("sdjFileName").test("filesome.sdj")).toBeTruthy();
+    expect(getRegEx("sdjFileName").test("sometest.txt")).toBeTruthy();
+
+    expect(getRegEx("sdjFileName").test("some.name.ts")).toBeFalsy();
+    expect(getRegEx("sdjFileName").test("something.a")).toBeFalsy();
+    expect(getRegEx("sdjFileName").test("Comet.fdo")).toBeFalsy();
+    expect(getRegEx("sdjFileName").test("1234123sodsfameth.asd")).toBeFalsy();
   })
 
   test("validIntArray", () => {
@@ -116,6 +118,8 @@ describe("Util Tests", () => {
     expect(getRegEx("lang").test("")).toBeFalsy()
     
     expect(getRegEx("lang").test("fr")).toBeTruthy();
+    expect(getRegEx("lang").test("en")).toBeTruthy();
+    expect(getRegEx("lang").test("eng")).toBeTruthy();
     expect(getRegEx("lang").test("es")).toBeTruthy();
     expect(getRegEx("lang").test("RT")).toBeTruthy();
     expect(getRegEx("lang").test("SOM")).toBeTruthy();

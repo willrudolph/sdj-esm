@@ -15,12 +15,13 @@ const badDescA = {
     "graph": [],
     "items": []
 }
-
+/*
 const hostSdj = SdjHost.getISdjHost({lexicons: [extLexicon, new SimpleSdjLexicon()], options:{logMode: ESDJ_LOG.DEV, }});
 //const aJson = new SdJson(<SdJsonJI>testA);
-const descBasedSdj = new SdJson(badDescA);
+const descBasedSdj = new SdJson(badDescA);*/
 const testAClass = new SdJson(<SdJsonJI>testA);
-const rtnJI = descBasedSdj.genJI();
+const testJI = testAClass.genJI();
+/*const rtnJI = descBasedSdj.genJI();
 const simpleSdj = new SdJson(<SdJsonJI>simpleJI);
 
 const search01 = testAClass.dataByItem({sdId: 2})
@@ -39,6 +40,6 @@ const search07 = testAClass.dataByItem({type: "strl"})
 
 const search08 = testAClass.dataByItem({type: "title"})
 
-const search09 = simpleSdj.description.getItem(0);
+const search09 = simpleSdj.description.getItem(0);*/
 
 console.log();

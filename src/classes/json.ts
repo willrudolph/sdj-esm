@@ -25,7 +25,7 @@ import type {IDataSdj, IDescriptionSdj, IJsonSdj} from "./class-interfaces.js";
 import {SdjHost} from "../global/host.js";
 import {SdjData} from "./data.js";
 import {cloneDeep, each, has, isArray, isEmpty, isEqual, isObject} from "lodash-es";
-import {getRegEx} from "../util/regex";
+import {getRegEx} from "../util/regex.js";
 
 export class SdJson implements IJsonSdj{
   private _data: SdjData[] = [];
@@ -58,6 +58,10 @@ export class SdJson implements IJsonSdj{
 
   get data(): IDataSdj[] {
     return <IDataSdj[]>this._data;
+  }
+
+  set data(inval: SdjData[]) {
+    this._data = inval;
   }
 
   get description(): IDescriptionSdj {
@@ -333,7 +337,7 @@ export class SdJson implements IJsonSdj{
 
     if (!isInfo(inJson.sdInfo)) {
       throw new Error("[SDJ] Json: missing sdInfo;");
-    } else if (isInfo(inJson.sdInfo) && (!getRegEx("fileName").test(inJson.sdInfo.name))) {
+    } else if (isInfo(inJson.sdInfo) && (!getRegEx("sdjFileName").test(inJson.sdInfo.name))) {
       throw new Error(`[SDJ] Json sdInfo.name '${inJson.sdInfo.name}' is not regEx fileName;`);
     }
 

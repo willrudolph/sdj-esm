@@ -16,7 +16,7 @@ import {isInfo} from "../core/validators.js";
 import type {IDataSdj, IEntitySdj, IItemSdj} from "./class-interfaces.js";
 import {each, find, isArray, isFunction, isNull, isNumber, isObject, isString, isUndefined} from "lodash-es";
 import {cloneJI, getFromCoreArray} from "../util/func.std.js";
-import {validSDKey} from "../core/sdj-types";
+import {validSDKey} from "../core/sdj-types.js";
 
 /*
   SdjData / DataJI
@@ -186,7 +186,6 @@ export class SdjData implements CoreSD, IDataSdj {
         curIdx = this._sdChildren.length + 1;
       }
       sdData.$parentRef = this;
-      this._depth += 1;
       (<SdjData>sdData).$sdIndex = curIdx;
       this._sdChildren.push(sdData);
     }
@@ -267,6 +266,7 @@ export class SdjData implements CoreSD, IDataSdj {
         rtnDataJI.sdChildren.push(sdjData.genJI(withChildren));
       });
     }
+    // rtnDataJI["$$depth"] = this._depth;
     return rtnDataJI;
   }
   private confirmEntity(inEnt: IEntitySdj, inData: DataJI): IEntitySdj {

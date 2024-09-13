@@ -28,8 +28,8 @@ import {SdjEntity} from "./entity.js";
 import {SdjItem} from "./item.js";
 import type {ISdjHost, SdjJITypes} from "../global/global-interfaces.js";
 import {clone, cloneDeep, each, find, isArray, isEqual, isFunction, times, uniq} from "lodash-es";
-import {validSDKey} from "../core/sdj-types";
-import {getRegEx} from "../util/regex";
+import {validSDKey} from "../core/sdj-types.js";
+import {getRegEx} from "../util/regex.js";
 
 // Descriptions created outside of new SdJson() or SdjHost.makeDescription
 // using 'new SdjDescription(...)' ; will NOT automatically be added to a library.
