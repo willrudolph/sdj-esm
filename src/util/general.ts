@@ -63,12 +63,14 @@ export function genJson(inJson: SdJsonJI | DescriptionJI): IJsonSdj | undefined 
 export function genLexicon(inJson: SdJsonJI | DescriptionJI): ILexicon | undefined {
   let rtnVal = undefined,
     baseDescript: DescriptionJI,
+    asSdJson: SdJsonJI,
     lexName: string,
     iLexicon: ILexicon = {name: ""};
-  if (inJson.$id && inJson.description && inJson.sdInfo) {
+  if (has(inJson, "$id") && has(inJson, "description") && inJson.sdInfo) {
+    asSdJson = <SdJsonJI>inJson;
     try {
       SdJson.VerifyJI(<SdJsonJI>inJson);
-      baseDescript = <DescriptionJI>inJson.description;
+      baseDescript = <DescriptionJI>asSdJson.description;
     } catch(e) {
       // eslint-disable-next-line no-console
       console.log("[SDJ] genLexicon error:" + String(e).toString());

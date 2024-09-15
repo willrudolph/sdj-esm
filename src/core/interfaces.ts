@@ -94,9 +94,9 @@ export type DataJIValues = Info | DataJI[] | DataKeyValue;
 export interface DataJI extends CoreSD, JIObject {
   // sdId === entity.sdId
   // sdKey === unique string key per sdChildren/root
-  [dataKey: string]: DataJIValues;
   sdInfo?: Info;
   sdChildren?: DataJI[];
+  [dataKey: string]: DataJIValues;
 }
 
 export interface ItemSearch extends CoreSDSearch {
@@ -104,7 +104,7 @@ export interface ItemSearch extends CoreSDSearch {
   limiter?: ESDJ_LIMIT;
 }
 
-export interface ItemJI extends CoreSD, JIObject {
+export interface ItemJI extends CoreSD {
   // sdId === unique item id per description
   // sdKey === unique DataJI data Key, and per description
   type: string;
@@ -122,7 +122,7 @@ export interface EntityCore {
   sdProps?: SdKeyProps;
 }
 
-export interface EntityJI extends EntityCore, CoreSD, JIObject {
+export interface EntityJI extends EntityCore, CoreSD {
   // sdId === unique entity id per description
   // sdKey === unique entity name per description
 }
@@ -141,7 +141,7 @@ export interface IValidator extends ValidatorJI {
   input: FuncValueInput;
 }
 
-export interface DescriptionJI extends JIObject {
+export interface DescriptionJI {
   sdInfo: Info;
   items: ItemJI[];
   graph: EntityJI[];
@@ -160,7 +160,7 @@ export interface DescriptionSearch {
 
 
 // Self Described JSON Immutable
-export interface SdJsonJI extends JIObject {
+export interface SdJsonJI {
   $id: string // json schema id
   description: DescriptionJI;
   sdInfo: Info;

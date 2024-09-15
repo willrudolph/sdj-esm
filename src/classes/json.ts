@@ -261,7 +261,7 @@ export class SdJson implements IJsonSdj{
           rtnJson = cloneDeep(rtnJson);
           rtnJson.data = [];
         }
-      } else if (!inJI.data && inJI.sdInfo && has(descOrJson, "items") && has(descOrJson, "graph")) {
+      } else if (!has(inJI, "data") && inJI.sdInfo && has(descOrJson, "items") && has(descOrJson, "graph")) {
         descJI = <DescriptionJI>descOrJson;
         descJI.sdInfo = checkResetInfo(inJI.sdInfo);
         try {
