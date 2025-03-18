@@ -1,6 +1,6 @@
 {
   "name": "sdj-esm",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "Self Described JSON - ESM",
   "main": "./dist/index.js",
   "import": "./dist/index.js",
@@ -18,14 +18,14 @@
     "compile": "tsc -b",
     "build": "npm-run-all compile schema:copy",
     "build:reset": "npm-run-all build:clean compile schema:copy",
-    "build:clean": "rd /s /q dist",
+    "build:clean": "rd /s /q dist || rmdir -r /dist",
     "build:local": "tsc -p ./node/tsconfig.node.json",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:node": "node test/node.int.mjs",
     "schema:copy": "npm run schema:dir && npm run schema:copy:os || npm run schema:copy:win",
     "schema:dir": "mkdir .\\dist\\schema || mkdir ./dist/schema",
-    "schema:copy:win": "copy .\\src\\schema\\sdj-schema.json .\\dist\\schema",
-    "schema:copy:os": "cp ./src/schema/sdj-schema.json ./dist/schema",
+    "schema:copy:win": "copy .\\src\\schema\\sdj-schema.json .\\dist\\schema\\sdj-schema.json",
+    "schema:copy:os": "cp ./src/schema/sdj-schema.json ./dist/schema/sdj-schema.json",
     "lint": "eslint . --fix"
   },
   "keywords": [
@@ -48,10 +48,10 @@
   "author": "@willrudolph.com",
   "license": "MPL-2.0",
   "peerDependencies": {
-    "lodash-es": "^4.17.20"
+    "lodash-es": "^4.17.x"
   },
   "devDependencies": {
-    "@types/lodash-es": "^4.17.4",
+    "@types/lodash-es": "^4.17.x",
     "@types/node": "^18.11.17",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",

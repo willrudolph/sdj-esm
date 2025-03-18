@@ -138,8 +138,9 @@ export class SdjDescription implements IDescriptionSdj {
   calcSdKeyProps(entity: IEntitySdj): SdKeyProps {
     // confirm entity name and sdId, and get from graph instead
     const localEnt = (entity && this._graph[entity.sdId]) ? this._graph[entity.sdId] : undefined;
-    if (!localEnt || entity.sdKey !== localEnt.sdKey || !isEqual(localEnt.sdProps, entity.sdProps)) {
-      throw new Error(`[SDJ] entity '${entity.sdKey}' does match description '${this._sdInfo.name}'`);
+    if (!localEnt || entity.sdKey !== localEnt.sdKey || !entity.sdProps) {
+      this.log(`entity '${entity.sdKey}' does match description '${localEnt?.sdKey}'`);
+      return (entity.sdProps) ? cloneDeep(entity.sdProps) : {}; // calcSdKeyProps shouldn't be called on entities that don't have sdProps
     }
     return this._host.lexiconMgr.calcSdKeyProps(entity, this._graph);
   }

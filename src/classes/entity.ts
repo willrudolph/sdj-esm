@@ -215,6 +215,10 @@ export class SdjEntity implements CoreSD, IEntitySdj {
       rtnEntJI.childIds = [...<number[]>this._childIds];
     }
 
+    if (this._dataInfo) {
+      rtnEntJI.dataInfo = true;
+    }
+
     if (this.sdProps) {
       let rtnProps: SdKeyProps | undefined;
       if (this._description) {
